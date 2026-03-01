@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI股票分析助手 - 股票分析</title>
+    <!-- Element Plus CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.3.12/dist/index.css">
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #303133;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #1a365d;
+            color: white;
+            padding: 20px 0;
+        }
+        .sidebar-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .sidebar-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar-item.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #48bb78;
+        }
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            height: 60px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #f56565;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        .footer {
+            height: 40px;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 12px;
+            color: #909399;
+        }
+        .stock-analysis {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .stock-info {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .stock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .stock-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .stock-code {
+            font-size: 14px;
+            color: #718096;
+            margin-left: 10px;
+        }
+        .stock-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .action-button {
+            padding: 6px 12px;
+            border: 1px solid #48bb78;
+            border-radius: 4px;
+            background-color: white;
+            color: #48bb78;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .action-button:hover {
+            background-color: #48bb78;
+            color: white;
+        }
+        .stock-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        .metric-item {
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 4px;
+        }
+        .metric-value.positive {
+            color: #48bb78;
+        }
+        .metric-value.negative {
+            color: #f56565;
+        }
+        .chart-section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .chart-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .chart-controls {
+            display: flex;
+            gap: 10px;
+        }
+        .control-button {
+            padding: 4px 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            background-color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .control-button.active {
+            background-color: #1a365d;
+            color: white;
+            border-color: #1a365d;
+        }
+        .chart-container {
+            height: 400px;
+        }
+        .analysis-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            color: #1a365d;
+            border-bottom-color: #1a365d;
+            font-weight: 500;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .financial-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .financial-table th,
+        .financial-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .financial-table th {
+            background-color: #f8fafc;
+            font-weight: 500;
+        }
+        .sentiment-analysis {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .sentiment-item {
+            background-color: #f8fafc;
+            border-radius: 6px;
+            padding: 15px;
+        }
+        .sentiment-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        .sentiment-score {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .sentiment-score.positive {
+            color: #48bb78;
+        }
+        .sentiment-score.neutral {
+            color: #ed8936;
+        }
+        .sentiment-score.negative {
+            color: #f56565;
+        }
+        .sentiment-label {
+            font-size: 12px;
+            color: #718096;
+        }
+        .ai-analysis {
+            width: 350px;
+            background-color: white;
+            box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .ai-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ai-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .ai-toggle {
+            cursor: pointer;
+            font-size: 14px;
+            color: #718096;
+        }
+        .ai-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .ai-section {
+            margin-bottom: 20px;
+        }
+        .ai-section-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #1a365d;
+        }
+        .ai-score {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .score-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #48bb78;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        .score-info {
+            flex: 1;
+        }
+        .score-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .score-label {
+            font-size: 12px;
+            color: #718096;
+        }
+        .ai-recommendation {
+            background-color: #f0f9eb;
+            border-left: 4px solid #48bb78;
+            padding: 10px;
+            border-radius: 0 4px 4px 0;
+        }
+        .recommendation-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .ai-qa {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .qa-input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-top: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+        .qa-input:focus {
+            outline: none;
+        }
+        .qa-messages {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .qa-message {
+            margin-bottom: 10px;
+        }
+        .qa-message.user {
+            text-align: right;
+        }
+        .qa-message-content {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 16px;
+            max-width: 80%;
+        }
+        .qa-message.user .qa-message-content {
+            background-color: #1a365d;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .qa-message.ai .qa-message-content {
+            background-color: #f1f5f9;
+            color: #303133;
+            border-bottom-left-radius: 4px;
+        }
+        .ai-prediction {
+            background-color: #f8fafc;
+            border-radius: 6px;
+            padding: 15px;
+        }
+        .prediction-chart {
+            height: 150px;
+            margin-top: 10px;
+        }
+        .ai-risk {
+            background-color: #fffaf0;
+            border-left: 4px solid #ed8936;
+            padding: 10px;
+            border-radius: 0 4px 4px 0;
+        }
+        .risk-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .risk-level {
+            font-weight: 500;
+        }
+        .risk-level.high {
+            color: #f56565;
+        }
+        .risk-level.medium {
+            color: #ed8936;
+        }
+        .risk-level.low {
+            color: #48bb78;
+        }
+        .ai-similar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .similar-stock {
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .similar-stock-name {
+            font-weight: 500;
+        }
+        .similar-stock-code {
+            font-size: 12px;
+            color: #718096;
+            margin-left: 5px;
+        }
+        .similar-score {
+            font-size: 12px;
+            color: #718096;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧菜单栏 -->
+        <div class="sidebar">
+            <div class="sidebar-item">仪表盘</div>
+            <div class="sidebar-item active">股票分析</div>
+            <div class="sidebar-item">持仓管理</div>
+            <div class="sidebar-item">关注列表</div>
+            <div class="sidebar-item">用户设置</div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main">
+            <!-- 顶部导航栏 -->
+            <div class="header">
+                <div class="header-title">AI股票分析助手</div>
+                <div class="header-user">
+                    <div class="notification-icon">
+                        🔔
+                        <div class="notification-badge">3</div>
+                    </div>
+                    <span>欢迎，用户</span>
+                </div>
+            </div>
+            
+            <!-- 内容区 -->
+            <div class="content">
+                <!-- 股票分析区域 -->
+                <div class="stock-analysis">
+                    <!-- 搜索栏 -->
+                    <div class="search-bar">
+                        <input type="text" class="search-input" placeholder="搜索股票代码或名称...">
+                    </div>
+                    
+                    <!-- 股票基本信息 -->
+                    <div class="stock-info">
+                        <div class="stock-header">
+                            <div>
+                                <span class="stock-name">阿里巴巴</span>
+                                <span class="stock-code">BABA</span>
+                            </div>
+                            <div class="stock-actions">
+                                <button class="action-button">添加到关注</button>
+                                <button class="action-button">添加到持仓</button>
+                            </div>
+                        </div>
+                        <div class="stock-metrics">
+                            <div class="metric-item">
+                                <div class="metric-value">$85.25</div>
+                                <div class="metric-label">当前价格</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value positive">+2.35 (+2.84%)</div>
+                                <div class="metric-label">涨跌幅</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value">$83.50</div>
+                                <div class="metric-label">开盘价</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value">$85.75</div>
+                                <div class="metric-label">最高价</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- K线图表 -->
+                    <div class="chart-section">
+                        <div class="chart-header">
+                            <div class="chart-title">K线图表</div>
+                            <div class="chart-controls">
+                                <button class="control-button active">日K</button>
+                                <button class="control-button">周K</button>
+                                <button class="control-button">月K</button>
+                                <button class="control-button">分时</button>
+                            </div>
+                        </div>
+                        <div class="chart-container" id="klineChart"></div>
+                    </div>
+                    
+                    <!-- 分析标签页 -->
+                    <div class="chart-section">
+                        <div class="analysis-tabs">
+                            <div class="tab-button active">技术指标</div>
+                            <div class="tab-button">基本面分析</div>
+                            <div class="tab-button">舆情分析</div>
+                        </div>
+                        
+                        <!-- 技术指标内容 -->
+                        <div class="tab-content active">
+                            <div class="chart-controls" style="margin-bottom: 15px;">
+                                <button class="control-button active">MACD</button>
+                                <button class="control-button">KDJ</button>
+                                <button class="control-button">RSI</button>
+                                <button class="control-button">BOLL</button>
+                            </div>
+                            <div class="chart-container" id="techIndicatorChart"></div>
+                        </div>
+                        
+                        <!-- 基本面分析内容 -->
+                        <div class="tab-content">
+                            <table class="financial-table">
+                                <thead>
+                                    <tr>
+                                        <th>指标</th>
+                                        <th>2023</th>
+                                        <th>2024</th>
+                                        <th>2025</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>营收（亿元）</td>
+                                        <td>8686</td>
+                                        <td>9345</td>
+                                        <td>10234</td>
+                                    </tr>
+                                    <tr>
+                                        <td>净利润（亿元）</td>
+                                        <td>1574</td>
+                                        <td>1789</td>
+                                        <td>1987</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ROE（%）</td>
+                                        <td>12.5</td>
+                                        <td>13.2</td>
+                                        <td>14.1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>PE（倍）</td>
+                                        <td>18.5</td>
+                                        <td>17.2</td>
+                                        <td>16.5</td>
+                                    </tr>
+                                    <tr>
+                                        <td>PB（倍）</td>
+                                        <td>2.1</td>
+                                        <td>2.0</td>
+                                        <td>1.9</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- 舆情分析内容 -->
+                        <div class="tab-content">
+                            <div class="sentiment-analysis">
+                                <div class="sentiment-item">
+                                    <div class="sentiment-title">新闻情感分析</div>
+                                    <div class="sentiment-score positive">78</div>
+                                    <div class="sentiment-label">正面</div>
+                                </div>
+                                <div class="sentiment-item">
+                                    <div class="sentiment-title">社交媒体情绪</div>
+                                    <div class="sentiment-score neutral">52</div>
+                                    <div class="sentiment-label">中性</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <h4 style="margin-bottom: 10px;">相关新闻</h4>
+                                <div style="border-bottom: 1px solid #e2e8f0; padding: 10px 0;">
+                                    <div style="font-weight: 500; margin-bottom: 5px;">阿里巴巴Q4财报超预期，云业务增长强劲</div>
+                                    <div style="font-size: 12px; color: #718096;">2026-02-28</div>
+                                </div>
+                                <div style="border-bottom: 1px solid #e2e8f0; padding: 10px 0;">
+                                    <div style="font-weight: 500; margin-bottom: 5px;">阿里巴巴宣布新一轮组织架构调整</div>
+                                    <div style="font-size: 12px; color: #718096;">2026-02-25</div>
+                                </div>
+                                <div style="padding: 10px 0;">
+                                    <div style="font-weight: 500; margin-bottom: 5px;">阿里巴巴股价连续上涨，创近期新高</div>
+                                    <div style="font-size: 12px; color: #718096;">2026-02-20</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI分析窗口 -->
+                <div class="ai-analysis">
+                    <div class="ai-header">
+                        <div class="ai-title">AI分析</div>
+                        <div class="ai-toggle">▼</div>
+                    </div>
+                    <div class="ai-content">
+                        <!-- 综合评分和投资建议 -->
+                        <div class="ai-section">
+                            <div class="ai-section-title">综合评分</div>
+                            <div class="ai-score">
+                                <div class="score-circle">8.5</div>
+                                <div class="score-info">
+                                    <div class="score-value">8.5/10</div>
+                                    <div class="score-label">综合评分</div>
+                                </div>
+                            </div>
+                            <div class="ai-recommendation">
+                                <div class="recommendation-text">
+                                    <strong>投资建议：买入</strong><br>
+                                    阿里巴巴基本面稳健，云业务增长强劲，估值合理，建议积极买入。
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 智能问答 -->
+                        <div class="ai-section">
+                            <div class="ai-section-title">智能问答</div>
+                            <div class="ai-qa">
+                                <div class="qa-messages">
+                                    <div class="qa-message ai">
+                                        <div class="qa-message-content">
+                                            你好！我是AI股票分析师，有什么可以帮你分析的问题吗？
+                                        </div>
+                                    </div>
+                                    <div class="qa-message user">
+                                        <div class="qa-message-content">
+                                            阿里巴巴未来半年的走势如何？
+                                        </div>
+                                    </div>
+                                    <div class="qa-message ai">
+                                        <div class="qa-message-content">
+                                            根据当前数据和市场趋势，阿里巴巴未来半年有望保持稳步上涨态势，主要受益于云业务的持续增长和电商业务的复苏。
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="text" class="qa-input" placeholder="输入你的问题...">
+                            </div>
+                        </div>
+                        
+                        <!-- 预测走势分析 -->
+                        <div class="ai-section">
+                            <div class="ai-section-title">预测走势</div>
+                            <div class="ai-prediction">
+                                <div style="font-size: 14px; margin-bottom: 10px;">未来30天价格预测</div>
+                                <div class="prediction-chart" id="predictionChart"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- 风险评估 -->
+                        <div class="ai-section">
+                            <div class="ai-section-title">风险评估</div>
+                            <div class="ai-risk">
+                                <div class="risk-item">
+                                    <div>市场风险</div>
+                                    <div class="risk-level medium">中等</div>
+                                </div>
+                                <div class="risk-item">
+                                    <div>行业风险</div>
+                                    <div class="risk-level low">低</div>
+                                </div>
+                                <div class="risk-item">
+                                    <div>公司风险</div>
+                                    <div class="risk-level low">低</div>
+                                </div>
+                                <div class="risk-item">
+                                    <div>政策风险</div>
+                                    <div class="risk-level medium">中等</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 相似股票推荐 -->
+                        <div class="ai-section">
+                            <div class="ai-section-title">相似股票推荐</div>
+                            <div class="ai-similar">
+                                <div class="similar-stock">
+                                    <div>
+                                        <span class="similar-stock-name">腾讯控股</span>
+                                        <span class="similar-stock-code">0700.HK</span>
+                                    </div>
+                                    <div class="similar-score">相似度: 92%</div>
+                                </div>
+                                <div class="similar-stock">
+                                    <div>
+                                        <span class="similar-stock-name">京东</span>
+                                        <span class="similar-stock-code">JD</span>
+                                    </div>
+                                    <div class="similar-score">相似度: 85%</div>
+                                </div>
+                                <div class="similar-stock">
+                                    <div>
+                                        <span class="similar-stock-name">美团</span>
+                                        <span class="similar-stock-code">3690.HK</span>
+                                    </div>
+                                    <div class="similar-score">相似度: 80%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 底部状态栏 -->
+            <div class="footer">
+                <div>系统状态: 正常运行</div>
+                <div>版本: v1.0.0</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 初始化K线图表
+        const klineChart = echarts.init(document.getElementById('klineChart'));
+        const klineOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                }
+            },
+            legend: {
+                data: ['K线', 'MA5', 'MA10']
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: ['2026-02-01', '2026-02-02', '2026-02-03', '2026-02-04', '2026-02-05', '2026-02-08', '2026-02-09', '2026-02-10', '2026-02-11', '2026-02-12', '2026-02-15', '2026-02-16', '2026-02-17', '2026-02-18', '2026-02-19', '2026-02-22', '2026-02-23', '2026-02-24', '2026-02-25', '2026-02-26']
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [
+                {
+                    name: 'K线',
+                    type: 'candlestick',
+                    data: [
+                        [78.2, 80.5, 77.8, 80.2],
+                        [80.2, 81.5, 79.8, 81.2],
+                        [81.2, 82.5, 80.8, 82.2],
+                        [82.2, 83.5, 81.8, 83.2],
+                        [83.2, 84.5, 82.8, 84.2],
+                        [84.2, 85.5, 83.8, 85.2],
+                        [85.2, 86.5, 84.8, 86.2],
+                        [86.2, 85.5, 84.8, 85.2],
+                        [85.2, 84.5, 83.8, 84.2],
+                        [84.2, 83.5, 82.8, 83.2],
+                        [83.2, 82.5, 81.8, 82.2],
+                        [82.2, 83.5, 81.8, 83.2],
+                        [83.2, 84.5, 82.8, 84.2],
+                        [84.2, 85.5, 83.8, 85.2],
+                        [85.2, 86.5, 84.8, 86.2],
+                        [86.2, 85.5, 84.8, 85.2],
+                        [85.2, 84.5, 83.8, 84.2],
+                        [84.2, 83.5, 82.8, 83.2],
+                        [83.2, 84.5, 82.8, 84.2],
+                        [84.2, 85.5, 83.8, 85.2]
+                    ]
+                },
+                {
+                    name: 'MA5',
+                    type: 'line',
+                    data: [79.5, 80.5, 81.5, 82.5, 83.5, 84.5, 85.5, 85.2, 84.5, 83.5, 82.5, 83.0, 83.5, 84.5, 85.5, 85.2, 84.5, 83.5, 83.5, 84.2],
+                    smooth: true,
+                    lineStyle: {
+                        width: 1,
+                        opacity: 0.5
+                    }
+                },
+                {
+                    name: 'MA10',
+                    type: 'line',
+                    data: [79.0, 80.0, 81.0, 82.0, 83.0, 84.0, 85.0, 85.1, 84.6, 83.8, 83.0, 83.0, 83.2, 83.8, 84.5, 85.0, 84.8, 84.0, 83.8, 84.0],
+                    smooth: true,
+                    lineStyle: {
+                        width: 1,
+                        opacity: 0.5
+                    }
+                }
+            ]
+        };
+        klineChart.setOption(klineOption);
+        
+        // 初始化技术指标图表
+        const techIndicatorChart = echarts.init(document.getElementById('techIndicatorChart'));
+        const techIndicatorOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                }
+            },
+            legend: {
+                data: ['MACD', 'DIFF', 'DEA']
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: ['2026-02-01', '2026-02-02', '2026-02-03', '2026-02-04', '2026-02-05', '2026-02-08', '2026-02-09', '2026-02-10', '2026-02-11', '2026-02-12', '2026-02-15', '2026-02-16', '2026-02-17', '2026-02-18', '2026-02-19', '2026-02-22', '2026-02-23', '2026-02-24', '2026-02-25', '2026-02-26']
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [
+                {
+                    name: 'MACD',
+                    type: 'bar',
+                    data: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.6, 0.5, 0.4, 0.3, 0.4, 0.5, 0.6, 0.7, 0.6, 0.5, 0.4, 0.5, 0.6]
+                },
+                {
+                    name: 'DIFF',
+                    type: 'line',
+                    data: [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.0, 0.9, 0.8, 0.7, 0.8, 0.9, 1.0, 1.1, 1.0, 0.9, 0.8, 0.9, 1.0],
+                    lineStyle: {
+                        color: '#48bb78'
+                    }
+                },
+                {
+                    name: 'DEA',
+                    type: 'line',
+                    data: [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.0, 0.9, 0.8, 0.7, 0.8, 0.8, 0.9, 1.0, 1.0, 0.9, 0.8, 0.9, 0.9],
+                    lineStyle: {
+                        color: '#f56565'
+                    }
+                }
+            ]
+        };
+        techIndicatorChart.setOption(techIndicatorOption);
+        
+        // 初始化预测走势图表
+        const predictionChart = echarts.init(document.getElementById('predictionChart'));
+        const predictionOption = {
+            tooltip: {
+                trigger: 'axis'
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: ['Day 1', 'Day 5', 'Day 10', 'Day 15', 'Day 20', 'Day 25', 'Day 30']
+            },
+            yAxis: {
+                type: 'value',
+                min: 80,
+                max: 90
+            },
+            series: [
+                {
+                    name: '预测价格',
+                    type: 'line',
+                    data: [85.25, 86.5, 87.8, 88.5, 89.2, 89.8, 90.5],
+                    smooth: true,
+                    lineStyle: {
+                        color: '#48bb78'
+                    },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            {
+                                offset: 0,
+                                color: 'rgba(72, 187, 120, 0.3)'
+                            },
+                            {
+                                offset: 1,
+                                color: 'rgba(72, 187, 120, 0.1)'
+                            }
+                        ])
+                    }
+                }
+            ]
+        };
+        predictionChart.setOption(predictionOption);
+        
+        // 标签页切换
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // 移除所有标签页的active类
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                // 添加当前标签页的active类
+                this.classList.add('active');
+                
+                // 隐藏所有内容
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                // 显示对应内容
+                const index = Array.from(document.querySelectorAll('.tab-button')).indexOf(this);
+                document.querySelectorAll('.tab-content')[index].classList.add('active');
+            });
+        });
+        
+        // 周期按钮切换
+        document.querySelectorAll('.control-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // 移除同组所有按钮的active类
+                const parent = this.parentElement;
+                parent.querySelectorAll('.control-button').forEach(btn => btn.classList.remove('active'));
+                // 添加当前按钮的active类
+                this.classList.add('active');
+            });
+        });
+        
+        // 响应式调整
+        window.addEventListener('resize', function() {
+            klineChart.resize();
+            techIndicatorChart.resize();
+            predictionChart.resize();
+        });
+    </script>
+</body>
+</html>
