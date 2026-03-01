@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI股票分析助手 - AI模型管理</title>
+    <!-- Element Plus CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.3.12/dist/index.css">
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #303133;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #1a365d;
+            color: white;
+            padding: 20px 0;
+        }
+        .sidebar-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .sidebar-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar-item.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #48bb78;
+        }
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            height: 60px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #f56565;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            gap: 20px;
+        }
+        .footer {
+            height: 40px;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 12px;
+            color: #909399;
+        }
+        .models-list {
+            width: 250px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .models-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1a365d;
+        }
+        .model-item {
+            padding: 12px;
+            border-bottom: 1px solid #ebeef5;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .model-item:hover {
+            background-color: #f5f7fa;
+        }
+        .model-item.active {
+            background-color: #e6f7ee;
+            border-left: 4px solid #48bb78;
+        }
+        .model-name {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .model-status {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .status-running {
+            background-color: #48bb78;
+        }
+        .status-idle {
+            background-color: #ed8936;
+        }
+        .status-error {
+            background-color: #f56565;
+        }
+        .model-info {
+            font-size: 12px;
+            color: #909399;
+            margin-top: 4px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-range {
+            width: 100%;
+        }
+        .range-value {
+            text-align: right;
+            font-size: 12px;
+            color: #909399;
+            margin-top: 4px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            border: none;
+        }
+        .btn-primary {
+            background-color: #1a365d;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #48bb78;
+            color: white;
+        }
+        .btn-outline {
+            background-color: white;
+            color: #1a365d;
+            border: 1px solid #1a365d;
+        }
+        .chart-container {
+            height: 300px;
+            margin: 15px 0;
+        }
+        .log-item {
+            padding: 10px;
+            border-bottom: 1px solid #ebeef5;
+            font-size: 14px;
+        }
+        .log-time {
+            font-size: 12px;
+            color: #909399;
+            margin-bottom: 4px;
+        }
+        .log-content {
+            line-height: 1.4;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧菜单栏 -->
+        <div class="sidebar">
+            <div class="sidebar-item">仪表盘</div>
+            <div class="sidebar-item">股票分析</div>
+            <div class="sidebar-item">持仓管理</div>
+            <div class="sidebar-item">关注列表</div>
+            <div class="sidebar-item">分析报告管理</div>
+            <div class="sidebar-item">交易记录</div>
+            <div class="sidebar-item">市场板块</div>
+            <div class="sidebar-item">数据导入/导出</div>
+            <div class="sidebar-item">通知中心</div>
+            <div class="sidebar-item">帮助中心</div>
+            <div class="sidebar-item">用户反馈</div>
+            <div class="sidebar-item active">AI模型管理</div>
+            <div class="sidebar-item">用户设置</div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main">
+            <!-- 顶部导航栏 -->
+            <div class="header">
+                <div class="header-title">AI股票分析助手</div>
+                <div class="header-user">
+                    <div class="notification-icon">
+                        🔔
+                        <div class="notification-badge">3</div>
+                    </div>
+                    <span>欢迎，管理员</span>
+                </div>
+            </div>
+            
+            <!-- 内容区 -->
+            <div class="content">
+                <!-- 模型列表 -->
+                <div class="models-list">
+                    <div class="card-title">AI模型列表</div>
+                    <div class="model-item active">
+                        <div class="model-name">StockAnalysisCrew</div>
+                        <div class="model-status">
+                            <div class="status-indicator status-running"></div>
+                            <span>运行中</span>
+                        </div>
+                        <div class="model-info">响应时间: 1.2s</div>
+                    </div>
+                    <div class="model-item">
+                        <div class="model-name">PortfolioAnalysisCrew</div>
+                        <div class="model-status">
+                            <div class="status-indicator status-running"></div>
+                            <span>运行中</span>
+                        </div>
+                        <div class="model-info">响应时间: 0.9s</div>
+                    </div>
+                    <div class="model-item">
+                        <div class="model-name">WatchlistAnalysisCrew</div>
+                        <div class="model-status">
+                            <div class="status-indicator status-idle"></div>
+                            <span>空闲</span>
+                        </div>
+                        <div class="model-info">响应时间: 0.7s</div>
+                    </div>
+                    <div class="model-item">
+                        <div class="model-name">SentimentAnalysisAgent</div>
+                        <div class="model-status">
+                            <div class="status-indicator status-error"></div>
+                            <span>错误</span>
+                        </div>
+                        <div class="model-info">响应时间: N/A</div>
+                    </div>
+                </div>
+                
+                <!-- 模型详情和配置 -->
+                <div class="models-content">
+                    <!-- 模型状态监控 -->
+                    <div class="card">
+                        <div class="card-title">模型状态监控</div>
+                        <div class="model-info">
+                            <p><strong>模型名称:</strong> StockAnalysisCrew</p>
+                            <p><strong>运行状态:</strong> <span style="color: #48bb78;">运行中</span></p>
+                            <p><strong>响应时间:</strong> 1.2秒</p>
+                            <p><strong>上次更新:</strong> 2026-03-01 10:30</p>
+                            <p><strong>分析次数:</strong> 1,245次</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 模型参数配置 -->
+                    <div class="card">
+                        <div class="card-title">模型参数配置</div>
+                        <div class="form-group">
+                            <label class="form-label">分析深度</label>
+                            <input type="range" class="form-range" min="1" max="10" value="8" id="analysisDepth">
+                            <div class="range-value" id="analysisDepthValue">当前值: 8/10</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">数据来源优先级</label>
+                            <select class="form-select">
+                                <option value="api">API数据优先</option>
+                                <option value="crawler" selected>爬虫数据优先</option>
+                                <option value="mixed">混合数据</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">分析报告长度</label>
+                            <select class="form-select">
+                                <option value="short">简短</option>
+                                <option value="medium" selected>中等</option>
+                                <option value="detailed">详细</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">更新频率</label>
+                            <select class="form-select">
+                                <option value="realtime">实时</option>
+                                <option value="5min">每5分钟</option>
+                                <option value="15min" selected>每15分钟</option>
+                                <option value="30min">每30分钟</option>
+                            </select>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-primary">保存配置</button>
+                            <button class="btn btn-outline">恢复默认</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 模型性能评估 -->
+                    <div class="card">
+                        <div class="card-title">模型性能评估</div>
+                        <div class="chart-container" id="performanceChart"></div>
+                    </div>
+                    
+                    <!-- 模型更新日志 -->
+                    <div class="card">
+                        <div class="card-title">模型更新日志</div>
+                        <div class="log-item">
+                            <div class="log-time">2026-03-01 10:30</div>
+                            <div class="log-content">更新了StockAnalysisCrew模型，优化了技术指标分析算法</div>
+                        </div>
+                        <div class="log-item">
+                            <div class="log-time">2026-02-29 16:45</div>
+                            <div class="log-content">修复了SentimentAnalysisAgent的舆情分析bug</div>
+                        </div>
+                        <div class="log-item">
+                            <div class="log-time">2026-02-28 14:20</div>
+                            <div class="log-content">添加了新的数据源：新浪财经API</div>
+                        </div>
+                        <div class="log-item">
+                            <div class="log-time">2026-02-27 09:15</div>
+                            <div class="log-content">更新了所有模型的LLM版本到最新版</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 底部状态栏 -->
+            <div class="footer">
+                <div>系统状态: 正常运行</div>
+                <div>版本: v1.0.0</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 分析深度滑块
+        const analysisDepth = document.getElementById('analysisDepth');
+        const analysisDepthValue = document.getElementById('analysisDepthValue');
+        analysisDepth.addEventListener('input', function() {
+            analysisDepthValue.textContent = `当前值: ${this.value}/10`;
+        });
+        
+        // 性能评估图表
+        const performanceChart = echarts.init(document.getElementById('performanceChart'));
+        const performanceOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    label: {
+                        backgroundColor: '#6a7985'
+                    }
+                }
+            },
+            legend: {
+                data: ['响应时间', '分析准确率', '用户满意度']
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: ['2026-02-25', '2026-02-26', '2026-02-27', '2026-02-28', '2026-02-29', '2026-03-01']
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    name: '响应时间 (s)',
+                    min: 0,
+                    max: 2
+                },
+                {
+                    type: 'value',
+                    name: '百分比 (%)',
+                    min: 0,
+                    max: 100
+                }
+            ],
+            series: [
+                {
+                    name: '响应时间',
+                    type: 'line',
+                    yAxisIndex: 0,
+                    data: [1.8, 1.6, 1.4, 1.3, 1.2, 1.2]
+                },
+                {
+                    name: '分析准确率',
+                    type: 'line',
+                    yAxisIndex: 1,
+                    data: [85, 86, 87, 88, 89, 90]
+                },
+                {
+                    name: '用户满意度',
+                    type: 'line',
+                    yAxisIndex: 1,
+                    data: [82, 83, 85, 86, 87, 88]
+                }
+            ]
+        };
+        performanceChart.setOption(performanceOption);
+        
+        // 响应式调整
+        window.addEventListener('resize', function() {
+            performanceChart.resize();
+        });
+    </script>
+</body>
+</html>
