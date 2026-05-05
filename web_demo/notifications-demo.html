@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI股票分析助手 - 通知中心</title>
+    <!-- Element Plus CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.3.12/dist/index.css">
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #303133;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #1a365d;
+            color: white;
+            padding: 20px 0;
+        }
+        .sidebar-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .sidebar-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar-item.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #48bb78;
+        }
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            height: 60px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #f56565;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            gap: 20px;
+        }
+        .footer {
+            height: 40px;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 12px;
+            color: #909399;
+        }
+        .notifications-list {
+            width: 250px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .notifications-content {
+            flex: 1;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1a365d;
+        }
+        .notification-category {
+            padding: 10px;
+            border-bottom: 1px solid #ebeef5;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .notification-category:hover {
+            background-color: #f5f7fa;
+        }
+        .notification-category.active {
+            background-color: #e6f7ee;
+            border-left: 4px solid #48bb78;
+        }
+        .category-name {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .category-count {
+            font-size: 12px;
+            color: #909399;
+        }
+        .count-badge {
+            background-color: #f56565;
+            color: white;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        .notification-item {
+            padding: 15px;
+            border-bottom: 1px solid #ebeef5;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .notification-item:hover {
+            background-color: #f5f7fa;
+        }
+        .notification-item.unread {
+            background-color: #f0f9eb;
+            border-left: 4px solid #48bb78;
+        }
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .notification-title {
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .notification-time {
+            font-size: 12px;
+            color: #909399;
+        }
+        .notification-content {
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        .notification-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            border: none;
+        }
+        .btn-primary {
+            background-color: #1a365d;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #48bb78;
+            color: white;
+        }
+        .btn-outline {
+            background-color: white;
+            color: #1a365d;
+            border: 1px solid #1a365d;
+        }
+        .notification-settings {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ebeef5;
+        }
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #ebeef5;
+        }
+        .setting-label {
+            font-weight: bold;
+        }
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: #48bb78;
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧菜单栏 -->
+        <div class="sidebar">
+            <div class="sidebar-item">仪表盘</div>
+            <div class="sidebar-item">股票分析</div>
+            <div class="sidebar-item">持仓管理</div>
+            <div class="sidebar-item">关注列表</div>
+            <div class="sidebar-item">分析报告管理</div>
+            <div class="sidebar-item">交易记录</div>
+            <div class="sidebar-item">市场板块</div>
+            <div class="sidebar-item">数据导入/导出</div>
+            <div class="sidebar-item active">通知中心</div>
+            <div class="sidebar-item">帮助中心</div>
+            <div class="sidebar-item">用户反馈</div>
+            <div class="sidebar-item">AI模型管理</div>
+            <div class="sidebar-item">用户设置</div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main">
+            <!-- 顶部导航栏 -->
+            <div class="header">
+                <div class="header-title">AI股票分析助手</div>
+                <div class="header-user">
+                    <div class="notification-icon">
+                        🔔
+                        <div class="notification-badge">3</div>
+                    </div>
+                    <span>欢迎，用户</span>
+                </div>
+            </div>
+            
+            <!-- 内容区 -->
+            <div class="content">
+                <!-- 通知分类 -->
+                <div class="notifications-list">
+                    <div class="card-title">通知分类</div>
+                    <div class="notification-category active">
+                        <div class="category-name">全部 <span class="count-badge">3</span></div>
+                        <div class="category-count">所有通知</div>
+                    </div>
+                    <div class="notification-category">
+                        <div class="category-name">未读 <span class="count-badge">3</span></div>
+                        <div class="category-count">3条未读</div>
+                    </div>
+                    <div class="notification-category">
+                        <div class="category-name">提醒 <span class="count-badge">2</span></div>
+                        <div class="category-count">价格和指标提醒</div>
+                    </div>
+                    <div class="notification-category">
+                        <div class="category-name">系统消息</div>
+                        <div class="category-count">系统通知和更新</div>
+                    </div>
+                    <div class="notification-category">
+                        <div class="category-name">分析结果 <span class="count-badge">1</span></div>
+                        <div class="category-count">AI分析报告生成</div>
+                    </div>
+                </div>
+                
+                <!-- 通知内容 -->
+                <div class="notifications-content">
+                    <div class="card-title">通知列表</div>
+                    
+                    <!-- 通知项 -->
+                    <div class="notification-item unread">
+                        <div class="notification-header">
+                            <div class="notification-title">价格提醒：阿里巴巴 (BABA)</div>
+                            <div class="notification-time">2026-03-01 10:30</div>
+                        </div>
+                        <div class="notification-content">
+                            阿里巴巴 (BABA) 价格突破85美元，达到86.50美元，已触发您设置的价格提醒。
+                        </div>
+                        <div class="notification-actions">
+                            <button class="btn btn-secondary">查看详情</button>
+                            <button class="btn btn-outline">标记已读</button>
+                        </div>
+                    </div>
+                    
+                    <div class="notification-item unread">
+                        <div class="notification-header">
+                            <div class="notification-title">技术指标提醒：腾讯控股 (0700.HK)</div>
+                            <div class="notification-time">2026-03-01 09:15</div>
+                        </div>
+                        <div class="notification-content">
+                            腾讯控股 (0700.HK) MACD指标出现金叉，可能预示上涨趋势。
+                        </div>
+                        <div class="notification-actions">
+                            <button class="btn btn-secondary">查看详情</button>
+                            <button class="btn btn-outline">标记已读</button>
+                        </div>
+                    </div>
+                    
+                    <div class="notification-item unread">
+                        <div class="notification-header">
+                            <div class="notification-title">分析报告生成：贵州茅台 (600519.SH)</div>
+                            <div class="notification-time">2026-02-29 16:45</div>
+                        </div>
+                        <div class="notification-content">
+                            您请求的贵州茅台 (600519.SH) 分析报告已生成完成，综合评分为9.0/10。
+                        </div>
+                        <div class="notification-actions">
+                            <button class="btn btn-secondary">查看报告</button>
+                            <button class="btn btn-outline">标记已读</button>
+                        </div>
+                    </div>
+                    
+                    <div class="notification-item">
+                        <div class="notification-header">
+                            <div class="notification-title">系统更新通知</div>
+                            <div class="notification-time">2026-02-28 14:00</div>
+                        </div>
+                        <div class="notification-content">
+                            系统已更新至版本v1.0.1，新增了市场板块分析功能。
+                        </div>
+                        <div class="notification-actions">
+                            <button class="btn btn-outline">查看详情</button>
+                        </div>
+                    </div>
+                    
+                    <div class="notification-item">
+                        <div class="notification-header">
+                            <div class="notification-title">新闻提醒：新能源行业</div>
+                            <div class="notification-time">2026-02-27 11:30</div>
+                        </div>
+                        <div class="notification-content">
+                            新能源汽车销量持续增长，行业景气度高，相关股票表现活跃。
+                        </div>
+                        <div class="notification-actions">
+                            <button class="btn btn-outline">查看详情</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 通知设置 -->
+                    <div class="notification-settings">
+                        <div class="card-title">通知设置</div>
+                        <div class="setting-item">
+                            <div class="setting-label">价格提醒</div>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-label">技术指标提醒</div>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-label">新闻提醒</div>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-label">分析报告通知</div>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-label">系统消息</div>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 底部状态栏 -->
+            <div class="footer">
+                <div>系统状态: 正常运行</div>
+                <div>版本: v1.0.0</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

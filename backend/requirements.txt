@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy
+redis
+pandas
+akshare
+requests
+beautifulsoup4
+apscheduler
+python-jose[cryptography]
+python-multipart
+openpyxl
+python-dotenv

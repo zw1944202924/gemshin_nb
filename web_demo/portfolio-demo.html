@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI股票分析助手 - 持仓管理</title>
+    <!-- Element Plus CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.3.12/dist/index.css">
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #303133;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #1a365d;
+            color: white;
+            padding: 20px 0;
+        }
+        .sidebar-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .sidebar-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar-item.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #48bb78;
+        }
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            height: 60px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #f56565;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        .footer {
+            height: 40px;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 12px;
+            color: #909399;
+        }
+        .portfolio-management {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .portfolio-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .portfolio-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .portfolio-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .action-button {
+            padding: 6px 12px;
+            border: 1px solid #48bb78;
+            border-radius: 4px;
+            background-color: white;
+            color: #48bb78;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .action-button:hover {
+            background-color: #48bb78;
+            color: white;
+        }
+        .portfolio-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .summary-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .summary-title {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 10px;
+        }
+        .summary-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .summary-value.positive {
+            color: #48bb78;
+        }
+        .summary-value.negative {
+            color: #f56565;
+        }
+        .portfolio-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .holdings-list {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .list-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .list-controls {
+            display: flex;
+            gap: 10px;
+        }
+        .control-input {
+            padding: 4px 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .holdings-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .holdings-table th,
+        .holdings-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .holdings-table th {
+            background-color: #f8fafc;
+            font-weight: 500;
+        }
+        .holdings-table tr:hover {
+            background-color: #f8fafc;
+        }
+        .holding-profit.positive {
+            color: #48bb78;
+            font-weight: 500;
+        }
+        .holding-profit.negative {
+            color: #f56565;
+            font-weight: 500;
+        }
+        .portfolio-analysis {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .analysis-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            color: #1a365d;
+            border-bottom-color: #1a365d;
+            font-weight: 500;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .chart-container {
+            height: 250px;
+        }
+        .transaction-history {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e2e8f0;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #48bb78;
+        }
+        .timeline-item.sell::before {
+            background-color: #f56565;
+        }
+        .timeline-date {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 5px;
+        }
+        .timeline-content {
+            background-color: #f8fafc;
+            border-radius: 6px;
+            padding: 10px;
+        }
+        .timeline-stock {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        .timeline-details {
+            font-size: 12px;
+            color: #718096;
+        }
+        .rebalance-suggestions {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .suggestion-item {
+            padding: 10px;
+            border-left: 4px solid #48bb78;
+            background-color: #f0f9eb;
+            border-radius: 0 4px 4px 0;
+            margin-bottom: 10px;
+        }
+        .suggestion-title {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        .suggestion-details {
+            font-size: 12px;
+            color: #718096;
+        }
+        .ai-analysis {
+            width: 350px;
+            background-color: white;
+            box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .ai-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ai-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .ai-toggle {
+            cursor: pointer;
+            font-size: 14px;
+            color: #718096;
+        }
+        .ai-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .ai-section {
+            margin-bottom: 20px;
+        }
+        .ai-section-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #1a365d;
+        }
+        .portfolio-score {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .score-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #48bb78;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        .score-info {
+            flex: 1;
+        }
+        .score-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .score-label {
+            font-size: 12px;
+            color: #718096;
+        }
+        .risk-distribution {
+            background-color: #f8fafc;
+            border-radius: 6px;
+            padding: 15px;
+        }
+        .risk-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .risk-level {
+            font-weight: 500;
+        }
+        .risk-level.high {
+            color: #f56565;
+        }
+        .risk-level.medium {
+            color: #ed8936;
+        }
+        .risk-level.low {
+            color: #48bb78;
+        }
+        .industry-suggestion {
+            background-color: #f0f9eb;
+            border-left: 4px solid #48bb78;
+            padding: 10px;
+            border-radius: 0 4px 4px 0;
+        }
+        .suggestion-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .rebalancing-suggestion {
+            background-color: #fffaf0;
+            border-left: 4px solid #ed8936;
+            padding: 10px;
+            border-radius: 0 4px 4px 0;
+        }
+        .prediction-chart {
+            height: 150px;
+            margin-top: 10px;
+        }
+        .correlation-analysis {
+            background-color: #f8fafc;
+            border-radius: 6px;
+            padding: 15px;
+        }
+        .correlation-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .correlation-value {
+            font-weight: 500;
+        }
+        .correlation-value.high {
+            color: #f56565;
+        }
+        .correlation-value.medium {
+            color: #ed8936;
+        }
+        .correlation-value.low {
+            color: #48bb78;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧菜单栏 -->
+        <div class="sidebar">
+            <div class="sidebar-item">仪表盘</div>
+            <div class="sidebar-item">股票分析</div>
+            <div class="sidebar-item active">持仓管理</div>
+            <div class="sidebar-item">关注列表</div>
+            <div class="sidebar-item">用户设置</div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main">
+            <!-- 顶部导航栏 -->
+            <div class="header">
+                <div class="header-title">AI股票分析助手</div>
+                <div class="header-user">
+                    <div class="notification-icon">
+                        🔔
+                        <div class="notification-badge">3</div>
+                    </div>
+                    <span>欢迎，用户</span>
+                </div>
+            </div>
+            
+            <!-- 内容区 -->
+            <div class="content">
+                <!-- 持仓管理区域 -->
+                <div class="portfolio-management">
+                    <!-- 持仓管理头部 -->
+                    <div class="portfolio-header">
+                        <div class="portfolio-title">持仓管理</div>
+                        <div class="portfolio-actions">
+                            <button class="action-button">添加持仓</button>
+                            <button class="action-button">批量操作</button>
+                            <button class="action-button">导出数据</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 投资组合概览 -->
+                    <div class="portfolio-summary">
+                        <div class="summary-card">
+                            <div class="summary-title">总市值</div>
+                            <div class="summary-value">¥125,000</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-title">总收益</div>
+                            <div class="summary-value positive">+¥13,500</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-title">总收益率</div>
+                            <div class="summary-value positive">+12.5%</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-title">持仓数量</div>
+                            <div class="summary-value">10</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 持仓列表和分析 -->
+                    <div class="portfolio-content">
+                        <!-- 持仓列表 -->
+                        <div class="holdings-list">
+                            <div class="list-header">
+                                <div class="list-title">持仓列表</div>
+                                <div class="list-controls">
+                                    <input type="text" class="control-input" placeholder="搜索股票...">
+                                    <select class="control-input">
+                                        <option>全部行业</option>
+                                        <option>科技</option>
+                                        <option>消费</option>
+                                        <option>金融</option>
+                                        <option>医药</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <table class="holdings-table">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox"></th>
+                                        <th>股票</th>
+                                        <th>持仓数量</th>
+                                        <th>成本价</th>
+                                        <th>当前价</th>
+                                        <th>盈亏</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td>
+                                            <div style="font-weight: 500;">阿里巴巴</div>
+                                            <div style="font-size: 12px; color: #718096;">BABA</div>
+                                        </td>
+                                        <td>100</td>
+                                        <td>$80.50</td>
+                                        <td>$85.25</td>
+                                        <td class="holding-profit positive">+$475 (+5.9%)</td>
+                                        <td>
+                                            <button class="action-button" style="padding: 2px 6px; font-size: 10px;">详情</button>
+                                            <button class="action-button" style="padding: 2px 6px; font-size: 10px;">卖出</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td>
+                                            <div style="font-weight: 500;">腾讯控股</div>
+                                            <div style="font-size: 12px; color: #718096;">0700.HK</div>
+                                        </td>
+                                        <td>200</td>
+                                        <td>HK$350.00</td>
+                                        <td>HK$365.50</td>
+                                        <td class="holding-profit positive">+HK$3,100 (+4.4%)</td>
+                                        <td>
+                                            <button class="action-button" style="padding: 2px 6px; font-size: 10px;">详情</button>
+                                            <button class="action-button" style="padding: 2px 6px; font-size: 10px;">卖出</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td>
+                                            <div style="font-weight: 500;">贵州茅台</div>
+                                            <div style="font-size: 12px; color: #718096;">600519.SH</div>
+                                        </td>
+                                        <td>10</td>
+                                        <td>¥1,680.00</td>
+                                        <td>¥1,820.00</td>
+                                        <td class="holding-profit positive">+¥1,400 (+8.3%)</td>
+                                        <td>
+                                            <button class="action-button" style="padding: 2px 6px; font-size: 10px;">详情</button>
+                                            <button class="action-button" style="padding: 2px 6px; font-size: 10px;">卖出</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td>
+                                            <div style="font-weight: 500;">京东</div>
+                                            <div style="font-size: 12px; color: #718096;">JD</div>
+                                        </td>
+                                        <td>50</td>
+                                        <td>$45.00</td>
+                                        <td>$42.50</td>
+                                        <td class="holding-profit negative">-$125 (-5.6%)</td>
+                                        <td>
+                                            <button class="action-button" style="padding: 2px 6px; font-size: 10px;">详情</button>
+                                            <button class="action-button" style="padding: 2px 6px; font-size: 10px;">卖出</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td>
+                                            <div style="font-weight: 500;">美团</div>
+                                            <div style="font-size: 12px; color: #718096;">3690.HK</div>
+                                        </td>
+                                        <td>150</td>
+                                        <td>HK$180.00</td>
+                                        <td>HK$195.50</td>
+                                        <td class="holding-profit positive">+HK$2,325 (+8.6%)</td>
+                                        <td>
+                                            <button class="action-button" style="padding: 2px 6px; font-size: 10px;">详情</button>
+                                            <button class="action-button" style="padding: 2px 6px; font-size: 10px;">卖出</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div style="margin-top: 15px; text-align: right; font-size: 12px; color: #718096;">
+                                显示 1-5 条，共 10 条
+                                <button class="action-button" style="padding: 2px 6px; font-size: 10px; margin-left: 10px;">上一页</button>
+                                <button class="action-button" style="padding: 2px 6px; font-size: 10px; margin-left: 5px;">下一页</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 投资组合分析 -->
+                        <div class="portfolio-analysis">
+                            <div class="analysis-tabs">
+                                <div class="tab-button active">行业分布</div>
+                                <div class="tab-button">风险评估</div>
+                                <div class="tab-button">收益分析</div>
+                            </div>
+                            
+                            <!-- 行业分布内容 -->
+                            <div class="tab-content active">
+                                <div class="chart-container" id="industryChart"></div>
+                            </div>
+                            
+                            <!-- 风险评估内容 -->
+                            <div class="tab-content">
+                                <div class="chart-container" id="riskChart"></div>
+                            </div>
+                            
+                            <!-- 收益分析内容 -->
+                            <div class="tab-content">
+                                <div class="chart-container" id="returnChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 交易记录 -->
+                    <div class="transaction-history">
+                        <div class="list-header">
+                            <div class="list-title">交易记录</div>
+                            <div class="list-controls">
+                                <select class="control-input">
+                                    <option>全部类型</option>
+                                    <option>买入</option>
+                                    <option>卖出</option>
+                                </select>
+                                <select class="control-input">
+                                    <option>最近7天</option>
+                                    <option>最近30天</option>
+                                    <option>最近90天</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-date">2026-02-28 14:30</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-stock">买入 阿里巴巴 (BABA)</div>
+                                    <div class="timeline-details">价格: $83.50, 数量: 50, 金额: $4,175.00</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item sell">
+                                <div class="timeline-date">2026-02-25 10:15</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-stock">卖出 苹果 (AAPL)</div>
+                                    <div class="timeline-details">价格: $185.25, 数量: 20, 金额: $3,705.00, 收益: +$155.00</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-date">2026-02-20 09:45</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-stock">买入 腾讯控股 (0700.HK)</div>
+                                    <div class="timeline-details">价格: HK$350.00, 数量: 100, 金额: HK$35,000.00</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-date">2026-02-18 11:30</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-stock">买入 贵州茅台 (600519.SH)</div>
+                                    <div class="timeline-details">价格: ¥1,680.00, 数量: 10, 金额: ¥16,800.00</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 再平衡建议 -->
+                    <div class="rebalance-suggestions">
+                        <div class="list-header">
+                            <div class="list-title">再平衡建议</div>
+                        </div>
+                        <div class="suggestion-item">
+                            <div class="suggestion-title">降低科技行业占比</div>
+                            <div class="suggestion-details">科技行业占比过高（45%），建议降低至30%左右，以分散风险。</div>
+                        </div>
+                        <div class="suggestion-item">
+                            <div class="suggestion-title">增加医药行业配置</div>
+                            <div class="suggestion-details">医药行业占比过低（5%），建议增加至15%左右，以平衡行业分布。</div>
+                        </div>
+                        <div class="suggestion-item">
+                            <div class="suggestion-title">调整京东持仓</div>
+                            <div class="suggestion-details">京东目前处于亏损状态，建议考虑止损或增加持仓以降低平均成本。</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI分析窗口 -->
+                <div class="ai-analysis">
+                    <div class="ai-header">
+                        <div class="ai-title">AI分析</div>
+                        <div class="ai-toggle">▼</div>
+                    </div>
+                    <div class="ai-content">
+                        <!-- 投资组合整体评估 -->
+                        <div class="ai-section">
+                            <div class="ai-section-title">投资组合整体评估</div>
+                            <div class="portfolio-score">
+                                <div class="score-circle">8.2</div>
+                                <div class="score-info">
+                                    <div class="score-value">8.2/10</div>
+                                    <div class="score-label">投资组合评分</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 14px; line-height: 1.4; margin-top: 10px;">
+                                您的投资组合整体表现良好，收益率高于市场平均水平，但行业分布不够均衡，科技行业占比过高。
+                            </div>
+                        </div>
+                        
+                        <!-- 风险分散分析 -->
+                        <div class="ai-section">
+                            <div class="ai-section-title">风险分散分析</div>
+                            <div class="risk-distribution">
+                                <div class="risk-item">
+                                    <div>行业集中度风险</div>
+                                    <div class="risk-level medium">中等</div>
+                                </div>
+                                <div class="risk-item">
+                                    <div>单一股票风险</div>
+                                    <div class="risk-level low">低</div>
+                                </div>
+                                <div class="risk-item">
+                                    <div>市场风险</div>
+                                    <div class="risk-level medium">中等</div>
+                                </div>
+                                <div class="risk-item">
+                                    <div>流动性风险</div>
+                                    <div class="risk-level low">低</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 行业配置建议 -->
+                        <div class="ai-section">
+                            <div class="ai-section-title">行业配置建议</div>
+                            <div class="industry-suggestion">
+                                <div class="suggestion-text">
+                                    <strong>建议配置比例：</strong><br>
+                                    - 科技：30%（当前：45%）<br>
+                                    - 消费：25%（当前：25%）<br>
+                                    - 金融：20%（当前：15%）<br>
+                                    - 医药：15%（当前：5%）<br>
+                                    - 其他：10%（当前：10%）
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 智能调仓建议 -->
+                        <div class="ai-section">
+                            <div class="ai-section-title">智能调仓建议</div>
+                            <div class="rebalancing-suggestion">
+                                <div class="suggestion-text">
+                                    <strong>调仓建议：</strong><br>
+                                    1. 减持阿里巴巴 10% 仓位<br>
+                                    2. 减持腾讯控股 10% 仓位<br>
+                                    3. 增加医药行业股票配置<br>
+                                    4. 增加金融行业股票配置
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 收益预测分析 -->
+                        <div class="ai-section">
+                            <div class="ai-section-title">收益预测分析</div>
+                            <div style="font-size: 14px; margin-bottom: 10px;">未来3个月收益预测</div>
+                            <div class="prediction-chart" id="portfolioPredictionChart"></div>
+                        </div>
+                        
+                        <!-- 市场热点与持仓相关性分析 -->
+                        <div class="ai-section">
+                            <div class="ai-section-title">市场热点相关性</div>
+                            <div class="correlation-analysis">
+                                <div class="correlation-item">
+                                    <div>人工智能</div>
+                                    <div class="correlation-value high">高</div>
+                                </div>
+                                <div class="correlation-item">
+                                    <div>新能源</div>
+                                    <div class="correlation-value low">低</div>
+                                </div>
+                                <div class="correlation-item">
+                                    <div>消费升级</div>
+                                    <div class="correlation-value medium">中等</div>
+                                </div>
+                                <div class="correlation-item">
+                                    <div>医药创新</div>
+                                    <div class="correlation-value low">低</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 12px; color: #718096; margin-top: 10px;">
+                                建议关注人工智能和消费升级相关领域的投资机会。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 底部状态栏 -->
+            <div class="footer">
+                <div>系统状态: 正常运行</div>
+                <div>版本: v1.0.0</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 初始化行业分布图表
+        const industryChart = echarts.init(document.getElementById('industryChart'));
+        const industryOption = {
+            tooltip: {
+                trigger: 'item'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left',
+            },
+            series: [
+                {
+                    name: '行业分布',
+                    type: 'pie',
+                    radius: '70%',
+                    data: [
+                        { value: 45, name: '科技' },
+                        { value: 25, name: '消费' },
+                        { value: 15, name: '金融' },
+                        { value: 5, name: '医药' },
+                        { value: 10, name: '其他' }
+                    ],
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+        industryChart.setOption(industryOption);
+        
+        // 初始化风险评估图表
+        const riskChart = echarts.init(document.getElementById('riskChart'));
+        const riskOption = {
+            tooltip: {
+                trigger: 'item'
+            },
+            radar: {
+                indicator: [
+                    { name: '行业集中度', max: 100 },
+                    { name: '单一股票风险', max: 100 },
+                    { name: '市场风险', max: 100 },
+                    { name: '流动性风险', max: 100 },
+                    { name: '政策风险', max: 100 }
+                ]
+            },
+            series: [
+                {
+                    name: '风险评估',
+                    type: 'radar',
+                    data: [
+                        {
+                            value: [65, 30, 55, 25, 45],
+                            name: '当前风险'
+                        },
+                        {
+                            value: [40, 25, 50, 20, 40],
+                            name: '理想风险'
+                        }
+                    ]
+                }
+            ]
+        };
+        riskChart.setOption(riskOption);
+        
+        // 初始化收益分析图表
+        const returnChart = echarts.init(document.getElementById('returnChart'));
+        const returnOption = {
+            tooltip: {
+                trigger: 'axis'
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: ['1月', '2月', '3月', '4月', '5月', '6月']
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [
+                {
+                    name: '投资组合收益',
+                    type: 'line',
+                    data: [2.5, 4.2, 6.8, 8.5, 10.2, 12.5],
+                    smooth: true,
+                    lineStyle: {
+                        color: '#48bb78'
+                    },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            {
+                                offset: 0,
+                                color: 'rgba(72, 187, 120, 0.3)'
+                            },
+                            {
+                                offset: 1,
+                                color: 'rgba(72, 187, 120, 0.1)'
+                            }
+                        ])
+                    }
+                },
+                {
+                    name: '市场平均收益',
+                    type: 'line',
+                    data: [1.8, 3.2, 4.5, 5.8, 7.2, 8.5],
+                    smooth: true,
+                    lineStyle: {
+                        color: '#ed8936'
+                    }
+                }
+            ]
+        };
+        returnChart.setOption(returnOption);
+        
+        // 初始化投资组合收益预测图表
+        const portfolioPredictionChart = echarts.init(document.getElementById('portfolioPredictionChart'));
+        const portfolioPredictionOption = {
+            tooltip: {
+                trigger: 'axis'
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: ['1个月', '2个月', '3个月']
+            },
+            yAxis: {
+                type: 'value',
+                min: 12,
+                max: 18
+            },
+            series: [
+                {
+                    name: '预测收益率',
+                    type: 'line',
+                    data: [12.5, 15.2, 17.8],
+                    smooth: true,
+                    lineStyle: {
+                        color: '#48bb78'
+                    },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            {
+                                offset: 0,
+                                color: 'rgba(72, 187, 120, 0.3)'
+                            },
+                            {
+                                offset: 1,
+                                color: 'rgba(72, 187, 120, 0.1)'
+                            }
+                        ])
+                    }
+                }
+            ]
+        };
+        portfolioPredictionChart.setOption(portfolioPredictionOption);
+        
+        // 标签页切换
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // 移除所有标签页的active类
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                // 添加当前标签页的active类
+                this.classList.add('active');
+                
+                // 隐藏所有内容
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                // 显示对应内容
+                const index = Array.from(document.querySelectorAll('.tab-button')).indexOf(this);
+                document.querySelectorAll('.tab-content')[index].classList.add('active');
+                
+                // 调整图表大小
+                setTimeout(() => {
+                    if (index === 0) {
+                        industryChart.resize();
+                    } else if (index === 1) {
+                        riskChart.resize();
+                    } else if (index === 2) {
+                        returnChart.resize();
+                    }
+                }, 100);
+            });
+        });
+        
+        // 响应式调整
+        window.addEventListener('resize', function() {
+            industryChart.resize();
+            riskChart.resize();
+            returnChart.resize();
+            portfolioPredictionChart.resize();
+        });
+    </script>
+</body>
+</html>
