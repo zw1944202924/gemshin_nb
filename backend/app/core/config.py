@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     doubak_api_key: str = ""
     secret_key: str = "default_secret_key"
     access_token_expire_minutes: int = 30
+<<<<<<< HEAD
+=======
+    refresh_token_expire_days: int = 7
+>>>>>>> feature/backend-api-enhancement
 
     class Config:
         env_file = ".env"

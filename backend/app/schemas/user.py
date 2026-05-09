@@ -16,6 +16,24 @@ class UserLogin(BaseModel):
 class User(UserBase):
     id: int
     is_active: bool
+<<<<<<< HEAD
     
     class Config:
         orm_mode = True
+=======
+
+    class Config:
+        orm_mode = True
+
+
+class TokenRefreshRequest(BaseModel):
+    refresh_token: str
+
+
+class TokenResponse(BaseModel):
+    id: int
+    username: str
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+>>>>>>> feature/backend-api-enhancement
