@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关注列表 - 股票分析系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* 左侧菜单栏 */
+        .sidebar {
+            width: 200px;
+            background-color: #1a365d;
+            color: white;
+            padding: 20px 0;
+        }
+        
+        .sidebar-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-item.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #48bb78;
+        }
+        
+        /* 主内容区 */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* 顶部导航栏 */
+        .header {
+            height: 60px;
+            background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .notification {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ff4d4f;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 内容区域 */
+        .content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+        
+        /* 底部状态栏 */
+        .footer {
+            height: 40px;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            font-size: 12px;
+            color: #909399;
+        }
+        
+        /* 页面头部 */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .search-box {
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-box input {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px 0 0 4px;
+            outline: none;
+        }
+        
+        .search-box button {
+            padding: 8px 16px;
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+        
+        .add-btn, .batch-btn {
+            padding: 8px 16px;
+            border: 1px solid #1890ff;
+            border-radius: 4px;
+            background-color: white;
+            color: #1890ff;
+            cursor: pointer;
+        }
+        
+        .add-btn:hover, .batch-btn:hover {
+            background-color: #e6f7ff;
+        }
+        
+        /* 主内容区域 */
+        .main-content {
+            display: flex;
+            gap: 24px;
+        }
+        
+        /* 左侧区域 */
+        .left-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        /* 右侧AI分析窗口 */
+        .right-section {
+            width: 400px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 24px;
+            align-self: flex-start;
+        }
+        
+        /* 通用区块样式 */
+        .watchlist-section, .alert-settings, .alert-history, .ai-analysis {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        /* 区块头部 */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .section-header h2 {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        /* 排序和分组选项 */
+        .sort-group-options {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .sort-group-options select {
+            padding: 4px 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        /* 股票列表 */
+        .stock-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        /* 分组标题 */
+        .group-title {
+            padding: 8px 12px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .stock-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            background-color: #fafafa;
+        }
+        
+        .stock-item.alert-triggered {
+            border-left: 4px solid #ff4d4f;
+            background-color: #fff2f0;
+        }
+        
+        .stock-checkbox {
+            margin-right: 12px;
+        }
+        
+        .stock-info {
+            flex: 1;
+        }
+        
+        .stock-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        
+        .stock-name .name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .stock-name .code {
+            font-size: 14px;
+            color: #999;
+        }
+        
+        .stock-price {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .stock-price .price {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .stock-price .change {
+            font-size: 14px;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        
+        .change.positive {
+            color: #52c41a;
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+        }
+        
+        .change.negative {
+            color: #ff4d4f;
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+        }
+        
+        .alert-status {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin: 0 16px;
+        }
+        
+        .alert-icon {
+            font-size: 16px;
+        }
+        
+        .no-alert {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .stock-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            padding: 4px 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            background-color: white;
+            color: #666;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .action-btn:hover {
+            background-color: #f5f5f5;
+        }
+        
+        /* 批量操作栏 */
+        .batch-actions {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background-color: #fafafa;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            margin-top: 12px;
+        }
+        
+        .batch-actions button {
+            padding: 6px 12px;
+            border: 1px solid #1890ff;
+            border-radius: 4px;
+            background-color: white;
+            color: #1890ff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .batch-actions button:hover {
+            background-color: #e6f7ff;
+        }
+        
+        /* 提醒设置 */
+        .setting-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .setting-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .stock-select {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .alert-types, .indicator-alerts, .news-alert {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .price-alert {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .price-inputs {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .price-inputs > div {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .price-inputs input {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .price-slider {
+            margin: 16px 0;
+        }
+        
+        .slider-track {
+            position: relative;
+            height: 4px;
+            background-color: #f0f0f0;
+            border-radius: 2px;
+            margin: 16px 0;
+        }
+        
+        .slider-range {
+            position: absolute;
+            height: 100%;
+            background-color: #1890ff;
+            border-radius: 2px;
+        }
+        
+        .slider-handle {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border: 2px solid #1890ff;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+        
+        .slider-handle.left {
+            left: 20%;
+        }
+        
+        .slider-handle.right {
+            right: 20%;
+        }
+        
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .save-btn {
+            padding: 10px 20px;
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .save-btn:hover {
+            background-color: #40a9ff;
+        }
+        
+        /* 提醒历史记录 */
+        .history-filter {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .history-filter select, .history-filter input {
+            padding: 4px 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .history-search {
+            display: flex;
+            align-items: center;
+        }
+        
+        .history-search input {
+            padding: 4px 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px 0 0 4px;
+            outline: none;
+        }
+        
+        .history-search button {
+            padding: 4px 8px;
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+        
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            padding: 12px;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            background-color: #fafafa;
+        }
+        
+        .history-time {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+        
+        .history-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .history-content .stock {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .alert-type {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+        
+        .alert-type.price-alert {
+            background-color: #e6f7ff;
+            color: #1890ff;
+        }
+        
+        .alert-type.indicator-alert {
+            background-color: #f6ffed;
+            color: #52c41a;
+        }
+        
+        .alert-type.news-alert {
+            background-color: #fff7e6;
+            color: #fa8c16;
+        }
+        
+        /* AI分析窗口 */
+        .ai-analysis {
+            position: relative;
+        }
+        
+        .ai-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .ai-header h2 {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .collapse-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .collapse-btn.collapsed {
+            transform: rotate(-90deg);
+        }
+        
+        .ai-content {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: max-height 0.3s ease-out;
+            overflow: hidden;
+        }
+        
+        .ai-content.collapsed {
+            max-height: 0;
+            gap: 0;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .ai-section {
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 16px;
+        }
+        
+        .ai-section:last-child {
+            border-bottom: none;
+        }
+        
+        .ai-section h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .performance-summary {
+            display: flex;
+            justify-content: space-around;
+            gap: 12px;
+        }
+        
+        .metric {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .metric .label {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .metric .value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .alert-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .alert-item.opportunity {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+        }
+        
+        .alert-item.risk {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+        }
+        
+        .industry-trends {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .industry-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .trend {
+            font-weight: bold;
+        }
+        
+        .correlation-chart {
+            height: 120px;
+            background-color: #fafafa;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chart-placeholder {
+            text-align: center;
+            color: #999;
+        }
+        
+        .suggestions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .suggestion-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 8px;
+            background-color: #f0f5ff;
+            border: 1px solid #adc6ff;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .suggestion-icon {
+            font-size: 16px;
+            margin-top: 2px;
+        }
+        
+        .recommendations {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .recommendation-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 8px;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .recommendation-item .stock-name {
+            font-weight: bold;
+            margin-bottom: 0;
+        }
+        
+        .recommendation-item .reason {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .right-section {
+                width: 350px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .right-section {
+                width: 100%;
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧菜单栏 -->
+        <div class="sidebar">
+            <div class="sidebar-item">仪表盘</div>
+            <div class="sidebar-item">股票分析</div>
+            <div class="sidebar-item">持仓管理</div>
+            <div class="sidebar-item active">关注列表</div>
+            <div class="sidebar-item">用户设置</div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main">
+            <!-- 顶部导航栏 -->
+            <div class="header">
+                <div class="header-title">股票分析系统</div>
+                <div class="header-user">
+                    <div class="notification">
+                        <span>🔔</span>
+                        <span class="notification-badge">3</span>
+                    </div>
+                    <span>用户名</span>
+                    <span>退出</span>
+                </div>
+            </div>
+            
+            <!-- 内容区域 -->
+            <div class="content">
+                <div class="page-header">
+                    <h1>关注列表</h1>
+                    <div class="header-actions">
+                        <div class="search-box">
+                            <input type="text" placeholder="搜索股票...">
+                            <button>搜索</button>
+                        </div>
+                        <button class="add-btn">添加股票</button>
+                        <button class="batch-btn">批量操作</button>
+                    </div>
+                </div>
+                
+                <div class="main-content">
+                    <!-- 左侧关注股票列表和设置 -->
+                    <div class="left-section">
+                        <!-- 关注股票列表 -->
+                        <div class="watchlist-section">
+                            <div class="section-header">
+                                <h2>关注股票</h2>
+                                <div class="sort-group-options">
+                                    <select>
+                                        <option>按涨跌幅排序</option>
+                                        <option>按价格排序</option>
+                                        <option>按名称排序</option>
+                                    </select>
+                                    <select>
+                                        <option>不分组</option>
+                                        <option>按行业分组</option>
+                                        <option>按涨跌幅分组</option>
+                                    </select>
+                                    <select>
+                                        <option>全部</option>
+                                        <option>上涨</option>
+                                        <option>下跌</option>
+                                        <option>触发提醒</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="stock-list">
+                                <!-- 行业分组：白酒 -->
+                                <div class="group-title">白酒</div>
+                                <div class="stock-item alert-triggered">
+                                    <input type="checkbox" class="stock-checkbox">
+                                    <div class="stock-info">
+                                        <div class="stock-name">
+                                            <span class="name">贵州茅台</span>
+                                            <span class="code">600519</span>
+                                        </div>
+                                        <div class="stock-price">
+                                            <span class="price">1,680.00</span>
+                                            <span class="change positive">+2.50%</span>
+                                        </div>
+                                    </div>
+                                    <div class="alert-status">
+                                        <span class="alert-icon">🔔</span>
+                                        <span>价格突破</span>
+                                    </div>
+                                    <div class="stock-actions">
+                                        <button class="action-btn">编辑提醒</button>
+                                        <button class="action-btn">移除</button>
+                                    </div>
+                                </div>
+                                
+                                <!-- 行业分组：互联网 -->
+                                <div class="group-title">互联网</div>
+                                <div class="stock-item">
+                                    <input type="checkbox" class="stock-checkbox">
+                                    <div class="stock-info">
+                                        <div class="stock-name">
+                                            <span class="name">腾讯控股</span>
+                                            <span class="code">00700</span>
+                                        </div>
+                                        <div class="stock-price">
+                                            <span class="price">385.60</span>
+                                            <span class="change negative">-1.20%</span>
+                                        </div>
+                                    </div>
+                                    <div class="alert-status">
+                                        <span class="no-alert">无提醒</span>
+                                    </div>
+                                    <div class="stock-actions">
+                                        <button class="action-btn">编辑提醒</button>
+                                        <button class="action-btn">移除</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="stock-item">
+                                    <input type="checkbox" class="stock-checkbox">
+                                    <div class="stock-info">
+                                        <div class="stock-name">
+                                            <span class="name">阿里巴巴</span>
+                                            <span class="code">09988</span>
+                                        </div>
+                                        <div class="stock-price">
+                                            <span class="price">87.50</span>
+                                            <span class="change negative">-0.50%</span>
+                                        </div>
+                                    </div>
+                                    <div class="alert-status">
+                                        <span class="no-alert">无提醒</span>
+                                    </div>
+                                    <div class="stock-actions">
+                                        <button class="action-btn">编辑提醒</button>
+                                        <button class="action-btn">移除</button>
+                                    </div>
+                                </div>
+                                
+                                <!-- 行业分组：新能源 -->
+                                <div class="group-title">新能源</div>
+                                <div class="stock-item">
+                                    <input type="checkbox" class="stock-checkbox">
+                                    <div class="stock-info">
+                                        <div class="stock-name">
+                                            <span class="name">宁德时代</span>
+                                            <span class="code">300750</span>
+                                        </div>
+                                        <div class="stock-price">
+                                            <span class="price">235.80</span>
+                                            <span class="change positive">+1.80%</span>
+                                        </div>
+                                    </div>
+                                    <div class="alert-status">
+                                        <span class="alert-icon">🔔</span>
+                                        <span>MACD金叉</span>
+                                    </div>
+                                    <div class="stock-actions">
+                                        <button class="action-btn">编辑提醒</button>
+                                        <button class="action-btn">移除</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 批量操作栏 -->
+                            <div class="batch-actions">
+                                <button>批量设置提醒</button>
+                                <button>批量移除</button>
+                                <button>批量添加到组合</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 提醒设置 -->
+                        <div class="alert-settings">
+                            <div class="section-header">
+                                <h2>提醒设置</h2>
+                            </div>
+                            
+                            <div class="setting-form">
+                                <div class="setting-group">
+                                    <label>股票选择</label>
+                                    <select class="stock-select">
+                                        <option>贵州茅台 (600519)</option>
+                                        <option>腾讯控股 (00700)</option>
+                                        <option>宁德时代 (300750)</option>
+                                        <option>阿里巴巴 (09988)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="setting-group">
+                                    <label>提醒类型</label>
+                                    <div class="alert-types">
+                                        <label class="checkbox-item">
+                                            <input type="checkbox" checked>
+                                            <span>价格提醒</span>
+                                        </label>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox">
+                                            <span>技术指标提醒</span>
+                                        </label>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox">
+                                            <span>新闻提醒</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-group">
+                                    <label>价格提醒设置</label>
+                                    <div class="price-alert">
+                                        <div class="price-inputs">
+                                            <div>
+                                                <label>价格上限</label>
+                                                <input type="number" value="1700.00">
+                                            </div>
+                                            <div>
+                                                <label>价格下限</label>
+                                                <input type="number" value="1600.00">
+                                            </div>
+                                        </div>
+                                        <div class="price-slider">
+                                            <div class="slider-track">
+                                                <div class="slider-range" style="left: 20%; right: 20%;"></div>
+                                                <div class="slider-handle left"></div>
+                                                <div class="slider-handle right"></div>
+                                            </div>
+                                            <div class="slider-labels">
+                                                <span>1500</span>
+                                                <span>1600</span>
+                                                <span>1700</span>
+                                                <span>1800</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-group">
+                                    <label>技术指标提醒</label>
+                                    <div class="indicator-alerts">
+                                        <label class="checkbox-item">
+                                            <input type="checkbox">
+                                            <span>MACD金叉/死叉</span>
+                                        </label>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox">
+                                            <span>突破压力位/支撑位</span>
+                                        </label>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox">
+                                            <span>RSI超买/超卖</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-group">
+                                    <label>新闻提醒</label>
+                                    <div class="news-alert">
+                                        <label class="checkbox-item">
+                                            <input type="checkbox">
+                                            <span>重大新闻</span>
+                                        </label>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox">
+                                            <span>公司公告</span>
+                                        </label>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox">
+                                            <span>行业动态</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <button class="save-btn">保存提醒设置</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 提醒历史记录 -->
+                        <div class="alert-history">
+                            <div class="section-header">
+                                <h2>提醒历史记录</h2>
+                                <div class="history-filter">
+                                    <select>
+                                        <option>全部提醒</option>
+                                        <option>价格提醒</option>
+                                        <option>技术指标提醒</option>
+                                        <option>新闻提醒</option>
+                                    </select>
+                                    <input type="date" value="2024-01-15">
+                                    <div class="history-search">
+                                        <input type="text" placeholder="搜索提醒...">
+                                        <button>搜索</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="history-list">
+                                <div class="history-item">
+                                    <div class="history-time">2024-01-15 14:30</div>
+                                    <div class="history-content">
+                                        <span class="stock">贵州茅台 (600519)</span>
+                                        <span class="alert-type price-alert">价格提醒</span>
+                                        <span>价格突破上限 1700.00</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="history-item">
+                                    <div class="history-time">2024-01-15 10:15</div>
+                                    <div class="history-content">
+                                        <span class="stock">宁德时代 (300750)</span>
+                                        <span class="alert-type indicator-alert">技术指标提醒</span>
+                                        <span>MACD金叉形成</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="history-item">
+                                    <div class="history-time">2024-01-14 16:45</div>
+                                    <div class="history-content">
+                                        <span class="stock">腾讯控股 (00700)</span>
+                                        <span class="alert-type news-alert">新闻提醒</span>
+                                        <span>公司发布2023年Q4财报</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="history-item">
+                                    <div class="history-time">2024-01-14 09:30</div>
+                                    <div class="history-content">
+                                        <span class="stock">贵州茅台 (600519)</span>
+                                        <span class="alert-type price-alert">价格提醒</span>
+                                        <span>价格突破下限 1600.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧AI分析窗口 -->
+                    <div class="right-section">
+                        <div class="ai-analysis">
+                            <div class="ai-header">
+                                <h2>AI分析</h2>
+                                <button class="collapse-btn" onclick="toggleAIAnalysis()">📋</button>
+                            </div>
+                            
+                            <div class="ai-content" id="aiContent">
+                                <!-- 关注列表整体市场表现分析 -->
+                                <div class="ai-section">
+                                    <h3>关注列表市场表现</h3>
+                                    <div class="performance-summary">
+                                        <div class="metric">
+                                            <span class="label">平均涨跌幅</span>
+                                            <span class="value positive">+0.65%</span>
+                                        </div>
+                                        <div class="metric">
+                                            <span class="label">上涨股票</span>
+                                            <span class="value">2/4</span>
+                                        </div>
+                                        <div class="metric">
+                                            <span class="label">下跌股票</span>
+                                            <span class="value">2/4</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 潜在机会与风险预警 -->
+                                <div class="ai-section">
+                                    <h3>机会与风险预警</h3>
+                                    <div class="alert-list">
+                                        <div class="alert-item opportunity">
+                                            <span class="alert-icon">📈</span>
+                                            <span>宁德时代：MACD金叉形成，短期看涨</span>
+                                        </div>
+                                        <div class="alert-item risk">
+                                            <span class="alert-icon">📉</span>
+                                            <span>腾讯控股：成交量萎缩，短期可能调整</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 行业热点分析 -->
+                                <div class="ai-section">
+                                    <h3>行业热点分析</h3>
+                                    <div class="industry-trends">
+                                        <div class="industry-item">
+                                            <span class="industry">新能源</span>
+                                            <span class="trend positive">+2.1%</span>
+                                        </div>
+                                        <div class="industry-item">
+                                            <span class="industry">白酒</span>
+                                            <span class="trend positive">+1.8%</span>
+                                        </div>
+                                        <div class="industry-item">
+                                            <span class="industry">互联网</span>
+                                            <span class="trend negative">-0.7%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 关注股票相关性分析 -->
+                                <div class="ai-section">
+                                    <h3>股票相关性分析</h3>
+                                    <div class="correlation-chart">
+                                        <div class="chart-placeholder">
+                                            <p>相关性热力图</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 智能提醒建议 -->
+                                <div class="ai-section">
+                                    <h3>智能提醒建议</h3>
+                                    <div class="suggestions-list">
+                                        <div class="suggestion-item">
+                                            <span class="suggestion-icon">💡</span>
+                                            <span>建议为阿里巴巴设置价格提醒，当前处于历史低位</span>
+                                        </div>
+                                        <div class="suggestion-item">
+                                            <span class="suggestion-icon">💡</span>
+                                            <span>建议关注贵州茅台的成交量变化，近期有放量迹象</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 个性化推荐 -->
+                                <div class="ai-section">
+                                    <h3>个性化推荐</h3>
+                                    <div class="recommendations">
+                                        <div class="recommendation-item">
+                                            <span class="stock-name">五粮液 (000858)</span>
+                                            <span class="reason">基于您对贵州茅台的关注</span>
+                                        </div>
+                                        <div class="recommendation-item">
+                                            <span class="stock-name">比亚迪 (002594)</span>
+                                            <span class="reason">基于您对宁德时代的关注</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 底部状态栏 -->
+            <div class="footer">
+                <div>系统状态: 正常运行</div>
+                <div>版本: v1.0.0</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 切换AI分析窗口的折叠/展开状态
+        function toggleAIAnalysis() {
+            const aiContent = document.getElementById('aiContent');
+            const collapseBtn = document.querySelector('.collapse-btn');
+            
+            aiContent.classList.toggle('collapsed');
+            collapseBtn.classList.toggle('collapsed');
+        }
+    </script>
+</body>
+</html>

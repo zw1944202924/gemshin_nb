@@ -1,0 +1,66 @@
+## gemshin_nb 后端项目架构分析报告
+
+### 项目结构
+```
+backend/
+├── main.py                    # FastAPI 应用入口
+├── requirements.txt           # 依赖库
+└── app/
+    ├── api/                   # API 路由层
+    │   ├── __init__.py
+    │   ├── user.py
+    │   ├── stock.py
+    │   ├── portfolio.py
+    │   ├── watchlist.py
+    │   ├── alert.py
+    │   ├── analysis.py
+    │   ├── quant.py
+    │   ├── backtest.py
+    │   └── notification.py
+    ├── core/                  # 核心配置和工具
+    │   ├── config.py          # 配置管理
+    │   ├── database.py        # 数据库连接和会话管理
+    │   └── scheduler.py       # 定时任务调度
+    ├── models/                # SQLAlchemy ORM 模型
+    │   └── __init__.py
+    ├── schemas/               # Pydantic 数据验证模型
+    │   ├── __init__.py
+    │   ├── user.py
+    │   └── portfolio.py
+    ├── services/              # 业务逻辑层
+    │   ├── __init__.py
+    │   ├── user.py
+    │   ├── stock.py
+    │   ├── analysis.py
+    │   ├── portfolio.py
+    │   ├── watchlist.py
+    │   └── quant.py
+    └── tasks/                 # 任务目录（空）
+```
+
+### 核心功能模块
+1. 用户管理：注册/登录，JWT Token 认证
+2. 股票数据：获取A股列表，同步日线数据（AkShare）
+3. 持仓管理
+4. 关注列表
+5. 提醒规则
+6. AI 分析
+7. 量化选股
+8. 回测
+9. 通知管理
+
+### 技术栈
+- FastAPI（Web 框架）
+- SQLAlchemy（ORM）
+- SQLite（数据库）
+- AkShare（A股数据）
+- APScheduler（定时任务）
+- JWT（认证）
+- passlib（密码加密）
+
+### 注意事项
+- 项目采用分层架构：API → Services → Models
+- 所有现有架构应保持不变，在其基础上继续开发
+- 依赖库已通过 requirements.txt 列出
+
+已熟悉项目架构，准备好进行后续功能开发。

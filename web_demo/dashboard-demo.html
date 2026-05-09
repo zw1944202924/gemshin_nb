@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI股票分析助手 - 仪表盘</title>
+    <!-- Element Plus CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.3.12/dist/index.css">
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #303133;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #1a365d;
+            color: white;
+            padding: 20px 0;
+        }
+        .sidebar-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .sidebar-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar-item.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #48bb78;
+        }
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            height: 60px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #f56565;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .footer {
+            height: 40px;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 12px;
+            color: #909399;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: auto;
+            gap: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1a365d;
+        }
+        .chart-container {
+            height: 300px;
+        }
+        .market-overview {
+            grid-column: 1 / 3;
+        }
+        .holdings-overview {
+            grid-column: 1 / 2;
+        }
+        .watchlist-alerts {
+            grid-column: 2 / 3;
+        }
+        .analysis-reports {
+            grid-column: 1 / 2;
+        }
+        .market-news {
+            grid-column: 2 / 3;
+        }
+        .data-summary {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+        }
+        .data-item {
+            text-align: center;
+        }
+        .data-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .data-label {
+            font-size: 12px;
+            color: #909399;
+        }
+        .profit-positive {
+            color: #48bb78;
+        }
+        .profit-negative {
+            color: #f56565;
+        }
+        .alert-item {
+            padding: 10px;
+            border-left: 4px solid #48bb78;
+            margin-bottom: 10px;
+            background-color: #f0f9eb;
+        }
+        .alert-item.warning {
+            border-left-color: #ed8936;
+            background-color: #fffaf0;
+        }
+        .report-item {
+            padding: 10px;
+            border-bottom: 1px solid #ebeef5;
+        }
+        .report-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .report-summary {
+            font-size: 12px;
+            color: #606266;
+        }
+        .news-item {
+            padding: 10px;
+            border-bottom: 1px solid #ebeef5;
+        }
+        .news-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .news-time {
+            font-size: 12px;
+            color: #909399;
+        }
+        .time-range-selector {
+            margin-bottom: 15px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧菜单栏 -->
+        <div class="sidebar">
+            <div class="sidebar-item active">仪表盘</div>
+            <div class="sidebar-item">股票分析</div>
+            <div class="sidebar-item">持仓管理</div>
+            <div class="sidebar-item">关注列表</div>
+            <div class="sidebar-item">用户设置</div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main">
+            <!-- 顶部导航栏 -->
+            <div class="header">
+                <div class="header-title">AI股票分析助手</div>
+                <div class="header-user">
+                    <div class="notification-icon">
+                        🔔
+                        <div class="notification-badge">3</div>
+                    </div>
+                    <span>欢迎，用户</span>
+                </div>
+            </div>
+            
+            <!-- 内容区 -->
+            <div class="content">
+                <div class="dashboard-grid">
+                    <!-- 市场概览 -->
+                    <div class="card market-overview">
+                        <div class="card-title">市场概览</div>
+                        <div class="time-range-selector">
+                            <select>
+                                <option>今日</option>
+                                <option>本周</option>
+                                <option>本月</option>
+                                <option>本年</option>
+                            </select>
+                        </div>
+                        <div class="chart-container" id="marketChart"></div>
+                    </div>
+                    
+                    <!-- 个人持仓概览 -->
+                    <div class="card holdings-overview">
+                        <div class="card-title">个人持仓概览</div>
+                        <div class="data-summary">
+                            <div class="data-item">
+                                <div class="data-value profit-positive">+12.5%</div>
+                                <div class="data-label">总收益率</div>
+                            </div>
+                            <div class="data-item">
+                                <div class="data-value">¥125,000</div>
+                                <div class="data-label">总市值</div>
+                            </div>
+                            <div class="data-item">
+                                <div class="data-value profit-positive">¥13,500</div>
+                                <div class="data-label">总收益</div>
+                            </div>
+                        </div>
+                        <div class="chart-container" id="holdingsChart"></div>
+                    </div>
+                    
+                    <!-- 关注列表重要提醒 -->
+                    <div class="card watchlist-alerts">
+                        <div class="card-title">关注列表重要提醒</div>
+                        <div class="alert-item">
+                            <div class="alert-title">阿里巴巴 (BABA)</div>
+                            <div class="alert-content">价格突破压力位，建议关注</div>
+                        </div>
+                        <div class="alert-item warning">
+                            <div class="alert-title">腾讯控股 (0700.HK)</div>
+                            <div class="alert-content">MACD出现死叉，可能下跌</div>
+                        </div>
+                        <div class="alert-item">
+                            <div class="alert-title">贵州茅台 (600519.SH)</div>
+                            <div class="alert-content">发布季度财报，超预期</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 最近分析报告摘要 -->
+                    <div class="card analysis-reports">
+                        <div class="card-title">最近分析报告摘要</div>
+                        <div class="report-item">
+                            <div class="report-title">阿里巴巴 (BABA) 分析报告</div>
+                            <div class="report-summary">综合评分：8.5/10，建议：买入</div>
+                        </div>
+                        <div class="report-item">
+                            <div class="report-title">腾讯控股 (0700.HK) 分析报告</div>
+                            <div class="report-summary">综合评分：7.8/10，建议：持有</div>
+                        </div>
+                        <div class="report-item">
+                            <div class="report-title">贵州茅台 (600519.SH) 分析报告</div>
+                            <div class="report-summary">综合评分：9.0/10，建议：买入</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 市场热点新闻 -->
+                    <div class="card market-news">
+                        <div class="card-title">市场热点新闻</div>
+                        <div class="news-item">
+                            <div class="news-title">央行降准0.5个百分点，释放流动性约1万亿元</div>
+                            <div class="news-time">2026-03-01 09:30</div>
+                        </div>
+                        <div class="news-item">
+                            <div class="news-title">科技股集体上涨，纳斯达克指数创历史新高</div>
+                            <div class="news-time">2026-03-01 10:15</div>
+                        </div>
+                        <div class="news-item">
+                            <div class="news-title">新能源汽车销量持续增长，行业景气度高</div>
+                            <div class="news-time">2026-03-01 11:00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 底部状态栏 -->
+            <div class="footer">
+                <div>系统状态: 正常运行</div>
+                <div>版本: v1.0.0</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 市场概览图表
+        const marketChart = echarts.init(document.getElementById('marketChart'));
+        const marketOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    label: {
+                        backgroundColor: '#6a7985'
+                    }
+                }
+            },
+            legend: {
+                data: ['上证指数', '深证成指', '创业板指']
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: ['09:30', '10:00', '10:30', '11:00', '11:30', '13:30', '14:00', '14:30', '15:00']
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value'
+                }
+            ],
+            series: [
+                {
+                    name: '上证指数',
+                    type: 'line',
+                    stack: 'Total',
+                    areaStyle: {},
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: [3200, 3210, 3205, 3220, 3230, 3235, 3240, 3250, 3260]
+                },
+                {
+                    name: '深证成指',
+                    type: 'line',
+                    stack: 'Total',
+                    areaStyle: {},
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: [12500, 12550, 12530, 12580, 12600, 12650, 12700, 12750, 12800]
+                },
+                {
+                    name: '创业板指',
+                    type: 'line',
+                    stack: 'Total',
+                    areaStyle: {},
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: [2500, 2510, 2505, 2520, 2530, 2540, 2550, 2560, 2570]
+                }
+            ]
+        };
+        marketChart.setOption(marketOption);
+        
+        // 持仓分布图表
+        const holdingsChart = echarts.init(document.getElementById('holdingsChart'));
+        const holdingsOption = {
+            tooltip: {
+                trigger: 'item'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left',
+            },
+            series: [
+                {
+                    name: '持仓分布',
+                    type: 'pie',
+                    radius: '70%',
+                    data: [
+                        { value: 35, name: '科技' },
+                        { value: 25, name: '消费' },
+                        { value: 20, name: '金融' },
+                        { value: 15, name: '医药' },
+                        { value: 5, name: '其他' }
+                    ],
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+        holdingsChart.setOption(holdingsOption);
+        
+        // 响应式调整
+        window.addEventListener('resize', function() {
+            marketChart.resize();
+            holdingsChart.resize();
+        });
+    </script>
+</body>
+</html>

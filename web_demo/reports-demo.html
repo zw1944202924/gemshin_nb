@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI股票分析助手 - 分析报告管理</title>
+    <!-- Element Plus CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.3.12/dist/index.css">
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #303133;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #1a365d;
+            color: white;
+            padding: 20px 0;
+        }
+        .sidebar-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .sidebar-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar-item.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #48bb78;
+        }
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            height: 60px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #f56565;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            gap: 20px;
+        }
+        .footer {
+            height: 40px;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 12px;
+            color: #909399;
+        }
+        .reports-list {
+            width: 300px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .reports-detail {
+            flex: 1;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1a365d;
+        }
+        .report-item {
+            padding: 12px;
+            border-bottom: 1px solid #ebeef5;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .report-item:hover {
+            background-color: #f5f7fa;
+        }
+        .report-item.active {
+            background-color: #e6f7ee;
+            border-left: 4px solid #48bb78;
+        }
+        .report-stock {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .report-date {
+            font-size: 12px;
+            color: #909399;
+            margin-bottom: 4px;
+        }
+        .report-score {
+            font-size: 14px;
+            font-weight: bold;
+            color: #48bb78;
+        }
+        .report-header {
+            border-bottom: 1px solid #ebeef5;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .report-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .report-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            border: none;
+        }
+        .btn-primary {
+            background-color: #1a365d;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #48bb78;
+            color: white;
+        }
+        .btn-outline {
+            background-color: white;
+            color: #1a365d;
+            border: 1px solid #1a365d;
+        }
+        .report-section {
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1a365d;
+        }
+        .chart-container {
+            height: 300px;
+            margin: 15px 0;
+        }
+        .analysis-content {
+            line-height: 1.6;
+        }
+        .recommendation {
+            background-color: #f0f9eb;
+            border-left: 4px solid #48bb78;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .recommendation-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧菜单栏 -->
+        <div class="sidebar">
+            <div class="sidebar-item">仪表盘</div>
+            <div class="sidebar-item">股票分析</div>
+            <div class="sidebar-item">持仓管理</div>
+            <div class="sidebar-item">关注列表</div>
+            <div class="sidebar-item active">分析报告管理</div>
+            <div class="sidebar-item">交易记录</div>
+            <div class="sidebar-item">市场板块</div>
+            <div class="sidebar-item">数据导入/导出</div>
+            <div class="sidebar-item">通知中心</div>
+            <div class="sidebar-item">帮助中心</div>
+            <div class="sidebar-item">用户反馈</div>
+            <div class="sidebar-item">AI模型管理</div>
+            <div class="sidebar-item">用户设置</div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main">
+            <!-- 顶部导航栏 -->
+            <div class="header">
+                <div class="header-title">AI股票分析助手</div>
+                <div class="header-user">
+                    <div class="notification-icon">
+                        🔔
+                        <div class="notification-badge">3</div>
+                    </div>
+                    <span>欢迎，用户</span>
+                </div>
+            </div>
+            
+            <!-- 内容区 -->
+            <div class="content">
+                <!-- 报告列表 -->
+                <div class="reports-list">
+                    <div class="card-title">分析报告列表</div>
+                    <div class="report-item active">
+                        <div class="report-stock">阿里巴巴 (BABA)</div>
+                        <div class="report-date">2026-03-01 10:30</div>
+                        <div class="report-score">综合评分：8.5/10</div>
+                    </div>
+                    <div class="report-item">
+                        <div class="report-stock">腾讯控股 (0700.HK)</div>
+                        <div class="report-date">2026-03-01 09:15</div>
+                        <div class="report-score">综合评分：7.8/10</div>
+                    </div>
+                    <div class="report-item">
+                        <div class="report-stock">贵州茅台 (600519.SH)</div>
+                        <div class="report-date">2026-02-29 16:45</div>
+                        <div class="report-score">综合评分：9.0/10</div>
+                    </div>
+                    <div class="report-item">
+                        <div class="report-stock">宁德时代 (300750.SZ)</div>
+                        <div class="report-date">2026-02-29 14:20</div>
+                        <div class="report-score">综合评分：8.2/10</div>
+                    </div>
+                    <div class="report-item">
+                        <div class="report-stock">中国平安 (601318.SH)</div>
+                        <div class="report-date">2026-02-28 11:30</div>
+                        <div class="report-score">综合评分：7.5/10</div>
+                    </div>
+                </div>
+                
+                <!-- 报告详情 -->
+                <div class="reports-detail">
+                    <div class="report-header">
+                        <h2>阿里巴巴 (BABA) 分析报告</h2>
+                        <div class="report-meta">
+                            <span>生成时间：2026-03-01 10:30</span>
+                            <span>综合评分：<strong style="color: #48bb78;">8.5/10</strong></span>
+                        </div>
+                    </div>
+                    
+                    <div class="report-actions">
+                        <button class="btn btn-primary">导出PDF</button>
+                        <button class="btn btn-secondary">导出Excel</button>
+                        <button class="btn btn-outline">分享报告</button>
+                    </div>
+                    
+                    <div class="report-section">
+                        <div class="section-title">1. 市场表现</div>
+                        <div class="chart-container" id="marketChart"></div>
+                        <div class="analysis-content">
+                            <p>阿里巴巴近期表现强劲，过去30天上涨12.5%，跑赢大盘5.2个百分点。成交量较上月增加23%，显示市场关注度提升。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="report-section">
+                        <div class="section-title">2. 基本面分析</div>
+                        <div class="analysis-content">
+                            <p><strong>营收：</strong>2025财年Q4营收2430亿元，同比增长8.7%，超出市场预期。</p>
+                            <p><strong>净利润：</strong>季度净利润456亿元，同比增长12.3%，利润率提升1.5个百分点。</p>
+                            <p><strong>估值：</strong>当前PE为18.5，低于行业平均水平22.3，具有一定估值优势。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="report-section">
+                        <div class="section-title">3. 技术分析</div>
+                        <div class="chart-container" id="technicalChart"></div>
+                        <div class="analysis-content">
+                            <p>价格已突破60日均线，MACD形成金叉，RSI为65，处于强势区域。短期支撑位85美元，阻力位95美元。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="report-section">
+                        <div class="section-title">4. 舆情分析</div>
+                        <div class="analysis-content">
+                            <p>社交媒体情绪偏向正面，正面提及率为68%，负面提及率为15%。主要正面因素包括云业务增长、AI战略推进等；负面因素主要集中在监管风险和竞争加剧。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="recommendation">
+                        <div class="recommendation-title">投资建议</div>
+                        <p><strong>建议：</strong>买入</p>
+                        <p><strong>目标价：</strong>95美元</p>
+                        <p><strong>理由：</strong>基本面稳健，技术面向好，估值合理，云业务和AI战略有望成为新增长点。</p>
+                        <p><strong>风险：</strong>监管政策变化、行业竞争加剧、宏观经济不确定性。</p>
+                    </div>
+                </div>
+            </div>
+            <!-- 底部状态栏 -->
+            <div class="footer">
+                <div>系统状态: 正常运行</div>
+                <div>版本: v1.0.0</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 市场表现图表
+        const marketChart = echarts.init(document.getElementById('marketChart'));
+        const marketOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    label: {
+                        backgroundColor: '#6a7985'
+                    }
+                }
+            },
+            legend: {
+                data: ['阿里巴巴', '纳斯达克']
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: ['2026-02-01', '2026-02-08', '2026-02-15', '2026-02-22', '2026-02-29', '2026-03-01']
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value'
+                }
+            ],
+            series: [
+                {
+                    name: '阿里巴巴',
+                    type: 'line',
+                    stack: 'Total',
+                    areaStyle: {},
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: [78, 80, 79, 82, 84, 86]
+                },
+                {
+                    name: '纳斯达克',
+                    type: 'line',
+                    stack: 'Total',
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: [18500, 18600, 18550, 18650, 18700, 18750]
+                }
+            ]
+        };
+        marketChart.setOption(marketOption);
+        
+        // 技术分析图表
+        const technicalChart = echarts.init(document.getElementById('technicalChart'));
+        const technicalOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    label: {
+                        backgroundColor: '#6a7985'
+                    }
+                }
+            },
+            legend: {
+                data: ['价格', 'MACD', 'RSI']
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: ['2026-02-01', '2026-02-08', '2026-02-15', '2026-02-22', '2026-02-29', '2026-03-01']
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    name: '价格',
+                    position: 'left'
+                },
+                {
+                    type: 'value',
+                    name: '指标',
+                    position: 'right',
+                    min: 0,
+                    max: 100
+                }
+            ],
+            series: [
+                {
+                    name: '价格',
+                    type: 'line',
+                    yAxisIndex: 0,
+                    data: [78, 80, 79, 82, 84, 86]
+                },
+                {
+                    name: 'MACD',
+                    type: 'line',
+                    yAxisIndex: 1,
+                    data: [0, 0.5, 0.8, 1.2, 1.5, 1.8]
+                },
+                {
+                    name: 'RSI',
+                    type: 'line',
+                    yAxisIndex: 1,
+                    data: [50, 55, 60, 62, 63, 65]
+                }
+            ]
+        };
+        technicalChart.setOption(technicalOption);
+        
+        // 响应式调整
+        window.addEventListener('resize', function() {
+            marketChart.resize();
+            technicalChart.resize();
+        });
+    </script>
+</body>
+</html>
