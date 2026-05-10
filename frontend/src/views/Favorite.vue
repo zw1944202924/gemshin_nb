@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-
-<template>
-  <div class="page-container">
-    <h2>自选股</h2>
-    <el-alert title="功能开发中..." type="info" style="margin-top: 20px;" />
-=======
 <template>
   <div class="favorite-container">
     <div class="header">
@@ -89,20 +82,10 @@
         <el-button type="primary" @click="handleAdd" :loading="addLoading">添加</el-button>
       </template>
     </el-dialog>
->>>>>>> feature/backend-api-enhancement
   </div>
 </template>
 
 <script setup>
-<<<<<<< HEAD
-</script>
-
-<style scoped>
-.page-container {
-  padding: 20px;
-}
-</style>
-=======
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Plus } from '@element-plus/icons-vue'
@@ -293,4 +276,3 @@ onUnmounted(() => {
   color: #909399;
 }
 </style>
->>>>>>> feature/backend-api-enhancement
