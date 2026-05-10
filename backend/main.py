@@ -1,6 +1,7 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime
 from backend.app.core.database import engine, Base
 from backend.app.core.scheduler import init_scheduler, shutdown_scheduler
 from backend.app.api import stock, user, portfolio, watchlist, alert, analysis, quant, backtest, notification
@@ -42,8 +43,14 @@ def shutdown_event():
 
 # 健康检查接口
 @app.get("/api/health")
-def health_check():
+def api_health_check():
     return {"status": "ok", "message": "AI股票分析助手服务运行正常"}
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "timestamp": datetime.now().isoformat()}
+
 
 if __name__ == "__main__":
     import uvicorn
