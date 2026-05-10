@@ -1,16 +1,3 @@
-<<<<<<< HEAD
-__pycache__/
-*.pyc
-node_modules/
-.env
-*.db
-*.log
-.DS_Store
-.vscode/
-.idea/
-frontend/node_modules/
-frontend/.vite/
-=======
 # Dependencies
 node_modules/
 frontend/node_modules/
@@ -41,6 +28,7 @@ Thumbs.db
 # Build
 dist/
 frontend/dist/
+frontend/.vite/
 
 # Python
 __pycache__/
@@ -48,4 +36,4 @@ __pycache__/
 *$py.class
 *.so
 .Python
->>>>>>> feature/backend-api-enhancement
+
