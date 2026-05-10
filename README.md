@@ -75,3 +75,20 @@ Closes #123
 - 所有代码合并必须通过 Pull Request 进行 Code Review
 - 合并前确保代码通过所有测试
 - 删除已合并的临时分支，保持仓库整洁
+
+
+## 项目结构
+
+```
+gemshin_nb/
+├── backend/        — Python 后端服务
+├── frontend/       — Vue 前端应用
+├── web_demo/       — 纯 HTML/JS 网页演示
+└── docs/           — 项目文档
+```
+
+### 目录说明
+- **backend/**: 基于 Python 的后端服务，包含 API 接口实现
+- **frontend/**: Vue 前端应用，使用 Vite 构建工具
+- **web_demo/**: 纯 HTML/JS 的网页演示，用于快速原型验证
+- **docs/**: 包含系统架构、AI 模型、前后端接口设计等文档
