@@ -5,16 +5,16 @@
       <h2 class="register-title">用户注册</h2>
       <el-form ref="registerForm" :model="registerForm" :rules="registerRules" label-width="80px">
         <el-form-item label="用户名" prop="username">
-          <el-input v-model="registerForm.username" @input="e => registerForm.username = e.target.value" placeholder="请输入用户名" />
+          <el-input v-model="registerForm.username" placeholder="请输入用户名" />
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
-          <el-input v-model="registerForm.email" @input="e => registerForm.email = e.target.value" placeholder="请输入邮箱" />
+          <el-input v-model="registerForm.email" placeholder="请输入邮箱" />
         </el-form-item>
         <el-form-item label="密码" prop="password">
-          <el-input v-model="registerForm.password" type="password" @input="e => registerForm.password = e.target.value" placeholder="请输入密码" />
+          <el-input v-model="registerForm.password" type="password" placeholder="请输入密码" />
         </el-form-item>
         <el-form-item label="确认密码" prop="confirmPassword">
-          <el-input v-model="registerForm.confirmPassword" type="password" @input="e => registerForm.confirmPassword = e.target.value" placeholder="请再次输入密码" />
+          <el-input v-model="registerForm.confirmPassword" type="password" placeholder="请再次输入密码" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleRegister" :loading="loading" style="width: 100%;">注册</el-button>
