@@ -3,8 +3,8 @@
   <div class="layout-container">
     <el-container style="height: 100vh; border: 1px solid #eee;">
       <el-aside width="200px" style="background-color: rgb(238, 241, 246);">
-        <el-menu :default-active="activeMenu" class="el-menu-vertical-demo">
-          <el-menu-item index="/">
+        <el-menu :default-active="activeMenu" router class="el-menu-vertical-demo">
+          <el-menu-item index="/home">
             <el-icon><Grid /></el-icon>
             <span>股票列表</span>
           </el-menu-item>
