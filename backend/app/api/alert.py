@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-
-from fastapi import APIRouter
-
-router = APIRouter()
-=======
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
@@ -94,4 +88,3 @@ def toggle_alert_rule(
     if not rule:
         raise HTTPException(status_code=404, detail="告警规则不存在")
     return rule
->>>>>>> feature/backend-api-enhancement

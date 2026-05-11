@@ -39,6 +39,8 @@ service.interceptors.response.use(
       localStorage.removeItem('user_info')
       window.location.href = '/login'
       ElMessage.error('登录已过期，请重新登录')
+    } else if (error.response && error.response.data && error.response.data.detail) {
+      ElMessage.error(error.response.data.detail)
     } else {
       ElMessage.error(error.message || '网络错误')
     }

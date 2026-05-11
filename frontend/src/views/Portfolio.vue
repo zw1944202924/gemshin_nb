@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-
-<template>
-  <div class="page-container">
-    <h2>持仓管理</h2>
-    <el-alert title="功能开发中..." type="info" style="margin-top: 20px;" />
-=======
 <template>
   <div class="portfolio-container">
     <div class="header">
@@ -138,20 +131,10 @@
         <el-button type="primary" @click="handleSubmit" :loading="submitLoading">确定</el-button>
       </template>
     </el-dialog>
->>>>>>> feature/backend-api-enhancement
   </div>
 </template>
 
 <script setup>
-<<<<<<< HEAD
-</script>
-
-<style scoped>
-.page-container {
-  padding: 20px;
-}
-</style>
-=======
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
@@ -362,4 +345,3 @@ onMounted(() => {
   color: #67c23a;
 }
 </style>
->>>>>>> feature/backend-api-enhancement

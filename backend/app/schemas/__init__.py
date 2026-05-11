@@ -1,8 +1,4 @@
 
-<<<<<<< HEAD
-from .user import User, UserCreate, UserLogin
-from .portfolio import Portfolio, PortfolioCreate, PortfolioUpdate
-=======
 from .user import User, UserCreate, UserLogin, TokenRefreshRequest, TokenResponse
 from .portfolio import Portfolio, PortfolioCreate, PortfolioUpdate
 from .alert import (
@@ -21,4 +17,3 @@ from .notification import (
     UserNotifyConfig,
     NotifySendRequest
 )
->>>>>>> feature/backend-api-enhancement

@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-
-from fastapi import APIRouter
-
-router = APIRouter()
-=======
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
@@ -91,4 +85,3 @@ def delete_backtest(
     )
     if not success:
         raise HTTPException(status_code=404, detail="回测记录不存在")
->>>>>>> feature/backend-api-enhancement

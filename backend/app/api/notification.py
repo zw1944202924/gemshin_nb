@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-
-from fastapi import APIRouter
-
-router = APIRouter()
-=======
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -120,4 +114,3 @@ def send_notification(
         return {"code": 0, "message": "发送成功"}
     else:
         raise HTTPException(status_code=400, detail=result["error"])
->>>>>>> feature/backend-api-enhancement

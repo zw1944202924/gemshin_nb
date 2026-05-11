@@ -1,29 +1,19 @@
 
-<<<<<<< HEAD
-from fastapi import APIRouter, Depends, HTTPException
-=======
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
->>>>>>> feature/backend-api-enhancement
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 import jwt
 from datetime import datetime, timedelta
-<<<<<<< HEAD
-=======
 from typing import Optional
->>>>>>> feature/backend-api-enhancement
 
 from backend.app.core.database import get_db
 from backend.app.core.config import settings
 from backend.app import schemas, services
 
 router = APIRouter()
-<<<<<<< HEAD
-=======
 security = HTTPBearer()
 
->>>>>>> feature/backend-api-enhancement
 
 def create_access_token(user_id: int, username: str) -> str:
     """生成JWT access token"""
@@ -32,8 +22,6 @@ def create_access_token(user_id: int, username: str) -> str:
     encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm="HS256")
     return encoded_jwt
 
-<<<<<<< HEAD
-=======
 
 def create_refresh_token(user_id: int, username: str) -> str:
     """生成JWT refresh token"""
@@ -85,7 +73,6 @@ def get_current_user_optional(
     except HTTPException:
         return None
 
->>>>>>> feature/backend-api-enhancement
 @router.post("/login")
 def login(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
     try:
@@ -93,15 +80,6 @@ def login(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
         if not user:
             raise HTTPException(status_code=400, detail="用户名或密码错误")
         access_token = create_access_token(user.id, user.username)
-<<<<<<< HEAD
-        return {
-            "code": 0, 
-            "message": "登录成功", 
-            "data": {
-                "id": user.id, 
-                "username": user.username,
-                "access_token": access_token,
-=======
         refresh_token = create_refresh_token(user.id, user.username)
         return {
             "code": 0,
@@ -111,7 +89,6 @@ def login(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
                 "username": user.username,
                 "access_token": access_token,
                 "refresh_token": refresh_token,
->>>>>>> feature/backend-api-enhancement
                 "token_type": "bearer"
             }
         }
@@ -121,24 +98,11 @@ def login(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
 @router.post("/register")
 def register(user_create: schemas.UserCreate, db: Session = Depends(get_db)):
     try:
-<<<<<<< HEAD
-        # 检查用户名是否已存在
-=======
->>>>>>> feature/backend-api-enhancement
         existing_user = services.user.get_user_by_username(db, user_create.username)
         if existing_user:
             raise HTTPException(status_code=400, detail="用户名已存在")
         user = services.user.create_user(db, user_create)
         access_token = create_access_token(user.id, user.username)
-<<<<<<< HEAD
-        return {
-            "code": 0, 
-            "message": "注册成功", 
-            "data": {
-                "id": user.id, 
-                "username": user.username,
-                "access_token": access_token,
-=======
         refresh_token = create_refresh_token(user.id, user.username)
         return {
             "code": 0,
@@ -148,7 +112,6 @@ def register(user_create: schemas.UserCreate, db: Session = Depends(get_db)):
                 "username": user.username,
                 "access_token": access_token,
                 "refresh_token": refresh_token,
->>>>>>> feature/backend-api-enhancement
                 "token_type": "bearer"
             }
         }
@@ -164,8 +127,6 @@ def register(user_create: schemas.UserCreate, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"注册失败：{str(e)}")
-<<<<<<< HEAD
-=======
 
 
 @router.post("/refresh")
@@ -207,4 +168,3 @@ def refresh_token(refresh_request: schemas.TokenRefreshRequest, db: Session = De
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Token刷新失败：{str(e)}")
->>>>>>> feature/backend-api-enhancement

@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-
-<template>
-  <div class="page-container">
-    <h2>AI股票分析</h2>
-    <el-alert title="功能开发中..." type="info" style="margin-top: 20px;" />
-=======
 <template>
   <div class="ai-analysis-container">
     <div class="header">
@@ -24,29 +17,29 @@
               <el-input v-model="form.stock_code" placeholder="如: 000001" clearable />
             </el-form-item>
             <el-form-item label="分析类型">
-              <el-select v-model="form.analysis_type" style="width: 100%;">
+              <el-select v-model="form.analysis_type" style="width: 100%">
                 <el-option label="基本面分析" value="fundamental" />
                 <el-option label="技术面分析" value="technical" />
                 <el-option label="综合分析" value="comprehensive" />
               </el-select>
             </el-form-item>
             <el-form-item label="AI模型">
-              <el-select v-model="form.model" style="width: 100%;">
+              <el-select v-model="form.model" style="width: 100%">
                 <el-option label="DeepSeek" value="deepseek" />
                 <el-option label="GPT-4" value="gpt4" />
                 <el-option label="Claude" value="claude" />
               </el-select>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="startAnalysis" :loading="analyzing" style="width: 100%;">
-                <el-icon style="margin-right: 4px;"><TrendCharts /></el-icon>
+              <el-button type="primary" @click="startAnalysis" :loading="analyzing" style="width: 100%">
+                <el-icon style="margin-right: 4px"><TrendCharts /></el-icon>
                 开始分析
               </el-button>
             </el-form-item>
           </el-form>
         </el-card>
 
-        <el-card class="history-card" style="margin-top: 20px;">
+        <el-card class="history-card" style="margin-top: 20px">
           <template #header>
             <div class="card-header">
               <span>历史记录</span>
@@ -134,20 +127,10 @@
         </el-card>
       </el-col>
     </el-row>
->>>>>>> feature/backend-api-enhancement
   </div>
 </template>
 
 <script setup>
-<<<<<<< HEAD
-</script>
-
-<style scoped>
-.page-container {
-  padding: 20px;
-}
-</style>
-=======
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { TrendCharts, Loading } from '@element-plus/icons-vue'
@@ -398,4 +381,3 @@ onMounted(() => {
   color: #e6a23c;
 }
 </style>
->>>>>>> feature/backend-api-enhancement
