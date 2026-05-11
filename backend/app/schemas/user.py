@@ -17,8 +17,7 @@ class User(UserBase):
     id: int
     is_active: bool
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class TokenRefreshRequest(BaseModel):
