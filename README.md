@@ -1,77 +1,50 @@
 # gemshin_nb
-一个伟大的项目
 
-## Git 分支规范
+面向长期扩展、便于人和 agent 协同开发的产品底座仓库。旧版实现与旧设计稿已经从工作树移除，并在本地完成压缩备份；当前仓库内容以新的 monorepo 骨架为准。
 
-### 分支类型说明
+## 当前方向
 
-| 分支类型 | 命名规范 | 用途说明 | 生命周期 |
-|---------|---------|---------|---------|
-| 主分支 | `main` | 生产环境代码，始终保持稳定可发布状态 | 永久 |
-| 开发分支 | `dev` | 日常开发集成，包含最新开发特性 | 永久 |
-| 功能分支 | `feature/<功能名>` | 开发新功能，从 develop 分支创建 | 临时 |
-| 修复分支 | `bugfix/<问题描述>` | 修复开发环境 bug，从 develop 分支创建 | 临时 |
-| 发布分支 | `release/<版本号>` | 准备发布新版本，从 develop 分支创建 | 临时 |
+- 前端：Nuxt，后续接入 `nuxt-ui-templates/dashboard` 与 `nuxt/ui`
+- 后端：Django + Django REST Framework
+- 基础设施：MySQL + Redis
+- 仓库形态：monorepo
 
+## 当前目录
 
-
-### 分支命名示例
-
-```
-# 功能分支
-feature/user-login
-feature/payment-gateway
-feature/api-optimization
-
-# 修复分支
-bugfix/fix-memory-leak
-bugfix/resolve-null-pointer
-
-# 发布分支
-release/v1.2.0
-release/v2.0.0-beta
+```text
+apps/
+  web/            # Nuxt 起步工程
+  api/            # Django 起步工程
+packages/
+  shared-types/   # 共享约定占位
+  eslint-config/  # 前端共享配置占位
+infra/
+  docker/
+  scripts/
+docs/
+  architecture/
+  api/
+  onboarding/
 ```
 
-### 提交信息规范
+## 本地启动
 
-```
-<type>(<scope>): <subject>
+1. 复制 `.env.example` 为 `.env`
+2. 执行 `docker compose up -d` 启动 MySQL 和 Redis
+3. 在 `apps/api` 中创建虚拟环境并安装依赖：`pip install -r requirements.txt`
+4. 在 `apps/web` 中安装依赖：`pnpm install`
+5. 分别启动：
+   - API：`python manage.py runserver 0.0.0.0:8000`
+   - Web：`pnpm dev`
 
-<body>
+## 第一阶段目标
 
-<footer>
-```
+- 跑通新的前后端骨架
+- 明确 `/api/v1/...` 接口约定
+- 建立认证闭环
+- 选一个最小示例业务模块继续实现
 
-**类型说明：**
-- `feat`: 新功能
-- `fix`: 修复 bug
-- `docs`: 文档更新
-- `style`: 代码格式调整（不影响功能）
-- `refactor`: 代码重构
-- `test`: 测试相关
-- `chore`: 构建过程或辅助工具的变动
+## 说明
 
-**示例：**
-```
-feat(auth): 添加用户登录功能
-
-- 实现 JWT Token 认证
-- 添加登录接口
-- 集成 Redis 缓存
-
-Closes #123
-```
-
-### 合并规范
-
-1. **功能开发完成**：`feature/*` → `develop`（通过 Pull Request）
-2. **发布新版本**：`develop` → `release/*` → `main` + `develop`
-3. **紧急修复**：`hotfix/*` → `main` + `develop`
-4. **日常修复**：`bugfix/*` → `develop`
-
-### 注意事项
-
-- 禁止直接向 `main` 分支推送代码
-- 所有代码合并必须通过 Pull Request 进行 Code Review
-- 合并前确保代码通过所有测试
-- 删除已合并的临时分支，保持仓库整洁
+- 旧资产已单独做本地压缩备份，不再保留在当前 Git 工作树中
+- 旧设计文档不再作为当前仓库的主线内容，后续仅按新底座方向补文档
