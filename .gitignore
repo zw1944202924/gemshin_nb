@@ -1,51 +1,21 @@
-<<<<<<< HEAD
-__pycache__/
-*.pyc
 node_modules/
-.env
-*.db
-*.log
-.DS_Store
-.vscode/
-.idea/
-frontend/node_modules/
-frontend/.vite/
-=======
-# Dependencies
-node_modules/
-frontend/node_modules/
+.pnpm-store/
+.nuxt/
+.output/
+dist/
 
-# Environment
 .env
 .env.local
 .env.*.local
 
-# Logs
-*.log
-logs/
-
-# Database
-*.db
-*.sqlite
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Build
-dist/
-frontend/dist/
-
-# Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
->>>>>>> feature/backend-api-enhancement
+*.sqlite3
+.venv/
+
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+backups/
