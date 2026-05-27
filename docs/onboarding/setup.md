@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Python 3.9+
+- Python 3.10+
 - Node.js 20+
 - pnpm
 - Docker Desktop or Docker Engine with Compose
@@ -15,6 +15,8 @@
 ```bash
 docker compose up -d
 ```
+
+If your local `mysql_data` volume was initialized by a different MySQL major version, recreate the volume before switching versions. This repository defaults to MySQL `8.4`; do not downgrade an existing `8.4` data volume to `8.0`.
 
 3. Create a virtual environment and install Python dependencies:
 

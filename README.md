@@ -30,10 +30,12 @@ docs/
 ## 本地启动
 
 1. 复制 `.env.example` 为 `.env`
-2. 执行 `docker compose up -d` 启动 MySQL `8.0` 和 Redis `7.2`
+2. 执行 `docker compose up -d` 启动 MySQL `8.4` 和 Redis `7.2`
 3. 在 `apps/api` 中创建虚拟环境并安装依赖
 4. 执行 Django 迁移并启动 API
 5. 在 `apps/web` 中安装依赖并启动前端
+
+如果本地 `mysql_data` 卷是用其他 MySQL 主版本初始化的，切换版本前先重建该卷；当前仓库默认使用 MySQL `8.4`，不要在保留 `8.4` 数据目录的情况下回退到 `8.0`。
 
 后端最小可复现命令：
 
