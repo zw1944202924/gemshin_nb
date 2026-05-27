@@ -1,6 +1,8 @@
 # Repository Instructions
 
 Use `git-branch-discipline` for any task that edits files in this repository or reports delivery status.
+Read `git-branch-discipline` before starting those tasks. This is a strict prerequisite, not an optional reference.
+If you delegate those tasks to another agent, explicitly instruct that agent to read `git-branch-discipline` before doing any analysis, edits, commits, or delivery reporting.
 
 ## Baseline branch
 
