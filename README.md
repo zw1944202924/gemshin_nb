@@ -4,7 +4,7 @@
 
 ## 当前方向
 
-- 前端：Nuxt，`apps/web` 已接入 `@nuxt/ui` 并建立 dashboard 基线
+- 前端：Nuxt，`apps/web` 已接入 `@nuxt/ui` 并建立 dashboard 基线，默认按离线友好的本地字体栈启动
 - 后端：Django + Django REST Framework
 - 基础设施：MySQL + Redis
 - 仓库形态：monorepo
