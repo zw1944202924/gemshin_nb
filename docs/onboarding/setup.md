@@ -17,6 +17,8 @@ docker compose up -d
 ```
 
 If your local `mysql_data` volume was initialized by a different MySQL major version, recreate the volume before switching versions. This repository defaults to MySQL `8.4`; do not downgrade an existing `8.4` data volume to `8.0`.
+If the local volume came from an older setup that started MySQL with `mysql_native_password`, recreate the volume before retrying. Otherwise the old account metadata remains in the data directory and Django can fail with `Plugin 'mysql_native_password' is not loaded`.
+The `MYSQL_PORT` value in `.env` is shared by Docker Compose and Django settings, so changing it updates both the exposed host port and the application's MySQL connection target.
 
 3. Create a virtual environment and install Python dependencies:
 

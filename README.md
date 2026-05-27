@@ -36,6 +36,8 @@ docs/
 5. 在 `apps/web` 中安装依赖并启动前端
 
 如果本地 `mysql_data` 卷是用其他 MySQL 主版本初始化的，切换版本前先重建该卷；当前仓库默认使用 MySQL `8.4`，不要在保留 `8.4` 数据目录的情况下回退到 `8.0`。
+如果本地卷是早先带 `mysql_native_password` 启动参数的版本初始化出来的，也要先重建该卷；否则旧账号认证插件元数据会保留在数据目录里，Django 连接时会报 `Plugin 'mysql_native_password' is not loaded`。
+`.env` 中的 `MYSQL_PORT` 同时决定 Docker 在宿主机暴露的 MySQL 端口，以及 Django 连接 MySQL 时使用的端口；如果改这个值，compose 和应用会一起跟随。
 
 后端最小可复现命令：
 
