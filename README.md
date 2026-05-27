@@ -4,7 +4,7 @@
 
 ## 当前方向
 
-- 前端：Nuxt，后续接入 `nuxt-ui-templates/dashboard` 与 `nuxt/ui`
+- 前端：Nuxt，`apps/web` 已接入 `@nuxt/ui` 并建立 dashboard 基线
 - 后端：Django + Django REST Framework
 - 基础设施：MySQL + Redis
 - 仓库形态：monorepo
@@ -13,7 +13,7 @@
 
 ```text
 apps/
-  web/            # Nuxt 起步工程
+  web/            # Nuxt + @nuxt/ui dashboard 基线
   api/            # Django 起步工程
 packages/
   shared-types/   # 共享约定占位
@@ -32,10 +32,10 @@ docs/
 1. 复制 `.env.example` 为 `.env`
 2. 执行 `docker compose up -d` 启动 MySQL 和 Redis
 3. 在 `apps/api` 中创建虚拟环境并安装依赖：`pip install -r requirements.txt`
-4. 在 `apps/web` 中安装依赖：`pnpm install`
+4. 在 `apps/web` 中安装依赖：`npm install`
 5. 分别启动：
    - API：`python manage.py runserver 0.0.0.0:8000`
-   - Web：`pnpm dev`
+   - Web：`npm run dev`
 
 ## 第一阶段目标
 
@@ -48,3 +48,4 @@ docs/
 
 - 旧资产已单独做本地压缩备份，不再保留在当前 Git 工作树中
 - 旧设计文档不再作为当前仓库的主线内容，后续仅按新底座方向补文档
+- `apps/web` 的运行与扩展说明见 `apps/web/README.md`

@@ -1,8 +1,49 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+:root {
+  --ui-primary: var(--ui-color-emerald-500);
+  --ui-bg: #f4f7f1;
+  --ui-text: #15251c;
+  --ui-radius: 1rem;
+  --ui-container: 88rem;
+  --ui-header-height: 4.5rem;
+}
+
+.dark {
+  --ui-bg: #0f1712;
+  --ui-text: #edf4ee;
+  --ui-border: #24352a;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
+  min-height: 100vh;
   margin: 0;
-  font-family: "Helvetica Neue", Arial, sans-serif;
-  background: #f5f7fb;
-  color: #162033;
+  font-family: "Avenir Next", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(99, 190, 141, 0.18), transparent 28%),
+    linear-gradient(180deg, #f7fbf6 0%, #edf3ec 48%, #e5ece4 100%);
+  color: var(--ui-text);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(21, 37, 28, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(21, 37, 28, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.65), transparent 85%);
+}
+
+#__nuxt {
+  min-height: 100vh;
 }
 
 a {

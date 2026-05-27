@@ -8,6 +8,7 @@
     "preview": "nuxt preview"
   },
   "dependencies": {
+    "@nuxt/ui": "^3.3.7",
     "nuxt": "^3.17.4"
   }
 }
