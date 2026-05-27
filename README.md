@@ -30,12 +30,44 @@ docs/
 ## 本地启动
 
 1. 复制 `.env.example` 为 `.env`
-2. 执行 `docker compose up -d` 启动 MySQL 和 Redis
-3. 在 `apps/api` 中创建虚拟环境并安装依赖：`pip install -r requirements.txt`
-4. 在 `apps/web` 中安装依赖：`pnpm install`
-5. 分别启动：
-   - API：`python manage.py runserver 0.0.0.0:8000`
-   - Web：`pnpm dev`
+2. 执行 `docker compose up -d` 启动 MySQL `8.0` 和 Redis `7.2`
+3. 在 `apps/api` 中创建虚拟环境并安装依赖
+4. 执行 Django 迁移并启动 API
+5. 在 `apps/web` 中安装依赖并启动前端
+
+后端最小可复现命令：
+
+```bash
+cp .env.example .env
+docker compose up -d
+
+cd apps/api
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver 0.0.0.0:8000
+```
+
+健康检查会真实访问 MySQL 和 Redis：
+
+```bash
+curl http://127.0.0.1:8000/api/v1/health/
+```
+
+预期返回：
+
+```json
+{"status":"ok","service":"api","checks":{"mysql":"ok","redis":"ok"}}
+```
+
+前端启动命令：
+
+```bash
+cd apps/web
+pnpm install
+pnpm dev
+```
 
 ## 第一阶段目标
 
