@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.core.authentication import build_auth_token
+from apps.core.authentication import build_auth_token, revoke_auth_token
 
 
 def serialize_user(user):
@@ -50,6 +50,8 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        if isinstance(request.auth, str):
+            revoke_auth_token(request.auth)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

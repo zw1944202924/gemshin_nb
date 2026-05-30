@@ -10,3 +10,4 @@
   - `POST /api/v1/auth/logout/`
   - `GET /api/v1/protected/`
 - Protected APIs use `Authorization: Bearer <token>`
+- Login tokens are random opaque values; the server stores and revokes session state in cache

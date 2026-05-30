@@ -87,9 +87,10 @@ pnpm dev
   - `/login` 登录页
   - `/dashboard` 受保护页面，未登录时自动跳转到 `/login`
 - 登录态机制：
-  - 后端返回 Django `signing` 生成的 Bearer token
+  - 后端登录成功后生成随机 Bearer token，并把服务端登录态写入缓存
   - 前端用 `gemshin_token` cookie 持有 token，并在访问受保护接口时自动附带 `Authorization: Bearer <token>`
   - token 默认有效期 `8` 小时，可通过 `AUTH_TOKEN_MAX_AGE_SECONDS` 调整
+  - 调用 `POST /api/v1/auth/logout/` 会删除当前 token 对应的服务端登录态，已退出 token 不能继续访问受保护接口
 
 本地联调建议：
 

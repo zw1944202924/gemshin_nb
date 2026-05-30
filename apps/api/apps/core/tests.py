@@ -53,3 +53,16 @@ class AuthFlowTests(TestCase):
         self.assertEqual(session_response.data["user"]["username"], "demo")
         self.assertEqual(protected_response.status_code, 200)
         self.assertEqual(protected_response.data["scope"], "authenticated")
+
+    def test_logout_revokes_current_token(self):
+        token = build_auth_token(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+        logout_response = self.client.post("/api/v1/auth/logout/")
+        self.assertEqual(logout_response.status_code, 204)
+
+        session_response = self.client.get("/api/v1/auth/me/")
+        protected_response = self.client.get("/api/v1/protected/")
+
+        self.assertEqual(session_response.status_code, 401)
+        self.assertEqual(protected_response.status_code, 401)
