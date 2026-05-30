@@ -50,6 +50,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
+python manage.py createsuperuser
 python manage.py runserver 0.0.0.0:8000
 ```
 
@@ -71,6 +72,39 @@ curl http://127.0.0.1:8000/api/v1/health/
 cd apps/web
 pnpm install
 pnpm dev
+```
+
+## 最小认证闭环
+
+当前仓库已经提供第一条真实认证链路，默认约定如下：
+
+- 后端认证接口：
+  - `POST /api/v1/auth/login/`
+  - `GET /api/v1/auth/me/`
+  - `POST /api/v1/auth/logout/`
+  - `GET /api/v1/protected/`
+- 前端页面：
+  - `/login` 登录页
+  - `/dashboard` 受保护页面，未登录时自动跳转到 `/login`
+- 登录态机制：
+  - 后端返回 Django `signing` 生成的 Bearer token
+  - 前端用 `gemshin_token` cookie 持有 token，并在访问受保护接口时自动附带 `Authorization: Bearer <token>`
+  - token 默认有效期 `8` 小时，可通过 `AUTH_TOKEN_MAX_AGE_SECONDS` 调整
+
+本地联调建议：
+
+1. 在 `apps/api` 执行 `python manage.py createsuperuser`，创建一个可登录账号
+2. 启动 Django API 与 Nuxt 前端
+3. 访问 `http://127.0.0.1:3000/login`
+4. 使用刚创建的账号登录，确认会跳转到 `/dashboard`
+5. 打开新标签直接访问 `/dashboard`，确认未退出前仍可访问
+6. 点击“退出登录”后再次访问 `/dashboard`，确认会被拦回 `/login`
+
+后端认证链路的最小自测命令：
+
+```bash
+cd apps/api
+./.venv/bin/python manage.py test apps.core --settings=config.settings.test
 ```
 
 ## 第一阶段目标

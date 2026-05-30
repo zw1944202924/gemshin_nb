@@ -4,6 +4,8 @@ from django.urls import path
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.views import LoginView, LogoutView, ProtectedView, SessionView
+
 
 class HealthView(APIView):
     def get(self, request):
@@ -38,4 +40,8 @@ class HealthView(APIView):
 
 urlpatterns = [
     path("api/v1/health/", HealthView.as_view(), name="health"),
+    path("api/v1/auth/login/", LoginView.as_view(), name="auth-login"),
+    path("api/v1/auth/logout/", LogoutView.as_view(), name="auth-logout"),
+    path("api/v1/auth/me/", SessionView.as_view(), name="auth-me"),
+    path("api/v1/protected/", ProtectedView.as_view(), name="protected"),
 ]
