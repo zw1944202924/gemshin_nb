@@ -27,142 +27,51 @@ const { token, user, logout } = useAuth()
         <button v-if="token && user" class="secondary" type="button" @click="logout()">退出登录</button>
       </div>
     </section>
-
-    <section id="delivery-tracks" class="delivery-list">
-      <UCard
-        v-for="track in deliveryTracks"
-        :key="track.title"
-        class="delivery-card"
-      >
-        <template #header>
-          <h3>{{ track.title }}</h3>
-        </template>
-
-        <p>{{ track.summary }}</p>
-      </UCard>
-    </section>
-  </div>
+  </main>
 </template>
 
 <style scoped>
-.dashboard-page {
+.page {
+  min-height: 100vh;
   display: grid;
-  gap: 24px;
+  place-items: center;
+  padding: 32px;
 }
 
-.hero-panel {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: space-between;
-  padding: 28px;
-  border: 1px solid rgba(21, 37, 28, 0.08);
-  border-radius: 28px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(241, 248, 240, 0.92)),
-    rgba(255, 255, 255, 0.85);
-  box-shadow: 0 20px 70px rgba(28, 46, 35, 0.08);
-}
-
-.hero-copy {
-  max-width: 52rem;
-}
-
-.hero-copy h1 {
-  margin: 14px 0 12px;
-  font-size: clamp(2.2rem, 5vw, 4.25rem);
-  line-height: 0.98;
-}
-
-.hero-copy p {
-  margin: 0;
-  max-width: 42rem;
-  line-height: 1.75;
-  color: rgba(21, 37, 28, 0.72);
-}
-
-.hero-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  justify-content: flex-end;
-}
-
-.metrics-grid,
-.delivery-list {
-  display: grid;
-  gap: 16px;
-}
-
-.metrics-grid {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
-.metric-card,
-.content-card,
-.delivery-card {
+.hero {
+  max-width: 760px;
+  background: linear-gradient(135deg, #ffffff, #eef4ff);
+  border: 1px solid #d7e2f2;
   border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 20px 60px rgba(22, 32, 51, 0.08);
 }
 
-.metric-label,
-.section-eyebrow,
-.nav-title {
-  margin: 0;
-  font-size: 0.78rem;
+.eyebrow {
+  margin: 0 0 12px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: #4b6381;
 }
 
-.metric-value {
+h1 {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: clamp(32px, 6vw, 56px);
 }
 
-.metric-tone,
-.content-text,
-.delivery-card p,
-.nav-group li {
-  color: rgba(21, 37, 28, 0.7);
-  line-height: 1.65;
+.intro {
+  margin: 16px 0 0;
+  line-height: 1.6;
 }
 
-.metric-tone {
-  margin: 10px 0 0;
-}
-
-.content-grid {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-}
-
-.section-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.section-heading h2,
-.delivery-card h3 {
-  margin: 4px 0 0;
-  font-size: 1.3rem;
-}
-
-.nav-groups {
-  display: grid;
-  gap: 18px;
-}
-
-.nav-group ul {
-  margin: 10px 0 0;
-  padding-left: 18px;
-}
-
-.delivery-list {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+.panel {
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 16px;
+  background: #162033;
+  color: #f5f7fb;
 }
 
 .actions {
@@ -195,13 +104,8 @@ code {
   font-family: "SFMono-Regular", Consolas, monospace;
 }
 
-@media (max-width: 768px) {
-  .hero-panel {
-    padding: 22px;
-  }
-
-  .hero-actions {
-    width: 100%;
-  }
+ul {
+  margin: 12px 0 0;
+  padding-left: 20px;
 }
 </style>
