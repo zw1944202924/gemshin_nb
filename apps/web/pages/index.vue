@@ -1,134 +1,31 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
-
-const metrics = [
-  {
-    label: "Runtime",
-    value: "Nuxt 3 + UI",
-    tone: "Foundation aligned with dashboard baseline"
-  },
-  {
-    label: "API target",
-    value: config.public.apiBase,
-    tone: "Ready for auth and module integration"
-  },
-  {
-    label: "Work mode",
-    value: "Local-first",
-    tone: "Buildable and extensible in apps/web"
-  }
-]
-
-const navigationGroups = [
-  {
-    title: "Core surfaces",
-    items: ["Overview", "Identity & access", "Operations", "Release notes"]
-  },
-  {
-    title: "Extension points",
-    items: ["layouts/", "components/dashboard/", "server/api/", "composables/"]
-  }
-]
-
-const deliveryTracks = [
-  {
-    title: "Dashboard shell",
-    summary: "Sidebar, header and content regions are separated so feature modules can land without reworking the app frame."
-  },
-  {
-    title: "Shared visual tokens",
-    summary: "Global CSS variables and Nuxt UI wiring provide a stable base for future pages and authentication states."
-  },
-  {
-    title: "Developer handoff",
-    summary: "Startup notes now point to apps/web and describe the local commands needed for build and dev verification."
-  }
-]
+const { token, user, logout } = useAuth()
 </script>
 
 <template>
-  <div class="dashboard-page">
-    <section class="hero-panel">
-      <div class="hero-copy">
-        <UBadge color="primary" variant="soft" label="Gemshin Dashboard Baseline" />
-        <h1>apps/web 已切到可持续扩展的 Dashboard 起点</h1>
-        <p>
-          当前前端基线基于 <code>main</code> 分支的 Nuxt 工程补齐了布局骨架、UI
-          入口和本地开发说明，后续认证、业务模块和接口联调可以直接在这里继续展开。
-        </p>
+  <main class="page">
+    <section class="hero">
+      <p class="eyebrow">Gemshin Base</p>
+      <h1>Nuxt + Django 认证闭环基线</h1>
+      <p class="intro">
+        第一条真实端到端链路已经落到当前 monorepo：前端登录页、后端认证接口、
+        登录态持有和受保护路由现在使用同一套最小口径。
+      </p>
+      <div class="panel">
+        <p>API base: {{ config.public.apiBase }}</p>
+        <ul>
+          <li>登录接口：<code>/auth/login/</code></li>
+          <li>会话校验：<code>/auth/me/</code></li>
+          <li>受保护示例：<code>/protected/</code> 与前端 <code>/dashboard</code></li>
+        </ul>
       </div>
-      <div class="hero-actions">
-        <UButton
-          label="查看 API 目标"
-          color="neutral"
-          variant="outline"
-          to="#api-target"
-        />
-        <UButton
-          label="继续扩展布局"
-          color="primary"
-          to="#delivery-tracks"
-        />
+
+      <div class="actions">
+        <NuxtLink v-if="token && user" class="primary" to="/dashboard">进入受保护页面</NuxtLink>
+        <NuxtLink v-else class="primary" to="/login">前往登录</NuxtLink>
+        <button v-if="token && user" class="secondary" type="button" @click="logout()">退出登录</button>
       </div>
-    </section>
-
-    <section class="metrics-grid">
-      <UCard
-        v-for="metric in metrics"
-        :key="metric.label"
-        class="metric-card"
-      >
-        <template #header>
-          <p class="metric-label">{{ metric.label }}</p>
-        </template>
-
-        <p class="metric-value">{{ metric.value }}</p>
-        <p class="metric-tone">{{ metric.tone }}</p>
-      </UCard>
-    </section>
-
-    <section class="content-grid">
-      <UCard id="api-target" class="content-card">
-        <template #header>
-          <div class="section-heading">
-            <div>
-              <p class="section-eyebrow">Current target</p>
-              <h2>联调入口</h2>
-            </div>
-            <UBadge color="neutral" variant="subtle" label="runtimeConfig" />
-          </div>
-        </template>
-
-        <p class="content-text">
-          当前公开 API 基址是 <code>{{ config.public.apiBase }}</code>。后续登录态、
-          租户上下文和业务查询可以从这个入口继续封装。
-        </p>
-      </UCard>
-
-      <UCard class="content-card">
-        <template #header>
-          <div class="section-heading">
-            <div>
-              <p class="section-eyebrow">Structure</p>
-              <h2>目录分层</h2>
-            </div>
-            <UBadge color="primary" variant="subtle" label="ready" />
-          </div>
-        </template>
-
-        <div class="nav-groups">
-          <div
-            v-for="group in navigationGroups"
-            :key="group.title"
-            class="nav-group"
-          >
-            <p class="nav-title">{{ group.title }}</p>
-            <ul>
-              <li v-for="item in group.items" :key="item">{{ item }}</li>
-            </ul>
-          </div>
-        </div>
-      </UCard>
     </section>
 
     <section id="delivery-tracks" class="delivery-list">
@@ -266,6 +163,32 @@ const deliveryTracks = [
 
 .delivery-list {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.primary,
+.secondary {
+  border-radius: 999px;
+  padding: 12px 18px;
+  font: inherit;
+  font-weight: 700;
+}
+
+.primary {
+  background: #162033;
+  color: #f5f7fb;
+}
+
+.secondary {
+  border: 1px solid #c0cfdf;
+  background: #fff;
+  cursor: pointer;
 }
 
 code {
