@@ -15,6 +15,15 @@ const loadProtectedMessage = async () => {
     const response = await authorizedFetch<{ message: string; scope: string }>("/protected/")
     message.value = `${response.message}，当前访问范围：${response.scope}`
   } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "statusCode" in error &&
+      error.statusCode === 401
+    ) {
+      return
+    }
+
     errorMessage.value = error instanceof Error ? error.message : "受保护资源加载失败"
   }
 }

@@ -17,6 +17,7 @@ type LoginResponse = {
 
 export const useAuth = () => {
   const config = useRuntimeConfig()
+  const route = useRoute()
   const token = useCookie<string | null>("gemshin_token", {
     default: () => null
   })
@@ -26,6 +27,14 @@ export const useAuth = () => {
   const clearSession = () => {
     token.value = null
     user.value = null
+  }
+
+  const redirectToLogin = async () => {
+    if (route.path === "/login") {
+      return
+    }
+
+    await navigateTo(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
   }
 
   const authorizedFetch = async <T>(path: string, options: Record<string, unknown> = {}) => {
@@ -38,10 +47,27 @@ export const useAuth = () => {
       Authorization: `Bearer ${token.value}`
     }
 
-    return await $fetch<T>(`${config.public.apiBase}${path}`, {
-      ...options,
-      headers
-    })
+    try {
+      return await $fetch<T>(`${config.public.apiBase}${path}`, {
+        ...options,
+        headers
+      })
+    } catch (error) {
+      const statusCode =
+        typeof error === "object" &&
+        error !== null &&
+        "statusCode" in error &&
+        typeof error.statusCode === "number"
+          ? error.statusCode
+          : null
+
+      if (statusCode === 401) {
+        clearSession()
+        await redirectToLogin()
+      }
+
+      throw error
+    }
   }
 
   const login = async (payload: LoginPayload) => {
