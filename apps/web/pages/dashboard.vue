@@ -59,6 +59,7 @@ await loadProtectedMessage()
 
       <div class="actions">
         <button class="primary" type="button" @click="loadProtectedMessage">重新验证后端鉴权</button>
+        <NuxtLink class="primary" to="/chat">打开 AI 对话页</NuxtLink>
         <NuxtLink class="link" to="/">返回首页</NuxtLink>
       </div>
     </section>
