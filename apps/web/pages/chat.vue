@@ -48,6 +48,10 @@ const createAndOpenConversation = async () => {
   await createConversation()
 }
 
+const renameConversationFromSidebar = async (payload: { conversationId: number; title: string }) => {
+  await renameConversation(payload.conversationId, payload.title)
+}
+
 const renameCurrentConversation = async (title: string) => {
   if (!activeConversationId.value) {
     return
@@ -107,7 +111,7 @@ onMounted(async () => {
           :pending-delete="pendingDelete"
           @create="createAndOpenConversation"
           @select="selectConversation"
-          @rename="renameConversation"
+          @rename="renameConversationFromSidebar"
           @delete="deleteConversation"
         />
       </div>

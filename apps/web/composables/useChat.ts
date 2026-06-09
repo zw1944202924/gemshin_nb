@@ -6,8 +6,23 @@ import {
   type ChatMessageStatus,
   createChatApi
 } from "~/services/chatApi"
-
-let activeStreamController: AbortController | null = null
+import {
+  abortActiveChatStreamController,
+  setActiveChatStreamController,
+  useChatActiveConversationState,
+  useChatConversationListState,
+  useChatConversationLoadingState,
+  useChatInitializedState,
+  useChatInterfaceErrorState,
+  useChatMessagesState,
+  useChatPendingDeleteState,
+  useChatPendingRenameState,
+  useChatPendingSendState,
+  useChatSidebarLoadingState,
+  useChatStreamErrorState,
+  useChatStreamingMessageIdState,
+  useChatStreamStoppingState
+} from "~/composables/chatState"
 
 const createClientRequestId = () => {
   if (globalThis.crypto?.randomUUID) {
@@ -62,19 +77,19 @@ export const useChat = () => {
   const router = useRouter()
   const { token } = useAuth()
 
-  const conversationList = useState<ChatConversationSummary[]>("chat-conversation-list", () => [])
-  const activeConversation = useState<ChatConversation | null>("chat-active-conversation", () => null)
-  const messages = useState<ChatMessage[]>("chat-messages", () => [])
-  const initialized = useState<boolean>("chat-initialized", () => false)
-  const sidebarLoading = useState<boolean>("chat-sidebar-loading", () => false)
-  const conversationLoading = useState<boolean>("chat-conversation-loading", () => false)
-  const pendingSend = useState<boolean>("chat-pending-send", () => false)
-  const pendingRename = useState<boolean>("chat-pending-rename", () => false)
-  const pendingDelete = useState<boolean>("chat-pending-delete", () => false)
-  const streamStopping = useState<boolean>("chat-stream-stopping", () => false)
-  const streamError = useState<string>("chat-stream-error", () => "")
-  const interfaceError = useState<string>("chat-interface-error", () => "")
-  const streamingMessageId = useState<number | null>("chat-streaming-message-id", () => null)
+  const conversationList = useChatConversationListState()
+  const activeConversation = useChatActiveConversationState()
+  const messages = useChatMessagesState()
+  const initialized = useChatInitializedState()
+  const sidebarLoading = useChatSidebarLoadingState()
+  const conversationLoading = useChatConversationLoadingState()
+  const pendingSend = useChatPendingSendState()
+  const pendingRename = useChatPendingRenameState()
+  const pendingDelete = useChatPendingDeleteState()
+  const streamStopping = useChatStreamStoppingState()
+  const streamError = useChatStreamErrorState()
+  const interfaceError = useChatInterfaceErrorState()
+  const streamingMessageId = useChatStreamingMessageIdState()
 
   const ensureToken = () => {
     if (!token.value) {
@@ -331,8 +346,9 @@ export const useChat = () => {
       optimisticAssistantId: number
     }
   ) => {
-    activeStreamController?.abort()
-    activeStreamController = new AbortController()
+    abortActiveChatStreamController()
+    const streamController = new AbortController()
+    setActiveChatStreamController(streamController)
     streamingMessageId.value = options.optimisticAssistantId
     streamError.value = ""
 
@@ -366,10 +382,10 @@ export const useChat = () => {
             finalizeAssistantStatus(assistant_message_id, "failed", message)
           }
         },
-        activeStreamController.signal
+        streamController.signal
       )
     } finally {
-      activeStreamController = null
+      setActiveChatStreamController(null)
     }
   }
 
