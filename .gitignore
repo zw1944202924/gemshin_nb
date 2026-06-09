@@ -12,6 +12,7 @@ __pycache__/
 *.py[cod]
 *.sqlite3
 .venv/
+.venv*/
 
 .DS_Store
 Thumbs.db
