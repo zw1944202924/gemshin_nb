@@ -1,10 +1,12 @@
 <script setup lang="ts">
 const navItems = [
-  { label: "Overview", hint: "当前基线与全局入口" },
-  { label: "Auth", hint: "登录、权限、会话" },
-  { label: "Modules", hint: "后续业务模块入口" },
-  { label: "Docs", hint: "运行说明与协作约束" }
+  { label: "Overview", hint: "当前基线与全局入口", to: "/" },
+  { label: "Auth", hint: "登录、权限、会话", to: "/dashboard" },
+  { label: "Chat", hint: "AI 对话模块入口", to: "/chat" },
+  { label: "Login", hint: "切回登录页", to: "/login" }
 ]
+
+const route = useRoute()
 </script>
 
 <template>
@@ -19,15 +21,16 @@ const navItems = [
       </div>
 
       <nav class="nav-list" aria-label="Dashboard sections">
-        <a
+        <NuxtLink
           v-for="item in navItems"
           :key="item.label"
-          href="/"
+          :to="item.to"
           class="nav-item"
+          :class="{ active: route.path === item.to }"
         >
           <span>{{ item.label }}</span>
           <small>{{ item.hint }}</small>
-        </a>
+        </NuxtLink>
       </nav>
     </aside>
 
@@ -132,6 +135,11 @@ const navItems = [
   transform: translateX(4px);
   border-color: rgba(155, 240, 165, 0.35);
   background: rgba(155, 240, 165, 0.08);
+}
+
+.nav-item.active {
+  border-color: rgba(240, 194, 107, 0.45);
+  background: rgba(240, 194, 107, 0.14);
 }
 
 .main-panel {

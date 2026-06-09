@@ -22,6 +22,7 @@ const { token, user, logout } = useAuth()
       </div>
 
       <div class="actions">
+        <NuxtLink class="primary" to="/chat">进入 AI 对话页</NuxtLink>
         <NuxtLink v-if="token && user" class="primary" to="/dashboard">进入受保护页面</NuxtLink>
         <NuxtLink v-else class="primary" to="/login">前往登录</NuxtLink>
         <button v-if="token && user" class="secondary" type="button" @click="logout()">退出登录</button>

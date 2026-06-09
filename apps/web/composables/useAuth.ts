@@ -1,3 +1,5 @@
+import { resetChatState } from "~/composables/chatState"
+
 type AuthUser = {
   id: number
   username: string
@@ -25,6 +27,7 @@ export const useAuth = () => {
   const pending = useState<boolean>("auth-pending", () => false)
 
   const clearSession = () => {
+    resetChatState()
     token.value = null
     user.value = null
   }
