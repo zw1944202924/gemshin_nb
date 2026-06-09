@@ -1,5 +1,7 @@
 import json
+import threading
 from dataclasses import dataclass
+from contextlib import contextmanager
 
 from django.conf import settings
 from django.core.cache import cache
@@ -16,6 +18,8 @@ from apps.chat.services.providers.base import ProviderError
 STOP_KEY_PREFIX = "chat:stop"
 IDEM_MESSAGE_KEY_PREFIX = "chat:idem:message"
 IDEM_REGEN_KEY_PREFIX = "chat:idem:regen"
+_CONVERSATION_LOCKS = {}
+_CONVERSATION_LOCKS_GUARD = threading.Lock()
 
 
 class ConflictError(exceptions.APIException):
@@ -39,6 +43,23 @@ def trim_text(value, limit=None):
     if limit and len(collapsed) > limit:
         return f"{collapsed[: limit - 1].rstrip()}…"
     return collapsed
+
+
+def _get_conversation_mutex(conversation_id):
+    with _CONVERSATION_LOCKS_GUARD:
+        mutex = _CONVERSATION_LOCKS.get(conversation_id)
+        if mutex is None:
+            mutex = threading.Lock()
+            _CONVERSATION_LOCKS[conversation_id] = mutex
+        return mutex
+
+
+@contextmanager
+def lock_conversation_mutation(conversation_id):
+    mutex = _get_conversation_mutex(conversation_id)
+    with mutex:
+        with transaction.atomic():
+            yield Conversation.objects.select_for_update().get(pk=conversation_id)
 
 
 def conversation_queryset_for_user(user):
@@ -159,7 +180,7 @@ def list_conversation_items(user, limit):
 
 
 def create_conversation(user, title):
-    trimmed_title = (title or "").strip()
+    trimmed_title = validate_conversation_title(title, allow_empty=True)
     conversation = Conversation.objects.create(
         user=user,
         title=trimmed_title,
@@ -169,13 +190,19 @@ def create_conversation(user, title):
     return serialize_conversation(conversation)
 
 
-def rename_conversation(conversation, title):
+def validate_conversation_title(title, *, allow_empty):
     trimmed_title = (title or "").strip()
     if not trimmed_title:
+        if allow_empty:
+            return ""
         raise exceptions.ValidationError({"title": "标题不能为空"})
     if len(trimmed_title) > 80:
         raise exceptions.ValidationError({"title": "标题长度不能超过 80 个字符"})
+    return trimmed_title
 
+
+def rename_conversation(conversation, title):
+    trimmed_title = validate_conversation_title(title, allow_empty=False)
     conversation.title = trimmed_title
     conversation.title_source = Conversation.TITLE_SOURCE_MANUAL
     conversation.save(update_fields=["title", "title_source", "updated_at"])
@@ -227,6 +254,78 @@ def _regen_idem_cache_key(user_id, assistant_message_id, client_request_id):
 
 def _set_idempotency_record(cache_key, payload):
     cache.set(cache_key, payload, timeout=settings.CHAT_IDEMPOTENCY_TTL_SECONDS)
+
+
+def create_message_pair_for_stream(*, conversation, user, content):
+    locked_conversation = conversation
+    with lock_conversation_mutation(conversation.id) as locked_conversation:
+        ensure_no_active_stream(locked_conversation)
+        user_message = Message.objects.create(
+            conversation=locked_conversation,
+            user=user,
+            role=Message.ROLE_USER,
+            content_markdown=content,
+            content_text=content,
+            status=Message.STATUS_COMPLETED,
+            sequence_no=_next_sequence_no(locked_conversation),
+            completed_at=timezone.now(),
+        )
+        assistant_message = Message.objects.create(
+            conversation=locked_conversation,
+            user=user,
+            role=Message.ROLE_ASSISTANT,
+            status=Message.STATUS_STREAMING,
+            sequence_no=_next_sequence_no(locked_conversation),
+            reply_to_message=user_message,
+            started_at=timezone.now(),
+        )
+        if not locked_conversation.title or locked_conversation.title_source == Conversation.TITLE_SOURCE_AUTO:
+            locked_conversation.title = auto_title_for_content(content)
+            locked_conversation.title_source = Conversation.TITLE_SOURCE_AUTO
+        locked_conversation.last_message_at = assistant_message.created_at
+        locked_conversation.model_code = settings.CHAT_MODEL_CODE
+        locked_conversation.save(
+            update_fields=["title", "title_source", "last_message_at", "model_code", "updated_at"]
+        )
+    return locked_conversation, user_message, assistant_message
+
+
+def create_regenerated_message(*, message, user):
+    with lock_conversation_mutation(message.conversation_id) as locked_conversation:
+        ensure_no_active_stream(locked_conversation)
+        messages = list(Message.objects.filter(conversation=locked_conversation).order_by("sequence_no", "id"))
+        version_map = build_version_map(messages)
+        current_info = version_map.get(message.id)
+        if not current_info or not current_info.is_current_version:
+            raise exceptions.ValidationError({"detail": "只能重新生成当前有效的最后一条回答"})
+
+        latest_current_assistant = next(
+            (
+                item
+                for item in reversed(messages)
+                if item.role == Message.ROLE_ASSISTANT
+                and version_map.get(item.id, MessageVersionInfo(True, None)).is_current_version
+            ),
+            None,
+        )
+        if latest_current_assistant is None or latest_current_assistant.id != message.id:
+            raise exceptions.ValidationError({"detail": "只能重新生成当前有效的最后一条回答"})
+        if message.reply_to_message_id is None:
+            raise exceptions.ValidationError({"detail": "当前回答缺少对应的用户消息"})
+
+        assistant_message = Message.objects.create(
+            conversation=locked_conversation,
+            user=user,
+            role=Message.ROLE_ASSISTANT,
+            status=Message.STATUS_STREAMING,
+            sequence_no=_next_sequence_no(locked_conversation),
+            reply_to_message_id=message.reply_to_message_id,
+            regen_from_message=message,
+            started_at=timezone.now(),
+        )
+        locked_conversation.last_message_at = assistant_message.created_at
+        locked_conversation.save(update_fields=["last_message_at", "updated_at"])
+    return locked_conversation, assistant_message
 
 
 def _get_provider():
@@ -317,34 +416,11 @@ def prepare_message_stream(conversation, *, user, content, client_message_id):
             )
         return _build_reused_stream_response(assistant_message, reused=True)
 
-    ensure_no_active_stream(conversation)
-
-    with transaction.atomic():
-        user_message = Message.objects.create(
-            conversation=conversation,
-            user=user,
-            role=Message.ROLE_USER,
-            content_markdown=content,
-            content_text=content,
-            status=Message.STATUS_COMPLETED,
-            sequence_no=_next_sequence_no(conversation),
-            completed_at=timezone.now(),
-        )
-        assistant_message = Message.objects.create(
-            conversation=conversation,
-            user=user,
-            role=Message.ROLE_ASSISTANT,
-            status=Message.STATUS_STREAMING,
-            sequence_no=_next_sequence_no(conversation),
-            reply_to_message=user_message,
-            started_at=timezone.now(),
-        )
-        if not conversation.title or conversation.title_source == Conversation.TITLE_SOURCE_AUTO:
-            conversation.title = auto_title_for_content(content)
-            conversation.title_source = Conversation.TITLE_SOURCE_AUTO
-        conversation.last_message_at = assistant_message.created_at
-        conversation.model_code = settings.CHAT_MODEL_CODE
-        conversation.save(update_fields=["title", "title_source", "last_message_at", "model_code", "updated_at"])
+    conversation, user_message, assistant_message = create_message_pair_for_stream(
+        conversation=conversation,
+        user=user,
+        content=content,
+    )
 
     idem_payload = {
         "conversation_id": conversation.id,
@@ -369,26 +445,6 @@ def prepare_regenerate_stream(message, *, user, client_request_id):
         raise exceptions.ValidationError({"detail": "只有 assistant 消息支持重新生成"})
 
     conversation = message.conversation
-    ensure_no_active_stream(conversation)
-
-    messages = list(Message.objects.filter(conversation=conversation).order_by("sequence_no", "id"))
-    version_map = build_version_map(messages)
-    current_info = version_map.get(message.id)
-    if not current_info or not current_info.is_current_version:
-        raise exceptions.ValidationError({"detail": "只能重新生成当前有效的最后一条回答"})
-
-    latest_current_assistant = next(
-        (
-            item
-            for item in reversed(messages)
-            if item.role == Message.ROLE_ASSISTANT and version_map.get(item.id, MessageVersionInfo(True, None)).is_current_version
-        ),
-        None,
-    )
-    if latest_current_assistant is None or latest_current_assistant.id != message.id:
-        raise exceptions.ValidationError({"detail": "只能重新生成当前有效的最后一条回答"})
-    if message.reply_to_message_id is None:
-        raise exceptions.ValidationError({"detail": "当前回答缺少对应的用户消息"})
 
     cache_key = _regen_idem_cache_key(user.id, message.id, client_request_id)
     existing = cache.get(cache_key)
@@ -406,19 +462,7 @@ def prepare_regenerate_stream(message, *, user, client_request_id):
             )
         return _build_reused_stream_response(assistant_message, reused=True)
 
-    with transaction.atomic():
-        assistant_message = Message.objects.create(
-            conversation=conversation,
-            user=user,
-            role=Message.ROLE_ASSISTANT,
-            status=Message.STATUS_STREAMING,
-            sequence_no=_next_sequence_no(conversation),
-            reply_to_message_id=message.reply_to_message_id,
-            regen_from_message=message,
-            started_at=timezone.now(),
-        )
-        conversation.last_message_at = assistant_message.created_at
-        conversation.save(update_fields=["last_message_at", "updated_at"])
+    conversation, assistant_message = create_regenerated_message(message=message, user=user)
 
     idem_payload = {
         "conversation_id": conversation.id,

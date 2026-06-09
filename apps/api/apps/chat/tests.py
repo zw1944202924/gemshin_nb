@@ -1,11 +1,15 @@
 import json
+import threading
+from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from django.test import TestCase, override_settings
+from django.db import close_old_connections
+from django.test import TestCase, TransactionTestCase, override_settings
 from rest_framework.test import APIClient
 
 from apps.chat.models import Conversation, Message
+from apps.chat.services import chat as chat_service
 from apps.core.authentication import build_auth_token
 
 
@@ -71,6 +75,16 @@ class ChatFlowTests(TestCase):
         listing = self.client.get("/api/v1/chat/conversations/")
         self.assertEqual(listing.status_code, 200)
         self.assertEqual(listing.data["items"], [])
+
+    def test_create_conversation_rejects_overlong_title(self):
+        response = self.client.post(
+            "/api/v1/chat/conversations/",
+            {"title": "x" * 81},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["title"], "标题长度不能超过 80 个字符")
 
     def test_stream_message_creates_user_and_assistant_messages(self):
         conversation = Conversation.objects.create(user=self.user, model_code="deepseek-chat")
@@ -200,3 +214,70 @@ class ChatFlowTests(TestCase):
         other_client.credentials(HTTP_AUTHORIZATION=f"Bearer {build_auth_token(self.other_user)}")
         denied = other_client.get(f"/api/v1/chat/messages/{message.id}/")
         self.assertEqual(denied.status_code, 404)
+
+
+@override_settings(
+    CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}},
+)
+class ChatConcurrencyTests(TransactionTestCase):
+    def setUp(self):
+        cache.clear()
+        self.user = get_user_model().objects.create_user(username="concurrent", password="pass123456")
+        self.conversation = Conversation.objects.create(user=self.user, model_code="deepseek-chat")
+
+    def test_same_conversation_only_allows_one_streaming_message(self):
+        start_event = threading.Event()
+        release_event = threading.Event()
+        original_next_sequence_no = chat_service._next_sequence_no
+        results = []
+        errors = []
+
+        def slow_next_sequence_no(conversation):
+            if threading.current_thread().name == "worker-1" and not start_event.is_set():
+                start_event.set()
+                release_event.wait(timeout=2)
+            return original_next_sequence_no(conversation)
+
+        def worker(name, content):
+            close_old_connections()
+            try:
+                _, user_message, assistant_message = chat_service.create_message_pair_for_stream(
+                    conversation=self.conversation,
+                    user=self.user,
+                    content=content,
+                )
+                results.append((name, user_message.id, assistant_message.id))
+            except Exception as exc:  # noqa: BLE001
+                errors.append((name, exc))
+            finally:
+                close_old_connections()
+
+        with mock.patch("apps.chat.services.chat._next_sequence_no", side_effect=slow_next_sequence_no):
+            first_thread = threading.Thread(
+                target=worker,
+                name="worker-1",
+                args=("worker-1", "第一个请求"),
+            )
+            second_thread = threading.Thread(
+                target=worker,
+                name="worker-2",
+                args=("worker-2", "第二个请求"),
+            )
+            first_thread.start()
+            self.assertTrue(start_event.wait(timeout=2))
+            second_thread.start()
+            release_event.set()
+            first_thread.join(timeout=5)
+            second_thread.join(timeout=5)
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(len(errors), 1)
+        self.assertEqual(
+            Message.objects.filter(
+                conversation=self.conversation,
+                role=Message.ROLE_ASSISTANT,
+                status=Message.STATUS_STREAMING,
+            ).count(),
+            1,
+        )
+        self.assertIn("当前会话仍有消息在生成中", str(errors[0][1]))
