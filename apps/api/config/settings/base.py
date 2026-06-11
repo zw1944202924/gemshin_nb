@@ -64,6 +64,10 @@ DATABASES = {
         "PASSWORD": os.getenv("MYSQL_PASSWORD", "app"),
         "HOST": os.getenv("MYSQL_HOST", "127.0.0.1"),
         "PORT": os.getenv("MYSQL_PORT", "3306"),
+        "OPTIONS": {
+            "charset": "utf8mb4",
+            "init_command": "SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'",
+        },
     }
 }
 

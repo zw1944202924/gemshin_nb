@@ -29,6 +29,22 @@ class FakeProvider:
             yield ProviderChunk(delta_text=chunk, provider_message_id="provider-msg-1")
 
 
+class EmojiFakeProvider:
+    chunks = ["Hello 😊", " World 🌍"]
+    fail_message = ""
+
+    def stream_messages(self, messages, *, model_code, system_prompt=""):
+        if self.fail_message:
+            from apps.chat.services.providers.base import ProviderError
+
+            raise ProviderError(self.fail_message)
+
+        from apps.chat.services.providers.base import ProviderChunk
+
+        for chunk in self.chunks:
+            yield ProviderChunk(delta_text=chunk, provider_message_id="provider-msg-emoji")
+
+
 @override_settings(
     CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}},
     CHAT_PROVIDER_CLASS="apps.chat.tests.FakeProvider",
@@ -293,6 +309,58 @@ class ChatFlowTests(TestCase):
         other_client.credentials(HTTP_AUTHORIZATION=f"Bearer {build_auth_token(self.other_user)}")
         denied = other_client.get(f"/api/v1/chat/messages/{message.id}/")
         self.assertEqual(denied.status_code, 404)
+
+    @override_settings(
+        CHAT_PROVIDER_CLASS="apps.chat.tests.EmojiFakeProvider",
+    )
+    def test_emoji_characters_persist_successfully(self):
+        """Test that emoji and other 4-byte Unicode characters can be stored and retrieved."""
+        conversation = Conversation.objects.create(user=self.user, model_code="deepseek-chat")
+        
+        # Test with various emoji characters
+        emoji_content = "Hello 😊 World 🌍 Test 🎉 Emoji 🚀"
+        message = Message.objects.create(
+            conversation=conversation,
+            user=self.user,
+            role="assistant",
+            content_markdown=emoji_content,
+            content_text=emoji_content,
+            status="completed",
+            sequence_no=1,
+        )
+        
+        # Refresh from database
+        message.refresh_from_db()
+        self.assertEqual(message.content_markdown, emoji_content)
+        self.assertEqual(message.content_text, emoji_content)
+        
+        # Test via API
+        detail = self.client.get(f"/api/v1/chat/messages/{message.id}/")
+        self.assertEqual(detail.status_code, 200)
+        self.assertEqual(detail.data["content_markdown"], emoji_content)
+        
+        # Test streaming with emoji content
+        conversation2 = Conversation.objects.create(user=self.user, model_code="deepseek-chat")
+        response = self.client.post(
+            f"/api/v1/chat/conversations/{conversation2.id}/messages/stream/",
+            {"content": "帮我写一个包含emoji的回复 😊", "client_message_id": "emoji-test-1"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        events = self._parse_sse(response)
+        self.assertEqual(
+            [event[0] for event in events],
+            ["conversation.meta", "message.delta", "message.delta", "message.done"],
+        )
+        
+        # Verify the assistant message was saved with emoji content
+        assistant_message = Message.objects.filter(
+            conversation=conversation2, 
+            role="assistant"
+        ).first()
+        self.assertIsNotNone(assistant_message)
+        self.assertEqual(assistant_message.status, "completed")
+        self.assertIn("😊", assistant_message.content_markdown)
 
 
 @override_settings(
