@@ -234,7 +234,7 @@ class ChatFlowTests(TestCase):
         self.assertTrue(assistant_versions[0]["is_current_version"])
         self.assertTrue(assistant_versions[1]["is_current_version"])
 
-    def test_regenerate_stopped_keeps_old_version_current(self):
+    def test_regenerate_completed_replaces_old_version(self):
         conversation = Conversation.objects.create(user=self.user, model_code="deepseek-chat")
         user_message = Message.objects.create(
             conversation=conversation,
