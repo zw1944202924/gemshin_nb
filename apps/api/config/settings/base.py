@@ -8,6 +8,7 @@ pymysql.install_as_MySQLdb()
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 load_dotenv(BASE_DIR.parent.parent / ".env")
+load_dotenv(BASE_DIR / ".env", override=True)
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "1") == "1"
