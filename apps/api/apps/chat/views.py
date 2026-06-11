@@ -63,6 +63,9 @@ class ConversationItemView(ChatAPIView):
 
 
 class MessageStreamView(ChatAPIView):
+    def perform_content_negotiation(self, request, force=False):
+        return None, None
+
     def post(self, request, conversation_id):
         conversation = get_conversation_for_user(request.user, conversation_id)
         stream = prepare_message_stream(
@@ -81,6 +84,9 @@ class MessageStopView(ChatAPIView):
 
 
 class MessageRegenerateView(ChatAPIView):
+    def perform_content_negotiation(self, request, force=False):
+        return None, None
+
     def post(self, request, message_id):
         message = get_message_for_user(request.user, message_id)
         stream = prepare_regenerate_stream(
