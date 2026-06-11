@@ -6,6 +6,7 @@ import {
   type ChatMessageStatus,
   createChatApi
 } from "~/services/chatApi"
+import { onUnmounted } from "vue"
 import {
   abortActiveChatStreamController,
   setActiveChatStreamController,
@@ -76,6 +77,20 @@ export const useChat = () => {
   const route = useRoute()
   const router = useRouter()
   const { token } = useAuth()
+
+  let pollingTimer: ReturnType<typeof setInterval> | null = null
+
+  const stopStreamingPolling = () => {
+    if (pollingTimer) {
+      clearInterval(pollingTimer)
+      pollingTimer = null
+    }
+  }
+
+  // 组件卸载时清理轮询器
+  onUnmounted(() => {
+    stopStreamingPolling()
+  })
 
   const conversationList = useChatConversationListState()
   const activeConversation = useChatActiveConversationState()
@@ -529,15 +544,45 @@ export const useChat = () => {
     }
   }
 
+  const startStreamingPolling = (messageId: number) => {
+    // 清理现有的轮询
+    stopStreamingPolling()
+
+    // 启动新的轮询，每2秒检查一次消息状态
+    pollingTimer = setInterval(async () => {
+      try {
+        const latest = await api().getMessage(messageId)
+        replaceMessage(messageId, () => latest)
+
+        if (latest.status !== "streaming") {
+          // 消息完成，停止轮询
+          streamingMessageId.value = null
+          syncActiveConversationSummary()
+          stopStreamingPolling()
+        }
+      } catch (error) {
+        // 轮询出错，停止轮询并显示错误
+        streamError.value = error instanceof Error ? error.message : "消息状态轮询失败"
+        stopStreamingPolling()
+      }
+    }, 2000)
+  }
+
   const recoverMessageStatus = async (messageId: number) => {
     try {
       const latest = await api().getMessage(messageId)
       replaceMessage(messageId, () => latest)
       if (latest.status !== "streaming") {
         streamingMessageId.value = null
+        syncActiveConversationSummary()
+        return latest
+      } else {
+        // 如果消息仍在流式生成中，启动轮询机制
+        streamingMessageId.value = latest.id
+        syncActiveConversationSummary()
+        startStreamingPolling(messageId)
+        return latest
       }
-      syncActiveConversationSummary()
-      return latest
     } catch (error) {
       streamError.value = error instanceof Error ? error.message : "消息状态恢复失败"
       throw error
