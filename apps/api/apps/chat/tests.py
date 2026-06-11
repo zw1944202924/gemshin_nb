@@ -194,6 +194,85 @@ class ChatFlowTests(TestCase):
         self.assertFalse(assistant_versions[0]["is_current_version"])
         self.assertTrue(assistant_versions[1]["is_current_version"])
 
+    def test_regenerate_failed_keeps_old_version_current(self):
+        conversation = Conversation.objects.create(user=self.user, model_code="deepseek-chat")
+        user_message = Message.objects.create(
+            conversation=conversation,
+            user=self.user,
+            role="user",
+            content_markdown="原问题",
+            content_text="原问题",
+            status="completed",
+            sequence_no=1,
+        )
+        assistant_message = Message.objects.create(
+            conversation=conversation,
+            user=self.user,
+            role="assistant",
+            content_markdown="旧回答",
+            content_text="旧回答",
+            status="completed",
+            sequence_no=2,
+            reply_to_message=user_message,
+        )
+
+        with mock.patch("apps.chat.tests.FakeProvider.fail_message", "模拟失败"):
+            response = self.client.post(
+                f"/api/v1/chat/messages/{assistant_message.id}/regenerate/",
+                {"client_request_id": "regen-fail-1"},
+                format="json",
+            )
+            self.assertEqual(response.status_code, 200)
+            self._parse_sse(response)
+
+        regenerated = Message.objects.filter(regen_from_message=assistant_message).get()
+        self.assertEqual(regenerated.status, "failed")
+
+        detail = self.client.get(f"/api/v1/chat/conversations/{conversation.id}/")
+        assistant_versions = [item for item in detail.data["messages"] if item["role"] == "assistant"]
+        self.assertEqual(len(assistant_versions), 2)
+        self.assertTrue(assistant_versions[0]["is_current_version"])
+        self.assertTrue(assistant_versions[1]["is_current_version"])
+
+    def test_regenerate_stopped_keeps_old_version_current(self):
+        conversation = Conversation.objects.create(user=self.user, model_code="deepseek-chat")
+        user_message = Message.objects.create(
+            conversation=conversation,
+            user=self.user,
+            role="user",
+            content_markdown="原问题",
+            content_text="原问题",
+            status="completed",
+            sequence_no=1,
+        )
+        assistant_message = Message.objects.create(
+            conversation=conversation,
+            user=self.user,
+            role="assistant",
+            content_markdown="旧回答",
+            content_text="旧回答",
+            status="completed",
+            sequence_no=2,
+            reply_to_message=user_message,
+        )
+
+        response = self.client.post(
+            f"/api/v1/chat/messages/{assistant_message.id}/regenerate/",
+            {"client_request_id": "regen-stop-1"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self._parse_sse(response)
+
+        regenerated = Message.objects.filter(regen_from_message=assistant_message).get()
+        self.assertEqual(regenerated.status, "completed")
+
+        detail = self.client.get(f"/api/v1/chat/conversations/{conversation.id}/")
+        assistant_versions = [item for item in detail.data["messages"] if item["role"] == "assistant"]
+        self.assertEqual(len(assistant_versions), 2)
+        self.assertFalse(assistant_versions[0]["is_current_version"])
+        self.assertTrue(assistant_versions[1]["is_current_version"])
+
     def test_message_detail_and_user_isolation(self):
         conversation = Conversation.objects.create(user=self.user, model_code="deepseek-chat")
         message = Message.objects.create(

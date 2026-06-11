@@ -5,11 +5,18 @@
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt build",
-    "preview": "nuxt preview"
+    "preview": "nuxt preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@nuxt/ui": "^3.3.7",
     "markdown-it": "^14.2.0",
     "nuxt": "^3.17.4"
+  },
+  "devDependencies": {
+    "@vue/test-utils": "^2.4.6",
+    "vitest": "^1.6.0",
+    "happy-dom": "^14.12.0"
   }
 }
