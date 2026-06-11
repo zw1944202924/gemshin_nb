@@ -85,10 +85,13 @@ def get_message_for_user(user, message_id):
 
 
 def build_version_map(messages):
+    # 记录每个被替代的消息ID，只有当新版本成功完成时才认为旧版本被替代
     superseded_map = {}
     for message in messages:
         if message.regen_from_message_id:
-            superseded_map[message.regen_from_message_id] = message.id
+            # 只有当新版本是完成状态时，才认为旧版本被替代
+            if message.status == Message.STATUS_COMPLETED:
+                superseded_map[message.regen_from_message_id] = message.id
 
     version_map = {}
     for message in messages:
