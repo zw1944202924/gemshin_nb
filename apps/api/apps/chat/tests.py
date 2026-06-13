@@ -1,10 +1,10 @@
 import json
 import threading
-from unittest import mock
+from unittest import mock, skipUnless
 
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from django.db import close_old_connections
+from django.db import close_old_connections, connection
 from django.test import TestCase, TransactionTestCase, override_settings
 from rest_framework.test import APIClient
 
@@ -428,3 +428,39 @@ class ChatConcurrencyTests(TransactionTestCase):
             1,
         )
         self.assertIn("当前会话仍有消息在生成中", str(errors[0][1]))
+
+
+class MySQLCharsetValidationTests(TestCase):
+    """MySQL 字符集回归验证：仅在 MySQL 环境下执行，保证 utf8mb4 路径真实生效。
+
+    注意：当前测试配置默认走 SQLite（config.settings.test），因此本类用例会被自动跳过。
+    部署到 MySQL 环境后，这些用例将在 CI 中真实通过，才能证明本次修复已覆盖生产路径。
+    """
+
+    @skipUnless(connection.vendor == 'mysql', 'MySQL charset test requires MySQL backend')
+    def test_charset_is_utf8mb4(self):
+        with connection.cursor() as cursor:
+            cursor.execute("SHOW VARIABLES LIKE 'character_set_connection'")
+            row = cursor.fetchone()
+            self.assertIsNotNone(row)
+            self.assertEqual(row[1], 'utf8mb4', '连接字符集必须为 utf8mb4，否则 emoji 写库会失败')
+
+            cursor.execute("SHOW VARIABLES LIKE 'collation_connection'")
+            row = cursor.fetchone()
+            self.assertIsNotNone(row)
+            self.assertTrue(
+                row[1].startswith('utf8mb4'),
+                f'连接排序规则必须为 utf8mb4 系列，当前为 {row[1]}',
+            )
+
+    @skipUnless(connection.vendor == 'mysql', 'MySQL charset test requires MySQL backend')
+    def test_chat_message_columns_are_utf8mb4(self):
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT COLUMN_NAME, CHARACTER_SET_NAME FROM INFORMATION_SCHEMA.COLUMNS "
+                "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'chat_messages' "
+                "AND COLUMN_NAME IN ('content_markdown', 'content_text')"
+            )
+            columns = {row[0]: row[1] for row in cursor.fetchall()}
+            self.assertEqual(columns.get('content_markdown'), 'utf8mb4')
+            self.assertEqual(columns.get('content_text'), 'utf8mb4')
