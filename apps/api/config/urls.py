@@ -45,4 +45,5 @@ urlpatterns = [
     path("api/v1/auth/me/", SessionView.as_view(), name="auth-me"),
     path("api/v1/protected/", ProtectedView.as_view(), name="protected"),
     path("api/v1/chat/", include("apps.chat.urls")),
+    path("api/v1/story/", include("apps.story.urls")),
 ]

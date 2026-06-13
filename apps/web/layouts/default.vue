@@ -3,6 +3,7 @@ const navItems = [
   { label: "Overview", hint: "当前基线与全局入口", to: "/" },
   { label: "Auth", hint: "登录、权限、会话", to: "/dashboard" },
   { label: "Chat", hint: "AI 对话模块入口", to: "/chat" },
+  { label: "Story", hint: "漫剧模块工作台", to: "/story" },
   { label: "Login", hint: "切回登录页", to: "/login" }
 ]
 
