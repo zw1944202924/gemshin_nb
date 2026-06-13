@@ -1,10 +1,10 @@
 import json
 import threading
-from unittest import mock
+from unittest import mock, skipUnless
 
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from django.db import close_old_connections
+from django.db import close_old_connections, connection
 from django.test import TestCase, TransactionTestCase, override_settings
 from rest_framework.test import APIClient
 
@@ -27,6 +27,22 @@ class FakeProvider:
 
         for chunk in self.chunks:
             yield ProviderChunk(delta_text=chunk, provider_message_id="provider-msg-1")
+
+
+class EmojiFakeProvider:
+    chunks = ["Hello 😊", " World 🌍"]
+    fail_message = ""
+
+    def stream_messages(self, messages, *, model_code, system_prompt=""):
+        if self.fail_message:
+            from apps.chat.services.providers.base import ProviderError
+
+            raise ProviderError(self.fail_message)
+
+        from apps.chat.services.providers.base import ProviderChunk
+
+        for chunk in self.chunks:
+            yield ProviderChunk(delta_text=chunk, provider_message_id="provider-msg-emoji")
 
 
 @override_settings(
@@ -294,6 +310,58 @@ class ChatFlowTests(TestCase):
         denied = other_client.get(f"/api/v1/chat/messages/{message.id}/")
         self.assertEqual(denied.status_code, 404)
 
+    @override_settings(
+        CHAT_PROVIDER_CLASS="apps.chat.tests.EmojiFakeProvider",
+    )
+    def test_emoji_characters_persist_successfully(self):
+        """Test that emoji and other 4-byte Unicode characters can be stored and retrieved."""
+        conversation = Conversation.objects.create(user=self.user, model_code="deepseek-chat")
+        
+        # Test with various emoji characters
+        emoji_content = "Hello 😊 World 🌍 Test 🎉 Emoji 🚀"
+        message = Message.objects.create(
+            conversation=conversation,
+            user=self.user,
+            role="assistant",
+            content_markdown=emoji_content,
+            content_text=emoji_content,
+            status="completed",
+            sequence_no=1,
+        )
+        
+        # Refresh from database
+        message.refresh_from_db()
+        self.assertEqual(message.content_markdown, emoji_content)
+        self.assertEqual(message.content_text, emoji_content)
+        
+        # Test via API
+        detail = self.client.get(f"/api/v1/chat/messages/{message.id}/")
+        self.assertEqual(detail.status_code, 200)
+        self.assertEqual(detail.data["content_markdown"], emoji_content)
+        
+        # Test streaming with emoji content
+        conversation2 = Conversation.objects.create(user=self.user, model_code="deepseek-chat")
+        response = self.client.post(
+            f"/api/v1/chat/conversations/{conversation2.id}/messages/stream/",
+            {"content": "帮我写一个包含emoji的回复 😊", "client_message_id": "emoji-test-1"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        events = self._parse_sse(response)
+        self.assertEqual(
+            [event[0] for event in events],
+            ["conversation.meta", "message.delta", "message.delta", "message.done"],
+        )
+        
+        # Verify the assistant message was saved with emoji content
+        assistant_message = Message.objects.filter(
+            conversation=conversation2, 
+            role="assistant"
+        ).first()
+        self.assertIsNotNone(assistant_message)
+        self.assertEqual(assistant_message.status, "completed")
+        self.assertIn("😊", assistant_message.content_markdown)
+
 
 @override_settings(
     CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}},
@@ -360,3 +428,39 @@ class ChatConcurrencyTests(TransactionTestCase):
             1,
         )
         self.assertIn("当前会话仍有消息在生成中", str(errors[0][1]))
+
+
+class MySQLCharsetValidationTests(TestCase):
+    """MySQL 字符集回归验证：仅在 MySQL 环境下执行，保证 utf8mb4 路径真实生效。
+
+    注意：当前测试配置默认走 SQLite（config.settings.test），因此本类用例会被自动跳过。
+    部署到 MySQL 环境后，这些用例将在 CI 中真实通过，才能证明本次修复已覆盖生产路径。
+    """
+
+    @skipUnless(connection.vendor == 'mysql', 'MySQL charset test requires MySQL backend')
+    def test_charset_is_utf8mb4(self):
+        with connection.cursor() as cursor:
+            cursor.execute("SHOW VARIABLES LIKE 'character_set_connection'")
+            row = cursor.fetchone()
+            self.assertIsNotNone(row)
+            self.assertEqual(row[1], 'utf8mb4', '连接字符集必须为 utf8mb4，否则 emoji 写库会失败')
+
+            cursor.execute("SHOW VARIABLES LIKE 'collation_connection'")
+            row = cursor.fetchone()
+            self.assertIsNotNone(row)
+            self.assertTrue(
+                row[1].startswith('utf8mb4'),
+                f'连接排序规则必须为 utf8mb4 系列，当前为 {row[1]}',
+            )
+
+    @skipUnless(connection.vendor == 'mysql', 'MySQL charset test requires MySQL backend')
+    def test_chat_message_columns_are_utf8mb4(self):
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT COLUMN_NAME, CHARACTER_SET_NAME FROM INFORMATION_SCHEMA.COLUMNS "
+                "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'chat_messages' "
+                "AND COLUMN_NAME IN ('content_markdown', 'content_text')"
+            )
+            columns = {row[0]: row[1] for row in cursor.fetchall()}
+            self.assertEqual(columns.get('content_markdown'), 'utf8mb4')
+            self.assertEqual(columns.get('content_text'), 'utf8mb4')
