@@ -45,5 +45,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(update_charset, reverse_charset),
+        migrations.RunPython(update_charset, reverse_charset, atomic=False),
     ]
