@@ -313,3 +313,55 @@ def validate_export(*, user, project_id: int):
         "errors": errors,
         "summary": summary,
     }
+
+
+def build_export_package(*, user, project_id: int) -> dict:
+    """构建结构化产物包 —— 聚合 project.json / storyboard.json / manifest.csv"""
+    project = get_project(user=user, project_id=project_id)
+    shots = Shot.objects.filter(project=project).order_by("order", "id")
+    assets = Asset.objects.filter(project=project, shot__isnull=False).select_related("shot")
+
+    shots_data = []
+    asset_by_shot: dict[int, list[dict]] = {}
+    for a in assets:
+        asset_by_shot.setdefault(a.shot_id, []).append({
+            "type": a.asset_type,
+            "file_path": a.file_path,
+            "file_size": a.file_size,
+            "status": a.status,
+            "is_stale": a.is_stale,
+        })
+
+    manifest_rows: list[dict] = []
+    for shot in shots:
+        shot_assets = asset_by_shot.get(shot.id, [])
+        shots_data.append({
+            "order": shot.order,
+            "description": shot.description,
+            "settings": shot.settings,
+            "status": shot.status,
+            "assets": shot_assets,
+        })
+        for a in shot_assets:
+            manifest_rows.append({
+                "shot_order": shot.order,
+                "asset_type": a["type"],
+                "file_path": a["file_path"],
+                "status": a["status"],
+            })
+
+    project_json = {
+        "title": project.title,
+        "description": project.description,
+        "config": project.config,
+        "status": project.status,
+    }
+
+    return {
+        "project": project_json,
+        "shots": shots_data,
+        "manifest": manifest_rows,
+        "project_file_name": "project.json",
+        "storyboard_file_name": "storyboard.json",
+        "manifest_file_name": "manifest.csv",
+    }

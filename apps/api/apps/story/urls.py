@@ -1,6 +1,7 @@
 from django.urls import path
 
 from apps.story.views import (
+    ExportDownloadView,
     ExportSummaryView,
     ExportValidateView,
     JobItemView,
@@ -22,4 +23,5 @@ urlpatterns = [
     path("jobs/<int:job_id>/retry/", JobRetryView.as_view(), name="story-job-retry"),
     path("projects/<int:project_id>/export-summary/", ExportSummaryView.as_view(), name="story-export-summary"),
     path("projects/<int:project_id>/export-validate/", ExportValidateView.as_view(), name="story-export-validate"),
+    path("projects/<int:project_id>/export-download/", ExportDownloadView.as_view(), name="story-export-download"),
 ]

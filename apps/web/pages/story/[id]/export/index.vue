@@ -13,6 +13,7 @@ const {
   fetchProject,
   fetchExportSummary,
   fetchExportValidation,
+  downloadExport,
 } = useStory()
 
 const tab = ref<"summary" | "validate">("summary")
@@ -65,6 +66,14 @@ const statusLabelMap: Record<string, string> = {
         </span>
         <span class="stat-label">标准校验</span>
       </div>
+    </div>
+
+    <!-- 下载入口 -->
+    <div v-if="exportValidation?.valid" class="download-bar">
+      <button class="btn-download" @click="downloadExport(projectId)">
+        下载导出包 (ZIP)
+      </button>
+      <span class="download-hint">包含 project.json / storyboard.json / manifest.csv</span>
     </div>
 
     <!-- 校验错误列表 -->
@@ -240,6 +249,37 @@ const statusLabelMap: Record<string, string> = {
   padding-left: 20px;
   font-size: 0.85rem;
   color: #bf360c;
+}
+
+.download-bar {
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: 2px solid #4caf50;
+  background: #e8f5e9;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-download {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 999px;
+  background: #2e7d32;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.btn-download:hover {
+  background: #1b5e20;
+}
+
+.download-hint {
+  font-size: 0.82rem;
+  color: #2e7d32;
 }
 
 .tabs {

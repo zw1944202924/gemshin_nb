@@ -3,6 +3,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+import csv
+import io
+import json
+import zipfile
+
+from django.http import HttpResponse
+
 from apps.story import serializers, services
 
 
@@ -168,3 +175,35 @@ class ExportValidateView(APIView):
     def get(self, request, project_id: int):
         result = services.validate_export(user=request.user, project_id=project_id)
         return Response(result)
+
+
+class ExportDownloadView(APIView):
+    """结构化产物包下载 —— 生成 ZIP 含 project.json / storyboard.json / manifest.csv"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, project_id: int):
+        package = services.build_export_package(user=request.user, project_id=project_id)
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr(
+                package["project_file_name"],
+                json.dumps(package["project"], ensure_ascii=False, indent=2),
+            )
+            zf.writestr(
+                package["storyboard_file_name"],
+                json.dumps(package["shots"], ensure_ascii=False, indent=2),
+            )
+            csv_buffer = io.StringIO()
+            if package["manifest"]:
+                writer = csv.DictWriter(csv_buffer, fieldnames=["shot_order", "asset_type", "file_path", "status"])
+                writer.writeheader()
+                writer.writerows(package["manifest"])
+                zf.writestr(package["manifest_file_name"], csv_buffer.getvalue())
+            else:
+                zf.writestr(package["manifest_file_name"], "shot_order,asset_type,file_path,status\n")
+
+        buf.seek(0)
+        project_title = package["project"].get("title", "export")
+        response = HttpResponse(buf.getvalue(), content_type="application/zip")
+        response["Content-Disposition"] = f'attachment; filename="{project_title}_export.zip"'
+        return response

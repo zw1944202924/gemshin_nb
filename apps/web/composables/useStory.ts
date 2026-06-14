@@ -256,6 +256,31 @@ export const useStory = () => {
     }
   }
 
+  const downloadExport = async (projectId: number) => {
+    const { token, user } = useAuth()
+    const config = useRuntimeConfig()
+    const apiBase = config.public.apiBase
+
+    if (!token.value || !user.value) {
+      error.value = "未登录"
+      return
+    }
+
+    const response = await $fetch<Blob>(`${apiBase}/story/projects/${projectId}/export-download/`, {
+      headers: { Authorization: `Bearer ${token.value}` },
+      responseType: "blob",
+    })
+
+    const url = URL.createObjectURL(response)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "export.zip"
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   return {
     projects,
     activeProject,
@@ -282,5 +307,6 @@ export const useStory = () => {
     retryJob,
     fetchExportSummary,
     fetchExportValidation,
+    downloadExport,
   }
 }
