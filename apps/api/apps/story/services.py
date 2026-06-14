@@ -126,8 +126,8 @@ def update_shot(*, user, shot_id: int, description: str | None = None, settings:
 # ---------------------------------------------------------------------------
 
 def _mark_project_assets_stale(project: Project):
-    """上游项目配置变更后，将项目级素材标记为 stale"""
-    Asset.objects.filter(project=project, shot__isnull=True, status=AssetStatus.COMPLETED).update(
+    """上游项目级变更后，将项目级素材和所有镜头级下游素材一并标记为 stale"""
+    Asset.objects.filter(project=project, status=AssetStatus.COMPLETED).update(
         is_stale=True,
         status=AssetStatus.STALE,
     )
@@ -285,11 +285,18 @@ def get_export_summary(*, user, project_id: int) -> dict:
             "is_complete": is_shot_complete,
         })
 
-    has_project_assets = Asset.objects.filter(
+    project_subtitle = Asset.objects.filter(
         project=project,
         shot__isnull=True,
         asset_type=AssetType.SUBTITLE,
-    ).exists()
+    ).first()
+
+    has_project_subtitles = (
+        project_subtitle is not None
+        and project_subtitle.status == AssetStatus.COMPLETED
+        and not project_subtitle.is_stale
+        and bool(project_subtitle.file_path)
+    )
 
     return {
         "project_id": project.id,
@@ -297,7 +304,7 @@ def get_export_summary(*, user, project_id: int) -> dict:
         "project_status": project.status,
         "shot_count": total_shots,
         "complete_shots": total_complete,
-        "has_project_subtitles": has_project_assets,
+        "has_project_subtitles": has_project_subtitles,
         "shots": shot_summaries,
     }
 
@@ -312,7 +319,7 @@ def validate_export(*, user, project_id: int):
         if s.get("stale"):
             errors.append(f"镜头 {s['shot_order']} 素材已过期: {', '.join(s['stale'])}")
     if not summary.get("has_project_subtitles"):
-        errors.append("项目级字幕缺失，请先生成项目级字幕素材")
+        errors.append("项目级字幕不可用（缺失、未完成、待更新或无文件路径）")
     return {
         "valid": len(errors) == 0,
         "errors": errors,
