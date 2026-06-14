@@ -73,7 +73,7 @@ const statusLabelMap: Record<string, string> = {
       <button class="btn-download" @click="downloadExport(projectId)">
         下载导出包 (ZIP)
       </button>
-      <span class="download-hint">包含 project.json / storyboard.json / manifest.csv</span>
+      <span class="download-hint">包含 project.json / storyboard.json / manifest.csv / 素材目录</span>
     </div>
 
     <!-- 校验错误列表 -->

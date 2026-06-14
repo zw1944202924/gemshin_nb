@@ -53,19 +53,21 @@ def get_project(*, user, project_id: int) -> Project:
 
 def update_project(*, user, project_id: int, title: str | None = None, description: str | None = None, config: dict | None = None) -> Project:
     project = get_project(user=user, project_id=project_id)
-    config_changed = False
-    if title is not None:
+    upstream_changed = False
+    if title is not None and project.title != title:
         project.title = title
-    if description is not None:
+        upstream_changed = True
+    if description is not None and project.description != description:
         project.description = description
+        upstream_changed = True
     if config is not None:
         if project.config != config:
-            config_changed = True
-        project.config = config
+            project.config = config
+            upstream_changed = True
 
     with transaction.atomic():
         project.save(update_fields=[f for f in ["title", "description", "config"] if locals().get(f) is not None])
-        if config_changed:
+        if upstream_changed:
             _mark_project_assets_stale(project)
     return project
 
@@ -103,17 +105,18 @@ def get_shot(*, user, shot_id: int) -> Shot:
 
 def update_shot(*, user, shot_id: int, description: str | None = None, settings: dict | None = None) -> Shot:
     shot = get_shot(user=user, shot_id=shot_id)
-    settings_changed = False
-    if description is not None:
+    upstream_changed = False
+    if description is not None and shot.description != description:
         shot.description = description
+        upstream_changed = True
     if settings is not None:
         if shot.settings != settings:
-            settings_changed = True
-        shot.settings = settings
+            shot.settings = settings
+            upstream_changed = True
 
     with transaction.atomic():
         shot.save(update_fields=[f for f in ["description", "settings"] if locals().get(f) is not None])
-        if settings_changed:
+        if upstream_changed:
             _mark_shot_assets_stale(shot)
     return shot
 
@@ -308,6 +311,8 @@ def validate_export(*, user, project_id: int):
             errors.append(f"镜头 {s['shot_order']} 缺少素材: {', '.join(s['missing'])}")
         if s.get("stale"):
             errors.append(f"镜头 {s['shot_order']} 素材已过期: {', '.join(s['stale'])}")
+    if not summary.get("has_project_subtitles"):
+        errors.append("项目级字幕缺失，请先生成项目级字幕素材")
     return {
         "valid": len(errors) == 0,
         "errors": errors,
@@ -316,25 +321,55 @@ def validate_export(*, user, project_id: int):
 
 
 def build_export_package(*, user, project_id: int) -> dict:
-    """构建结构化产物包 —— 聚合 project.json / storyboard.json / manifest.csv"""
+    """构建结构化产物包 —— 聚合 project.json / storyboard.json / manifest.csv 及素材目录清单"""
     project = get_project(user=user, project_id=project_id)
     shots = Shot.objects.filter(project=project).order_by("order", "id")
-    assets = Asset.objects.filter(project=project, shot__isnull=False).select_related("shot")
+    all_assets = Asset.objects.filter(project=project).select_related("shot")
 
     shots_data = []
-    asset_by_shot: dict[int, list[dict]] = {}
-    for a in assets:
-        asset_by_shot.setdefault(a.shot_id, []).append({
+    shot_asset_buckets: dict[int, list[dict]] = {}
+    asset_dir_entries: dict[str, list[str]] = {
+        "images": [],
+        "videos": [],
+        "audio": [],
+        "subtitles": [],
+    }
+    manifest_rows: list[dict] = []
+    project_assets: list[dict] = []
+
+    for a in all_assets:
+        asset_info = {
             "type": a.asset_type,
             "file_path": a.file_path,
             "file_size": a.file_size,
             "status": a.status,
             "is_stale": a.is_stale,
-        })
+        }
+        if a.shot_id is not None:
+            shot_asset_buckets.setdefault(a.shot_id, []).append(asset_info)
+            manifest_rows.append({
+                "shot_order": 0,  # 将在分镜循环中填充
+                "asset_type": a.asset_type,
+                "file_path": a.file_path,
+                "status": a.status,
+            })
+        else:
+            project_assets.append(asset_info)
+            manifest_rows.append({
+                "shot_order": -1,  # -1 表示项目级
+                "asset_type": a.asset_type,
+                "file_path": a.file_path,
+                "status": a.status,
+            })
 
-    manifest_rows: list[dict] = []
+        # 按类型归入素材目录
+        dir_key = _asset_type_to_dir(a.asset_type)
+        if dir_key and a.file_path:
+            asset_dir_entries[dir_key].append(a.file_path)
+
+    manifest_rows = []
     for shot in shots:
-        shot_assets = asset_by_shot.get(shot.id, [])
+        shot_assets = shot_asset_buckets.get(shot.id, [])
         shots_data.append({
             "order": shot.order,
             "description": shot.description,
@@ -350,6 +385,14 @@ def build_export_package(*, user, project_id: int) -> dict:
                 "status": a["status"],
             })
 
+    for a in project_assets:
+        manifest_rows.append({
+            "shot_order": -1,
+            "asset_type": a["type"],
+            "file_path": a["file_path"],
+            "status": a["status"],
+        })
+
     project_json = {
         "title": project.title,
         "description": project.description,
@@ -361,7 +404,17 @@ def build_export_package(*, user, project_id: int) -> dict:
         "project": project_json,
         "shots": shots_data,
         "manifest": manifest_rows,
+        "asset_directories": asset_dir_entries,
         "project_file_name": "project.json",
         "storyboard_file_name": "storyboard.json",
         "manifest_file_name": "manifest.csv",
     }
+
+
+def _asset_type_to_dir(asset_type: str) -> str:
+    return {
+        AssetType.IMAGE: "images",
+        AssetType.VIDEO: "videos",
+        AssetType.AUDIO: "audio",
+        AssetType.SUBTITLE: "subtitles",
+    }.get(asset_type, "")

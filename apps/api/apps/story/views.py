@@ -178,7 +178,7 @@ class ExportValidateView(APIView):
 
 
 class ExportDownloadView(APIView):
-    """结构化产物包下载 —— 生成 ZIP 含 project.json / storyboard.json / manifest.csv"""
+    """结构化产物包下载 —— 生成 ZIP 含 project.json / storyboard.json / manifest.csv 及素材目录"""
     permission_classes = [IsAuthenticated]
 
     def get(self, request, project_id: int):
@@ -194,13 +194,16 @@ class ExportDownloadView(APIView):
                 json.dumps(package["shots"], ensure_ascii=False, indent=2),
             )
             csv_buffer = io.StringIO()
-            if package["manifest"]:
-                writer = csv.DictWriter(csv_buffer, fieldnames=["shot_order", "asset_type", "file_path", "status"])
-                writer.writeheader()
-                writer.writerows(package["manifest"])
-                zf.writestr(package["manifest_file_name"], csv_buffer.getvalue())
-            else:
-                zf.writestr(package["manifest_file_name"], "shot_order,asset_type,file_path,status\n")
+            writer = csv.DictWriter(csv_buffer, fieldnames=["shot_order", "asset_type", "file_path", "status"])
+            writer.writeheader()
+            for row in package["manifest"]:
+                writer.writerow(row)
+            zf.writestr(package["manifest_file_name"], csv_buffer.getvalue())
+
+            for dir_name, paths in package.get("asset_directories", {}).items():
+                if paths:
+                    zf.writestr(f"{dir_name}/.keep", "")
+                    zf.writestr(f"{dir_name}/_manifest.json", json.dumps(paths, ensure_ascii=False, indent=2))
 
         buf.seek(0)
         project_title = package["project"].get("title", "export")
