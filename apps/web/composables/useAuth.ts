@@ -1,4 +1,5 @@
 import { resetChatState } from "~/composables/chatState"
+import { resetStoryState } from "~/composables/useStory"
 
 type AuthUser = {
   id: number
@@ -28,6 +29,7 @@ export const useAuth = () => {
 
   const clearSession = () => {
     resetChatState()
+    resetStoryState()
     token.value = null
     user.value = null
   }

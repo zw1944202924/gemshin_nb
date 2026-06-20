@@ -4,27 +4,31 @@ definePageMeta({
   requiresAuth: true
 })
 
-const { user } = useAuth()
-const { projects, fetchProjects } = useStory()
+const { user, authorizedFetch } = useAuth()
+// 使用独立本地状态，不污染 useStory 的全局 projects 共享状态
+const recentProjects = ref<{ id: number; title: string; status: string }[]>([])
 
 const displayNameInitial = computed(() => {
   const name = user.value?.display_name || user.value?.username || "?"
   return name.charAt(0).toUpperCase()
 })
 
-// 从真实后端获取项目统计
+// 项目统计：一次 fetch 获取全部项目，再本地推导各状态数量
 const projectStats = ref({ total: 0, processing: 0, completed: 0 })
 const statsLoading = ref(true)
 
 const loadStats = async () => {
   try {
-    // 并行获取各状态的项目数量
-    const all = await fetchProjects()
+    const all = await authorizedFetch<{ id: number; title: string; status: string }[]>("/story/projects/")
     projectStats.value.total = all?.length ?? 0
-    const processing = await fetchProjects("processing")
-    projectStats.value.processing = processing?.length ?? 0
-    const completed = await fetchProjects("completed")
-    projectStats.value.completed = completed?.length ?? 0
+    projectStats.value.processing = all?.filter((p) => p.status === "processing").length ?? 0
+    projectStats.value.completed = all?.filter((p) => p.status === "completed").length ?? 0
+    // 最近项目取前 3 条，按创建时间自然排序（后端返回即按 created_at 降序）
+    recentProjects.value = (all ?? []).slice(0, 3).map((p) => ({
+      id: p.id,
+      title: p.title,
+      status: p.status
+    }))
   } catch {
     // 统计加载失败不阻塞页面
   } finally {
@@ -96,11 +100,11 @@ onMounted(() => {
 
         <div class="sidebar-card">
           <strong>最近活动</strong>
-          <p v-if="projects.length === 0 && !statsLoading" class="muted-text">
+          <p v-if="recentProjects.length === 0 && !statsLoading" class="muted-text">
             还没有项目。去项目中心创建你的第一个项目。
           </p>
-          <div v-else-if="projects.length > 0" class="recent-projects">
-            <div v-for="p in projects.slice(0, 3)" :key="p.id" class="recent-item">
+          <div v-else-if="recentProjects.length > 0" class="recent-projects">
+            <div v-for="p in recentProjects" :key="p.id" class="recent-item">
               <span class="recent-name">{{ p.title }}</span>
               <span class="recent-status">{{ p.status }}</span>
             </div>

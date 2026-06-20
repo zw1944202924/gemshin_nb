@@ -5,7 +5,8 @@ definePageMeta({
 
 const { isAuthenticated } = useAuth()
 
-const ctaTarget = computed(() => isAuthenticated.value ? "/story" : "/login")
+// 未登录时携带 redirect=/story，确保登录后直接进入项目中心而非旧 /dashboard
+const ctaTarget = computed(() => isAuthenticated.value ? "/story" : "/login?redirect=/story")
 const ctaLabel = computed(() => isAuthenticated.value ? "进入项目中心" : "登录后开始")
 
 const workflowSteps = [
