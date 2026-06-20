@@ -10,29 +10,32 @@ definePageMeta({
       <div class="placeholder-hero-inner">
         <p class="kicker">业务模块</p>
         <h1>项目中心</h1>
-        <p class="hero-desc">管理所有小说转漫剧项目，查看阶段进度、待处理项和最近活动。</p>
+        <p class="hero-desc">管理所有小说转漫剧项目，查看阶段进度、待处理项和最近活动。项目管理的真实功能已上线，请通过下方入口进入。</p>
       </div>
     </section>
 
     <section class="placeholder-content">
       <div class="placeholder-card">
         <div class="placeholder-icon">📁</div>
-        <h2>项目中心正在建设中</h2>
-        <p>这里将展示你的所有项目列表，包括最近项目、阶段进度和待处理项。</p>
-        <p>预计支持：项目创建、导入小说正文、进度总览、筛选与搜索。</p>
+        <h2>项目中心已上线</h2>
+        <p>项目创建、列表管理、状态追踪等核心功能已在 /story 路由下可用。</p>
+
+        <div class="action-area">
+          <NuxtLink to="/story" class="primary-action">进入项目中心 →</NuxtLink>
+        </div>
 
         <div class="coming-features">
           <div class="feature-item">
             <strong>项目列表</strong>
-            <span>按状态和最近活动排序的项目总览</span>
+            <span>创建和管理你的小说转漫剧项目</span>
           </div>
           <div class="feature-item">
-            <strong>阶段追踪</strong>
-            <span>导入→整理→生成→校验→导出的全链路进度</span>
+            <strong>分镜管理</strong>
+            <span>为项目添加和管理分镜</span>
           </div>
           <div class="feature-item">
-            <strong>快速创建</strong>
-            <span>从小说文件或章节梗概一键创建新项目</span>
+            <strong>导出下载</strong>
+            <span>校验完整性并导出结构化产物包</span>
           </div>
         </div>
 
@@ -123,6 +126,30 @@ definePageMeta({
   line-height: 1.8;
   max-width: 480px;
   margin: 0 auto 8px;
+}
+
+.action-area {
+  margin: 24px 0;
+}
+
+.primary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  border-radius: 12px;
+  background: var(--accent-gradient);
+  color: #081120;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.primary-action:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
 }
 
 .coming-features {

@@ -1,16 +1,40 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: "shell"
+  layout: "shell",
+  requiresAuth: true
 })
 
-const profileItems = [
-  { label: "显示名称", value: "张炜", editable: true },
-  { label: "用户名", value: "zhangwei", editable: false },
-  { label: "邮箱", value: "zhangwei@example.com", editable: true },
-  { label: "角色", value: "管理员", editable: false },
-  { label: "注册时间", value: "2025-01-15", editable: false },
-  { label: "最近活跃项目", value: "漫剧项目 021", editable: false }
-]
+const { user } = useAuth()
+const { projects, fetchProjects } = useStory()
+
+const displayNameInitial = computed(() => {
+  const name = user.value?.display_name || user.value?.username || "?"
+  return name.charAt(0).toUpperCase()
+})
+
+// 从真实后端获取项目统计
+const projectStats = ref({ total: 0, processing: 0, completed: 0 })
+const statsLoading = ref(true)
+
+const loadStats = async () => {
+  try {
+    // 并行获取各状态的项目数量
+    const all = await fetchProjects()
+    projectStats.value.total = all?.length ?? 0
+    const processing = await fetchProjects("processing")
+    projectStats.value.processing = processing?.length ?? 0
+    const completed = await fetchProjects("completed")
+    projectStats.value.completed = completed?.length ?? 0
+  } catch {
+    // 统计加载失败不阻塞页面
+  } finally {
+    statsLoading.value = false
+  }
+}
+
+onMounted(() => {
+  loadStats()
+})
 </script>
 
 <template>
@@ -26,21 +50,38 @@ const profileItems = [
     <section class="profile-content">
       <div class="profile-card">
         <div class="avatar-area">
-          <div class="avatar-placeholder" aria-label="用户头像占位">
-            <span>张</span>
+          <div class="avatar-placeholder" aria-label="用户头像">
+            <span>{{ displayNameInitial }}</span>
           </div>
           <div class="avatar-info">
-            <strong>张炜</strong>
-            <span>管理员</span>
+            <strong>{{ user?.display_name || user?.username || "—" }}</strong>
+            <span>@{{ user?.username || "—" }}</span>
           </div>
         </div>
 
         <div class="profile-fields">
-          <div v-for="item in profileItems" :key="item.label" class="field-row">
-            <span class="field-label">{{ item.label }}</span>
+          <div class="field-row">
+            <span class="field-label">用户 ID</span>
             <div class="field-value">
-              <span>{{ item.value }}</span>
-              <button v-if="item.editable" class="field-edit-btn" type="button" disabled>编辑</button>
+              <span>{{ user?.id ?? "—" }}</span>
+            </div>
+          </div>
+          <div class="field-row">
+            <span class="field-label">显示名称</span>
+            <div class="field-value">
+              <span>{{ user?.display_name || user?.username || "—" }}</span>
+            </div>
+          </div>
+          <div class="field-row">
+            <span class="field-label">用户名</span>
+            <div class="field-value">
+              <span>@{{ user?.username || "—" }}</span>
+            </div>
+          </div>
+          <div class="field-row">
+            <span class="field-label">认证方式</span>
+            <div class="field-value">
+              <span>Token 登录</span>
             </div>
           </div>
         </div>
@@ -50,27 +91,36 @@ const profileItems = [
         <div class="sidebar-card">
           <strong>快捷操作</strong>
           <NuxtLink to="/account" class="sidebar-link">账户与权限设置 →</NuxtLink>
-          <NuxtLink to="/modules/projects" class="sidebar-link">我的项目 →</NuxtLink>
+          <NuxtLink to="/story" class="sidebar-link">我的项目 →</NuxtLink>
         </div>
 
         <div class="sidebar-card">
           <strong>最近活动</strong>
-          <p class="muted-text">暂无最近活动记录。开始处理项目后，这里会显示你的操作历史。</p>
+          <p v-if="projects.length === 0 && !statsLoading" class="muted-text">
+            还没有项目。去项目中心创建你的第一个项目。
+          </p>
+          <div v-else-if="projects.length > 0" class="recent-projects">
+            <div v-for="p in projects.slice(0, 3)" :key="p.id" class="recent-item">
+              <span class="recent-name">{{ p.title }}</span>
+              <span class="recent-status">{{ p.status }}</span>
+            </div>
+          </div>
+          <p v-else class="muted-text">加载中…</p>
         </div>
 
         <div class="sidebar-card">
-          <strong>使用统计</strong>
+          <strong>项目统计</strong>
           <div class="stat-row">
-            <span>处理中项目</span>
-            <strong>3</strong>
+            <span>全部项目</span>
+            <strong>{{ projectStats.total }}</strong>
           </div>
           <div class="stat-row">
-            <span>已完成项目</span>
-            <strong>12</strong>
+            <span>处理中</span>
+            <strong>{{ projectStats.processing }}</strong>
           </div>
           <div class="stat-row">
-            <span>本月活跃天数</span>
-            <strong>18</strong>
+            <span>已完成</span>
+            <strong>{{ projectStats.completed }}</strong>
           </div>
         </div>
       </div>
@@ -127,7 +177,6 @@ const profileItems = [
   line-height: 1.7;
 }
 
-/* 内容区 */
 .profile-content {
   display: grid;
   grid-template-columns: 1fr 320px;
@@ -216,22 +265,6 @@ const profileItems = [
   font-weight: 500;
 }
 
-.field-edit-btn {
-  padding: 4px 12px;
-  border: 1px solid rgba(22, 35, 56, 0.12);
-  border-radius: 6px;
-  background: transparent;
-  color: var(--surface-copy);
-  font-size: 12px;
-  cursor: pointer;
-  opacity: 0.5;
-}
-
-.field-edit-btn:hover {
-  background: rgba(22, 35, 56, 0.04);
-}
-
-/* 侧边栏 */
 .profile-sidebar {
   display: grid;
   gap: 16px;
@@ -257,7 +290,7 @@ const profileItems = [
 .sidebar-link {
   display: block;
   padding: 8px 0;
-  color: var(--accent);
+  color: #3b82f6;
   font-size: 14px;
   font-weight: 500;
 }
@@ -270,6 +303,37 @@ const profileItems = [
   color: var(--surface-copy);
   font-size: 14px;
   line-height: 1.7;
+}
+
+.recent-projects {
+  display: grid;
+  gap: 8px;
+}
+
+.recent-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(22, 35, 56, 0.04);
+}
+
+.recent-name {
+  color: var(--surface-ink);
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-status {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  flex-shrink: 0;
 }
 
 .stat-row {
