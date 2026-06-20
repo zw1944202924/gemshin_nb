@@ -1,19 +1,53 @@
-@import "tailwindcss";
-@import "@nuxt/ui";
-
 :root {
-  --ui-primary: var(--ui-color-emerald-500);
-  --ui-bg: #f4f7f1;
-  --ui-text: #15251c;
-  --ui-radius: 1rem;
-  --ui-container: 88rem;
-  --ui-header-height: 4.5rem;
+  /* 深色主题基础色 */
+  --bg-deep: #06080d;
+  --bg-soft: #0d1523;
+  --bg-panel: rgba(20, 31, 51, 0.92);
+  --bg-card: rgba(247, 250, 255, 0.06);
+  --bg-card-hover: rgba(247, 250, 255, 0.1);
+
+  --border-light: rgba(187, 210, 249, 0.16);
+  --border-card: rgba(194, 214, 255, 0.08);
+  --border-accent: rgba(194, 214, 255, 0.1);
+
+  --ink-primary: rgba(247, 250, 255, 0.96);
+  --ink-copy: rgba(214, 225, 242, 0.76);
+  --ink-muted: rgba(186, 202, 227, 0.62);
+  --ink-accent: rgba(212, 226, 255, 0.76);
+
+  --accent: #9fc2ff;
+  --accent-gradient: linear-gradient(135deg, #dce9ff, #b3ceff);
+
+  /* 亮色段变量 */
+  --surface-bg: #edf2f8;
+  --surface-card: rgba(255, 255, 255, 0.8);
+  --surface-ink: #101c29;
+  --surface-copy: #435163;
+
+  /* 功能色 */
+  --warning-bg: linear-gradient(135deg, rgba(233, 186, 96, 0.12), rgba(255, 255, 255, 0.04));
+
+  /* 排版 */
+  --font-display: "SF Pro Display", "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-body: "SF Pro Text", "Inter", "Segoe UI", system-ui, sans-serif;
+
+  /* 半径 */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 28px;
+  --radius-full: 999px;
+
+  /* 阴影 */
+  --shadow-float: 0 28px 80px rgba(0, 0, 0, 0.32);
+  --shadow-card: 0 12px 36px rgba(12, 18, 29, 0.08);
+
+  /* 间距 */
+  --header-height: 68px;
 }
 
-.dark {
-  --ui-bg: #0f1712;
-  --ui-text: #edf4ee;
-  --ui-border: #24352a;
+* {
+  box-sizing: border-box;
 }
 
 html {
@@ -21,11 +55,13 @@ html {
 }
 
 body {
-  min-height: 100vh;
   margin: 0;
-  font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
-  background: #f5f7fb;
-  color: #162033;
+  min-width: 320px;
+  font-family: var(--font-body);
+  background:
+    radial-gradient(circle at top, rgba(106, 154, 255, 0.18), transparent 26%),
+    linear-gradient(180deg, #05070b 0%, #0b1321 38%, #edf2f8 38%, #f8fafc 100%);
+  color: var(--ink-primary);
 }
 
 a {
@@ -33,13 +69,76 @@ a {
   text-decoration: none;
 }
 
-* {
-  box-sizing: border-box;
-}
-
 button,
 input,
 textarea,
 select {
   font: inherit;
+}
+
+h1, h2, h3, h4, p {
+  margin: 0;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* 通用按钮样式 */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent-gradient);
+  color: #081120;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.btn-primary:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: rgba(9, 18, 31, 0.4);
+  color: rgba(244, 248, 255, 0.92);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-secondary:hover {
+  background: rgba(247, 250, 255, 0.08);
+}
+
+/* 通用卡片 */
+.card {
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  padding: 20px;
+}
+
+.card-warning {
+  background: var(--warning-bg);
+}
+
+/* 通用容器 */
+.container-page {
+  width: min(1320px, calc(100% - 48px));
+  margin: 0 auto;
 }
