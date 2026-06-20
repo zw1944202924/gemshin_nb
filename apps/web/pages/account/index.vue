@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  layout: "shell"
+})
+
 const securityItems = [
   { label: "登录密码", value: "••••••••", action: "修改" },
   { label: "双因素认证", value: "未启用", action: "启用" },

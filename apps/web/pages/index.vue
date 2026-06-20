@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  layout: "shell"
+})
+
 const workflowSteps = [
   { name: "导入", detail: "导入小说正文、章节或梗概，建立项目起点。" },
   { name: "整理", detail: "提取角色、场景和剧情摘要，确认结构化内容。" },

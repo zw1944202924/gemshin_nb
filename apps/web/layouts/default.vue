@@ -1,163 +1,207 @@
+<script setup lang="ts">
+const navItems = [
+  { label: "Overview", hint: "当前基线与全局入口", to: "/" },
+  { label: "Auth", hint: "登录、权限、会话", to: "/dashboard" },
+  { label: "Chat", hint: "AI 对话模块入口", to: "/chat" },
+  { label: "Story", hint: "漫剧模块工作台", to: "/story" },
+  { label: "Login", hint: "切回登录页", to: "/login" }
+]
+
+const route = useRoute()
+</script>
+
 <template>
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="topbar-inner">
-        <NuxtLink to="/" class="brand">
-          <span class="brand-mark" aria-hidden="true" />
-          <span>gemshin_nb</span>
-        </NuxtLink>
-
-        <nav class="topnav" aria-label="主导航">
-          <NuxtLink to="/">首页</NuxtLink>
-          <NuxtLink to="/modules">模块中心</NuxtLink>
-          <NuxtLink to="/profile">个人中心</NuxtLink>
-          <NuxtLink to="/account">账户与权限</NuxtLink>
-        </nav>
-
-        <div class="top-actions">
-          <NuxtLink to="/modules" class="ghost-link">查看模块</NuxtLink>
-          <NuxtLink to="/modules/projects" class="primary-link">进入项目中心</NuxtLink>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <p class="brand-mark">G</p>
+        <div>
+          <p class="brand-name">Gemshin</p>
+          <p class="brand-subtitle">apps/web dashboard shell</p>
         </div>
       </div>
-    </header>
 
-    <main class="main-content">
-      <slot />
-    </main>
+      <nav class="nav-list" aria-label="Dashboard sections">
+        <NuxtLink
+          v-for="item in navItems"
+          :key="item.label"
+          :to="item.to"
+          class="nav-item"
+          :class="{ active: route.path === item.to }"
+        >
+          <span>{{ item.label }}</span>
+          <small>{{ item.hint }}</small>
+        </NuxtLink>
+      </nav>
+    </aside>
+
+    <div class="main-panel">
+      <header class="topbar">
+        <div>
+          <p class="topbar-eyebrow">Main baseline</p>
+          <h1>Dashboard workspace</h1>
+        </div>
+        <UBadge color="primary" variant="soft" label="Nuxt UI enabled" />
+      </header>
+
+      <main class="content">
+        <slot />
+      </main>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.app-shell {
+.shell {
   min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+  padding: 18px;
+  gap: 18px;
+}
+
+.sidebar,
+.main-panel {
+  border: 1px solid rgba(21, 37, 28, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.sidebar {
   display: flex;
   flex-direction: column;
-}
-
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  padding: 0 20px;
-  background: rgba(6, 8, 13, 0.85);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-light);
-}
-
-.topbar-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  width: min(1320px, calc(100% - 24px));
-  margin: 0 auto;
-  height: var(--header-height);
+  gap: 28px;
+  padding: 24px;
+  border-radius: 28px;
+  background: rgba(20, 31, 24, 0.9);
+  color: #edf4ee;
 }
 
 .brand {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  flex-shrink: 0;
+  gap: 14px;
 }
 
 .brand-mark {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(126, 177, 255, 0.72));
-  box-shadow: 0 0 24px rgba(132, 182, 255, 0.38);
+  width: 2.75rem;
+  height: 2.75rem;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #9bf0a5, #57c987);
+  color: #10311c;
+  font-size: 1.3rem;
+  font-weight: 800;
 }
 
-.topnav {
-  display: flex;
-  gap: 6px;
-  align-items: center;
+.brand-name,
+.brand-subtitle,
+.topbar-eyebrow,
+.topbar h1,
+.nav-item small {
+  margin: 0;
 }
 
-.topnav a {
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 14px;
-  color: var(--ink-copy);
-  transition: background 0.15s, color 0.15s;
-}
-
-.topnav a:hover,
-.topnav a.router-link-active {
-  background: rgba(247, 250, 255, 0.08);
-  color: var(--ink-primary);
-}
-
-.top-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-.ghost-link {
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 14px;
-  color: var(--ink-copy);
-  transition: color 0.15s;
-}
-
-.ghost-link:hover {
-  color: var(--ink-primary);
-}
-
-.primary-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 40px;
-  padding: 0 18px;
-  border-radius: var(--radius-sm);
-  background: var(--accent-gradient);
-  color: #081120;
-  font-size: 14px;
+.brand-name {
+  font-size: 1.05rem;
   font-weight: 700;
-  transition: opacity 0.15s, transform 0.15s;
 }
 
-.primary-link:hover {
-  opacity: 0.92;
-  transform: translateY(-1px);
+.brand-subtitle,
+.nav-item small,
+.topbar-eyebrow {
+  color: rgba(237, 244, 238, 0.68);
 }
 
-.main-content {
-  flex: 1;
+.nav-list {
+  display: grid;
+  gap: 10px;
 }
 
-/* 移动端适配 */
-@media (max-width: 920px) {
-  .topbar-inner {
-    flex-wrap: wrap;
-    height: auto;
-    padding: 12px 0;
-    gap: 10px;
+.nav-item {
+  display: grid;
+  gap: 2px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.nav-item:hover {
+  transform: translateX(4px);
+  border-color: rgba(155, 240, 165, 0.35);
+  background: rgba(155, 240, 165, 0.08);
+}
+
+.nav-item.active {
+  border-color: rgba(240, 194, 107, 0.45);
+  background: rgba(240, 194, 107, 0.14);
+}
+
+.main-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 28px 0;
+}
+
+.topbar-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(21, 37, 28, 0.55);
+}
+
+.topbar h1 {
+  margin-top: 6px;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+}
+
+.content {
+  min-width: 0;
+  padding: 24px 28px 28px;
+}
+
+@media (max-width: 960px) {
+  .shell {
+    grid-template-columns: 1fr;
   }
 
-  .topnav {
-    order: 3;
-    width: 100%;
-    overflow-x: auto;
-    white-space: nowrap;
-    gap: 2px;
-  }
-
-  .top-actions {
-    margin-left: auto;
+  .sidebar {
+    gap: 18px;
   }
 }
 
 @media (max-width: 640px) {
-  .top-actions {
-    display: none;
+  .shell {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .sidebar,
+  .main-panel {
+    border-radius: 22px;
+  }
+
+  .topbar,
+  .content {
+    padding-left: 18px;
+    padding-right: 18px;
   }
 }
 </style>

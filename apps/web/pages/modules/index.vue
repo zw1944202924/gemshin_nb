@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  layout: "shell"
+})
+
 const businessModules = [
   {
     id: "projects",

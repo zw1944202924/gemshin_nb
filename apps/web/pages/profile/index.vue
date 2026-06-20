@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  layout: "shell"
+})
+
 const profileItems = [
   { label: "显示名称", value: "张炜", editable: true },
   { label: "用户名", value: "zhangwei", editable: false },

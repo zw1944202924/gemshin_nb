@@ -1,5 +1,16 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
 :root {
-  /* 深色主题基础色 */
+  /* Nuxt UI 兼容变量 */
+  --ui-primary: var(--ui-color-emerald-500);
+  --ui-bg: #f4f7f1;
+  --ui-text: #15251c;
+  --ui-radius: 1rem;
+  --ui-container: 88rem;
+  --ui-header-height: 4.5rem;
+
+  /* 本期深色主题设计令牌 */
   --bg-deep: #06080d;
   --bg-soft: #0d1523;
   --bg-panel: rgba(20, 31, 51, 0.92);
@@ -43,7 +54,13 @@
   --shadow-card: 0 12px 36px rgba(12, 18, 29, 0.08);
 
   /* 间距 */
-  --header-height: 68px;
+  --shell-header-height: 68px;
+}
+
+.dark {
+  --ui-bg: #0f1712;
+  --ui-text: #edf4ee;
+  --ui-border: #24352a;
 }
 
 * {
@@ -58,10 +75,8 @@ body {
   margin: 0;
   min-width: 320px;
   font-family: var(--font-body);
-  background:
-    radial-gradient(circle at top, rgba(106, 154, 255, 0.18), transparent 26%),
-    linear-gradient(180deg, #05070b 0%, #0b1321 38%, #edf2f8 38%, #f8fafc 100%);
-  color: var(--ink-primary);
+  background: #f5f7fb;
+  color: #162033;
 }
 
 a {
@@ -85,7 +100,7 @@ img, svg {
   max-width: 100%;
 }
 
-/* 通用按钮样式 */
+/* 本期通用按钮样式 */
 .btn-primary {
   display: inline-flex;
   align-items: center;

@@ -1,3 +1,9 @@
+<script setup lang="ts">
+definePageMeta({
+  layout: "shell"
+})
+</script>
+
 <template>
   <div class="placeholder-page">
     <section class="placeholder-hero">
