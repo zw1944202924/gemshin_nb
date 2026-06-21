@@ -181,7 +181,7 @@ export const useChat = () => {
       nextQuery.conversation = String(conversationId)
     }
 
-    await router.replace({ path: "/chat", query: nextQuery })
+    await router.replace({ path: "/assistant", query: nextQuery })
   }
 
   const refreshConversationList = async () => {
@@ -614,7 +614,7 @@ export const useChat = () => {
       : null
 
     if (routeConversation === null) {
-      if (activeConversation.value && route.path === "/chat") {
+      if (activeConversation.value && route.path === "/assistant") {
         activeConversation.value = null
         messages.value = []
       }

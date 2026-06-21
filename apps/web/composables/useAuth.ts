@@ -35,11 +35,11 @@ export const useAuth = () => {
   }
 
   const redirectToLogin = async () => {
-    if (route.path === "/login") {
+    if (route.path === "/") {
       return
     }
 
-    await navigateTo(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
+    await navigateTo(`/?redirect=${encodeURIComponent(route.fullPath)}`)
   }
 
   const authorizedFetch = async <T>(path: string, options: Record<string, unknown> = {}) => {
