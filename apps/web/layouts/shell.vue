@@ -1,3 +1,13 @@
+<script setup lang="ts">
+const { isAuthenticated, user, logout } = useAuth()
+const router = useRouter()
+
+const handleLogout = async () => {
+  await logout()
+  await router.push("/")
+}
+</script>
+
 <template>
   <div class="app-shell">
     <header class="topbar">
@@ -10,13 +20,19 @@
         <nav class="topnav" aria-label="主导航">
           <NuxtLink to="/">首页</NuxtLink>
           <NuxtLink to="/modules">模块中心</NuxtLink>
+          <NuxtLink to="/assistant">AI 助手</NuxtLink>
           <NuxtLink to="/profile">个人中心</NuxtLink>
           <NuxtLink to="/account">账户与权限</NuxtLink>
         </nav>
 
         <div class="top-actions">
-          <NuxtLink to="/modules" class="ghost-link">查看模块</NuxtLink>
-          <NuxtLink to="/modules/projects" class="primary-link">进入项目中心</NuxtLink>
+          <template v-if="isAuthenticated">
+            <span class="user-greeting">{{ user?.display_name || user?.username }}</span>
+            <NuxtLink to="/modules" class="primary-link">模块中心</NuxtLink>
+          </template>
+          <template v-else>
+            <span class="guest-hint">请登录</span>
+          </template>
         </div>
       </div>
     </header>
@@ -32,7 +48,6 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  /* 本期页面使用深色背景 */
   background:
     radial-gradient(circle at top, rgba(106, 154, 255, 0.18), transparent 26%),
     linear-gradient(180deg, #05070b 0%, #0b1321 38%, #edf2f8 38%, #f8fafc 100%);
@@ -104,16 +119,15 @@
   flex-shrink: 0;
 }
 
-.ghost-link {
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 14px;
+.user-greeting {
+  font-size: 13px;
   color: var(--ink-copy);
-  transition: color 0.15s;
+  white-space: nowrap;
 }
 
-.ghost-link:hover {
-  color: var(--ink-primary);
+.guest-hint {
+  font-size: 13px;
+  color: var(--ink-muted);
 }
 
 .primary-link {
@@ -127,6 +141,7 @@
   font-size: 14px;
   font-weight: 700;
   transition: opacity 0.15s, transform 0.15s;
+  text-decoration: none;
 }
 
 .primary-link:hover {
@@ -138,7 +153,6 @@
   flex: 1;
 }
 
-/* 移动端适配 */
 @media (max-width: 920px) {
   .topbar-inner {
     flex-wrap: wrap;
