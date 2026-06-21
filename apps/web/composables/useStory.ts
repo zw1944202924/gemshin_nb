@@ -310,3 +310,18 @@ export const useStory = () => {
     downloadExport,
   }
 }
+
+// 清除所有 story 模块共享状态，与 resetChatState 保持一致
+// 登出时由 useAuth.clearSession() 统一调用，避免跨会话残留数据
+export const resetStoryState = () => {
+  useState<StoryProject[]>("story-projects", () => []).value = []
+  useState("story-active-project", () => null).value = null
+  useState("story-shots", () => []).value = []
+  useState("story-active-shot", () => null).value = null
+  useState("story-jobs", () => []).value = []
+  useState("story-active-job", () => null).value = null
+  useState("story-export-summary", () => null).value = null
+  useState("story-export-validation", () => null).value = null
+  useState("story-loading", () => false).value = false
+  useState("story-error", () => null).value = null
+}

@@ -1,24 +1,10 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: "shell"
+  layout: "shell",
+  requiresAuth: true
 })
 
-const securityItems = [
-  { label: "登录密码", value: "••••••••", action: "修改" },
-  { label: "双因素认证", value: "未启用", action: "启用" },
-  { label: "最近登录", value: "2026-06-20 12:30 于 北京", action: "" }
-]
-
-const apiKeyItems = [
-  { label: "API Key 1", value: "gsk-••••••••••••••••1234", action: "复制", created: "2026-03-12" },
-  { label: "API Key 2", value: "gsk-••••••••••••••••5678", action: "复制", created: "2026-05-08" }
-]
-
-const teamMembers = [
-  { name: "张炜", role: "所有者", avatar: "张" },
-  { name: "李设计", role: "编辑者", avatar: "李" },
-  { name: "王开发", role: "只读", avatar: "王" }
-]
+const { user } = useAuth()
 </script>
 
 <template>
@@ -35,73 +21,74 @@ const teamMembers = [
       <!-- 账户安全 -->
       <div class="account-card">
         <div class="card-header">
-          <h2>账户安全</h2>
-          <p>管理登录密码和认证方式</p>
+          <h2>账户信息</h2>
+          <p>当前登录账户的基本信息</p>
         </div>
         <div class="card-body">
-          <div v-for="item in securityItems" :key="item.label" class="setting-row">
+          <div class="setting-row">
             <div class="setting-info">
-              <span class="setting-label">{{ item.label }}</span>
-              <span class="setting-value">{{ item.value }}</span>
+              <span class="setting-label">用户 ID</span>
+              <span class="setting-value">{{ user?.id ?? "—" }}</span>
             </div>
-            <button
-              v-if="item.action"
-              class="setting-action-btn"
-              type="button"
-              disabled
-            >{{ item.action }}</button>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-label">用户名</span>
+              <span class="setting-value">@{{ user?.username || "—" }}</span>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-label">显示名称</span>
+              <span class="setting-value">{{ user?.display_name || user?.username || "—" }}</span>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-label">认证方式</span>
+              <span class="setting-value">Bearer Token（8 小时有效）</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- API 密钥 -->
+      <!-- 安全设置（占位） -->
+      <div class="account-card">
+        <div class="card-header">
+          <h2>安全设置</h2>
+          <p>密码修改、双因素认证等功能将在后续版本中提供</p>
+        </div>
+        <div class="card-body">
+          <div class="placeholder-block">
+            <p>密码修改、双因素认证、登录历史等功能正在开发中。当前版本通过 Bearer Token 进行认证，Token 有效期 8 小时。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- API 密钥（占位） -->
       <div class="account-card">
         <div class="card-header">
           <h2>API 密钥</h2>
-          <p>用于程序化访问的密钥管理</p>
+          <p>程序化访问密钥将在后续版本中提供</p>
         </div>
         <div class="card-body">
-          <div v-for="item in apiKeyItems" :key="item.label" class="setting-row">
-            <div class="setting-info">
-              <span class="setting-label">{{ item.label }}</span>
-              <span class="setting-meta">创建于 {{ item.created }}</span>
-              <code class="key-value">{{ item.value }}</code>
-            </div>
-            <div class="setting-actions">
-              <button class="setting-action-btn" type="button" disabled>{{ item.action }}</button>
-              <button class="setting-action-btn danger" type="button" disabled>删除</button>
-            </div>
-          </div>
-          <div class="add-new-row">
-            <button class="setting-action-btn" type="button" disabled>+ 生成新密钥</button>
+          <div class="placeholder-block">
+            <p>API 密钥管理功能正在开发中。完成后你可以在此生成和管理用于程序化访问的 API Key。</p>
           </div>
         </div>
       </div>
 
-      <!-- 团队协作 -->
+      <!-- 团队协作（占位） -->
       <div class="account-card">
         <div class="card-header">
           <h2>团队协作</h2>
-          <p>管理成员及其访问权限</p>
+          <p>成员管理和权限控制将在后续版本中提供</p>
         </div>
         <div class="card-body">
-          <div v-for="member in teamMembers" :key="member.name" class="member-row">
-            <div class="member-avatar" aria-hidden="true">{{ member.avatar }}</div>
-            <div class="member-info">
-              <span class="member-name">{{ member.name }}</span>
-              <span class="member-role">{{ member.role }}</span>
-            </div>
-            <button class="setting-action-btn" type="button" disabled>管理</button>
-          </div>
-          <div class="add-new-row">
-            <button class="setting-action-btn" type="button" disabled>+ 邀请成员</button>
+          <div class="placeholder-block">
+            <p>团队协作功能正在开发中。完成后你可以在此邀请成员、分配角色和管理项目访问权限。</p>
           </div>
         </div>
-      </div>
-
-      <!-- 占位提示 -->
-      <div class="placeholder-notice">
-        <p>以上功能为前端占位。完整的账户管理、权限控制和 API 密钥系统将在后续迭代中与后端联调实现。</p>
       </div>
     </section>
   </div>
@@ -156,7 +143,6 @@ const teamMembers = [
   line-height: 1.7;
 }
 
-/* 内容 */
 .account-content {
   width: min(1320px, calc(100% - 48px));
   margin: 0 auto;
@@ -222,105 +208,14 @@ const teamMembers = [
   font-size: 13px;
 }
 
-.setting-meta {
-  color: var(--surface-copy);
-  font-size: 12px;
-}
-
-.key-value {
-  display: block;
-  padding: 4px 10px;
-  background: rgba(22, 35, 56, 0.04);
-  border-radius: 6px;
-  font-size: 12px;
-  color: var(--surface-copy);
-  margin-top: 4px;
-  word-break: break-all;
-}
-
-.setting-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.setting-action-btn {
-  padding: 6px 16px;
-  border: 1px solid rgba(22, 35, 56, 0.12);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--surface-copy);
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-  opacity: 0.5;
-}
-
-.setting-action-btn:hover {
-  background: rgba(22, 35, 56, 0.04);
-}
-
-.setting-action-btn.danger {
-  border-color: rgba(220, 80, 80, 0.2);
-  color: #c44;
-}
-
-/* 成员行 */
-.member-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(22, 35, 56, 0.04);
-}
-
-.member-row:last-of-type {
-  border-bottom: none;
-}
-
-.member-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: var(--accent-gradient);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: 700;
-  color: #081120;
-  flex-shrink: 0;
-}
-
-.member-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.member-name {
-  color: var(--surface-ink);
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.member-role {
-  color: var(--surface-copy);
-  font-size: 13px;
-}
-
-.add-new-row {
-  padding-top: 16px;
-}
-
-.placeholder-notice {
+.placeholder-block {
   padding: 16px 20px;
   border-radius: 12px;
-  background: rgba(114, 162, 255, 0.06);
-  border: 1px solid rgba(194, 214, 255, 0.12);
+  background: rgba(59, 130, 246, 0.06);
+  border: 1px solid rgba(59, 130, 246, 0.12);
 }
 
-.placeholder-notice p {
+.placeholder-block p {
   color: var(--surface-copy);
   font-size: 14px;
   line-height: 1.7;
@@ -331,10 +226,6 @@ const teamMembers = [
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
-  }
-
-  .member-row {
-    flex-wrap: wrap;
   }
 }
 </style>

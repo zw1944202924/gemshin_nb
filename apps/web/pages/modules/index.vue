@@ -3,27 +3,32 @@ definePageMeta({
   layout: "shell"
 })
 
+const { isAuthenticated } = useAuth()
+
 const businessModules = [
   {
     id: "projects",
     title: "项目中心",
     description: "管理所有小说转漫剧项目，查看阶段进度、待处理项和最近活动。从这里开始一切创作。",
     icon: "📁",
-    to: "/modules/projects"
+    to: "/story",
+    ready: true
   },
   {
     id: "workbench",
     title: "漫剧工作台",
     description: "进入具体项目的分镜、素材生成和配音环节。左侧阶段导航，中间主工作区，右侧状态面板。",
     icon: "🎬",
-    to: "/modules/workbench"
+    to: "/modules/workbench",
+    ready: false
   },
   {
     id: "validation",
     title: "结果校验与导出",
     description: "在正式导出前校验完整性，识别缺口、失败任务和依赖失效，确保交付质量。",
     icon: "✅",
-    to: "/modules/validation"
+    to: "/modules/validation",
+    ready: false
   }
 ]
 
@@ -55,11 +60,16 @@ const supportingModules = [
           v-for="mod in businessModules"
           :key="mod.id"
           :to="mod.to"
-          class="module-card module-card-primary"
+          class="module-card"
+          :class="{ 'module-card-primary': mod.ready, 'module-card-dev': !mod.ready }"
         >
           <span class="module-icon" aria-hidden="true">{{ mod.icon }}</span>
           <div class="module-copy">
-            <span class="module-title">{{ mod.title }}</span>
+            <div class="module-title-row">
+              <span class="module-title">{{ mod.title }}</span>
+              <span v-if="mod.ready" class="badge-ready">可用</span>
+              <span v-else class="badge-dev">开发中</span>
+            </div>
             <p class="module-desc">{{ mod.description }}</p>
           </div>
           <span class="module-arrow" aria-hidden="true">→</span>
@@ -186,8 +196,45 @@ const supportingModules = [
   box-shadow: 0 16px 40px rgba(12, 18, 29, 0.12);
 }
 
+.module-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.module-title {
+  display: block;
+  color: var(--surface-ink);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.badge-ready,
+.badge-dev {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.badge-ready {
+  background: rgba(34, 197, 94, 0.12);
+  color: #16a34a;
+}
+
+.badge-dev {
+  background: rgba(148, 163, 184, 0.12);
+  color: #64748b;
+}
+
 .module-card-primary {
-  border-left: 4px solid var(--accent);
+  border-left: 4px solid #22c55e;
+}
+
+.module-card-dev {
+  border-left: 4px solid rgba(148, 163, 184, 0.3);
 }
 
 .module-icon {
@@ -197,14 +244,6 @@ const supportingModules = [
 
 .module-copy {
   min-width: 0;
-}
-
-.module-title {
-  display: block;
-  color: var(--surface-ink);
-  font-size: 17px;
-  font-weight: 700;
-  margin-bottom: 6px;
 }
 
 .module-desc {

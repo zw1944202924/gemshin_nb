@@ -3,6 +3,12 @@ definePageMeta({
   layout: "shell"
 })
 
+const { isAuthenticated } = useAuth()
+
+// 未登录时携带 redirect=/story，确保登录后直接进入项目中心而非旧 /dashboard
+const ctaTarget = computed(() => isAuthenticated.value ? "/story" : "/login?redirect=/story")
+const ctaLabel = computed(() => isAuthenticated.value ? "进入项目中心" : "登录后开始")
+
 const workflowSteps = [
   { name: "导入", detail: "导入小说正文、章节或梗概，建立项目起点。" },
   { name: "整理", detail: "提取角色、场景和剧情摘要，确认结构化内容。" },
@@ -12,7 +18,7 @@ const workflowSteps = [
 ]
 
 const pageHighlights = [
-  { title: "项目中心", summary: "先看到最近项目、阶段进度和待处理项，而不是空欢迎页。", to: "/modules/projects" },
+  { title: "项目中心", summary: "先看到最近项目、阶段进度和待处理项，而不是空欢迎页。", to: "/story" },
   { title: "漫剧工作台", summary: "左侧阶段导航，中间主工作区，右侧状态与缺口说明。", to: "/modules/workbench" },
   { title: "结果校验与导出", summary: "先判断是否可导出，再决定补缺口还是直接输出。", to: "/modules/validation" }
 ]
@@ -38,7 +44,7 @@ const valuePoints = [
           </p>
 
           <div class="hero-actions">
-            <NuxtLink to="/modules/projects" class="btn-primary btn-large">进入项目中心</NuxtLink>
+            <NuxtLink :to="ctaTarget" class="btn-primary btn-large">{{ ctaLabel }}</NuxtLink>
             <a href="#workflow" class="btn-secondary">查看工作流</a>
           </div>
 
