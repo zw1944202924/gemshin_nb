@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: "shell"
+  layout: "shell",
+  requiresAuth: true
 })
 </script>
 
