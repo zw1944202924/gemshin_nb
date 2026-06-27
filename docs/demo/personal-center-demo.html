@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gemshin_nb 个人中心 Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #eef2f6;
+        --surface: #f7f9fb;
+        --surface-soft: #f1f4f7;
+        --shell: #111722;
+        --shell-soft: #182131;
+        --line: #dbe2ea;
+        --line-soft: #e7edf2;
+        --ink: #17202c;
+        --copy: #556173;
+        --muted: #7a8594;
+        --accent: #315f8f;
+        --warning: #8c6841;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+        background: var(--canvas);
+        color: var(--ink);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 20px;
+        align-items: center;
+        padding: 16px 22px;
+        background: var(--shell);
+        color: rgba(246, 248, 251, 0.9);
+      }
+
+      .brand,
+      .topnav,
+      .userbar,
+      .overview,
+      .module-list,
+      .timeline,
+      .status-list,
+      .actions,
+      .notes {
+        display: flex;
+      }
+
+      .brand {
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .brand-mark {
+        width: 12px;
+        height: 12px;
+        background: #d9e4f0;
+      }
+
+      .topnav {
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: rgba(233, 239, 246, 0.68);
+        font-size: 14px;
+      }
+
+      .userbar {
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+      }
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .body {
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+      }
+
+      .sidebar {
+        padding: 22px 18px;
+        background: var(--shell-soft);
+        color: rgba(239, 243, 248, 0.84);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .label {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .navlist,
+      .status-stack {
+        display: grid;
+        gap: 8px;
+      }
+
+      .navlist {
+        margin-top: 16px;
+      }
+
+      .navitem {
+        padding: 12px 0;
+        color: rgba(239, 243, 248, 0.68);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .navitem.active {
+        color: #ffffff;
+      }
+
+      .sidebar-note {
+        margin-top: 18px;
+        line-height: 1.7;
+        font-size: 14px;
+        color: rgba(222, 229, 239, 0.68);
+      }
+
+      .status-stack {
+        margin-top: 24px;
+      }
+
+      .status-chip {
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .main {
+        padding: 28px 28px 34px;
+        background: var(--surface);
+      }
+
+      .breadcrumb {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: start;
+        margin-top: 10px;
+      }
+
+      h1 {
+        font-size: 34px;
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+      }
+
+      .header p {
+        max-width: 64ch;
+        margin-top: 12px;
+        color: var(--copy);
+        line-height: 1.72;
+      }
+
+      .small {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0 16px;
+        font-weight: 700;
+        color: #314154;
+        border: 1px solid var(--line);
+        background: transparent;
+      }
+
+      .section {
+        margin-top: 26px;
+      }
+
+      .section-head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 16px;
+        align-items: end;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .section-head h2 {
+        font-size: 24px;
+        line-height: 1.14;
+        letter-spacing: -0.03em;
+      }
+
+      .section-head p {
+        margin-top: 8px;
+        color: var(--copy);
+        line-height: 1.7;
+        font-size: 14px;
+      }
+
+      .overview {
+        gap: 22px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .profile-block,
+      .overview-block {
+        flex: 1 1 260px;
+        min-width: 240px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--line-soft);
+      }
+
+      .profile-grid {
+        display: grid;
+        grid-template-columns: 76px minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .hero-avatar {
+        width: 76px;
+        height: 76px;
+        display: grid;
+        place-items: center;
+        background: #dbe4ec;
+        color: #16202c;
+        font-size: 26px;
+        font-weight: 700;
+      }
+
+      .profile-meta strong,
+      .overview-block strong {
+        display: block;
+        font-size: 22px;
+        line-height: 1.1;
+      }
+
+      .profile-meta span,
+      .overview-block span {
+        display: block;
+        margin-top: 8px;
+        color: var(--copy);
+        line-height: 1.7;
+        font-size: 14px;
+      }
+
+      .profile-list,
+      .status-list {
+        margin-top: 14px;
+      }
+
+      .profile-list,
+      .timeline-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .row,
+      .timeline-item {
+        display: grid;
+        grid-template-columns: 132px minmax(0, 1fr);
+        gap: 14px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .row:last-child,
+      .timeline-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .row-label,
+      .timeline-label {
+        color: var(--muted);
+      }
+
+      .status-list {
+        gap: 12px;
+        flex-direction: column;
+      }
+
+      .status-item {
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--line-soft);
+      }
+
+      .status-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .status-item strong,
+      .module-item strong {
+        display: block;
+        font-size: 16px;
+        line-height: 1.2;
+      }
+
+      .status-item p,
+      .module-item p,
+      .timeline-item p {
+        margin-top: 6px;
+        color: var(--copy);
+        line-height: 1.7;
+        font-size: 14px;
+      }
+
+      .module-list {
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .module-item {
+        flex: 1 1 260px;
+        min-width: 240px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--line-soft);
+      }
+
+      .module-meta {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .actions {
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+      }
+
+      .notes {
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: var(--copy);
+        font-size: 14px;
+      }
+
+      @media (max-width: 920px) {
+        .body,
+        .header,
+        .section-head {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          border-right: 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .profile-grid,
+        .row,
+        .timeline-item {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>gemshin_nb</span>
+        </div>
+        <nav class="topnav">
+          <span>模块中心</span>
+          <span>个人中心</span>
+          <span>账户与权限</span>
+          <span>帮助</span>
+        </nav>
+        <div class="userbar">
+          <span>张炜</span>
+          <div class="avatar">ZW</div>
+        </div>
+      </header>
+
+      <div class="body">
+        <aside class="sidebar">
+          <div class="label">个人入口</div>
+          <div class="navlist">
+            <div class="navitem active">个人中心</div>
+            <div class="navitem">账户与权限</div>
+            <div class="navitem">登录与安全</div>
+            <div class="navitem">通知与偏好</div>
+          </div>
+          <p class="sidebar-note">这个入口从模块中心右上角头像进入，先看个人资料与账号状态，再决定是否下钻到权限页查看模块可访问范围。</p>
+
+          <div class="status-stack">
+            <div class="status-chip">
+              <div class="label">当前账号</div>
+              <div>主账号 / 正常可用</div>
+            </div>
+            <div class="status-chip">
+              <div class="label">默认落点</div>
+              <div>模块中心</div>
+            </div>
+            <div class="status-chip">
+              <div class="label">可访问模块</div>
+              <div>3 / 3 已开通</div>
+            </div>
+          </div>
+        </aside>
+
+        <main class="main">
+          <div class="breadcrumb">模块中心 / 右上角个人入口 / 个人中心</div>
+
+          <div class="header">
+            <div>
+              <div class="label">个人中心总览</div>
+              <h1>先看“我是谁、账号是否正常、我能进哪些模块”。</h1>
+              <p>这一页不承担复杂配置，只把个人资料、账号状态和模块访问范围讲清楚。用户从模块中心进入后，应该能在这里快速确认身份、账号有效性，以及自己在 3 个固定模块里的进入范围。</p>
+            </div>
+            <div class="small">进入账户与权限页</div>
+          </div>
+
+          <section class="section">
+            <div class="section-head">
+              <div>
+                <div class="label">个人资料</div>
+                <h2>资料放在第一屏，先建立身份与归属关系。</h2>
+                <p>这里只保留和产品使用直接相关的资料字段，不做复杂设置页，不把安全、偏好、权限混在一个入口里。</p>
+              </div>
+            </div>
+
+            <div class="overview">
+              <div class="profile-block">
+                <div class="profile-grid">
+                  <div class="hero-avatar">ZW</div>
+                  <div class="profile-meta">
+                    <strong>张炜</strong>
+                    <span>创始人 / 主账号持有者</span>
+                    <div class="profile-list">
+                      <div class="row">
+                        <div class="row-label">登录邮箱</div>
+                        <div>zhangwei@example.com</div>
+                      </div>
+                      <div class="row">
+                        <div class="row-label">所属工作区</div>
+                        <div>gemshin_nb 主工作区</div>
+                      </div>
+                      <div class="row">
+                        <div class="row-label">默认进入页</div>
+                        <div>登录后先到模块中心，再按需进入某个固定模块。</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="overview-block">
+                <strong>账号状态正常</strong>
+                <span>账号未冻结、未过期、未触发安全限制，当前所有已确认模块都可直接进入。</span>
+                <div class="status-list">
+                  <div class="status-item">
+                    <strong>登录状态</strong>
+                    <p>本机已登录，最近一次登录时间为今天 11:42，当前会话仍有效。</p>
+                  </div>
+                  <div class="status-item">
+                    <strong>安全状态</strong>
+                    <p>未发现异常设备、未触发强制验证。高风险提醒只在有问题时上浮，不常驻压在首页。</p>
+                  </div>
+                  <div class="status-item">
+                    <strong>套餐 / 开通状态</strong>
+                    <p>当前工作区已开通 3 个固定业务方向，个人中心只展示是否可访问，不在这里做购买表达。</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-head">
+              <div>
+                <div class="label">模块范围</div>
+                <h2>模块可访问范围直接列出来，不靠抽象角色猜测。</h2>
+                <p>权限表达先让用户看懂“我能进哪里、进去后能做什么”，而不是先丢一堆角色名词。角色只作为解释，不代替访问范围本身。</p>
+              </div>
+              <div class="small">查看完整权限说明</div>
+            </div>
+
+            <div class="module-list">
+              <article class="module-item">
+                <strong>AI 漫剧制作一站式系统</strong>
+                <p>可进入模块中心内的项目中心、漫剧工作台和结果校验与导出页，具备完整主流程使用权限。</p>
+                <div class="module-meta">访问级别：完整访问 / 当前身份：模块管理员</div>
+              </article>
+
+              <article class="module-item">
+                <strong>AI 股票分析系统</strong>
+                <p>可查看模块首页、策略分析入口与研究记录，当前不额外区分“试用态”或“待开放”状态。</p>
+                <div class="module-meta">访问级别：完整访问 / 当前身份：模块使用者</div>
+              </article>
+
+              <article class="module-item">
+                <strong>个人博客 / 个人内容库</strong>
+                <p>可进入内容整理、标签管理和发布准备相关页面，强调个人内容沉淀而不是团队协作流程。</p>
+                <div class="module-meta">访问级别：完整访问 / 当前身份：内容维护者</div>
+              </article>
+            </div>
+
+            <div class="notes">
+              <span>个人中心先展示“访问结果”，账户与权限页再解释“为什么是这个结果”。</span>
+              <span>模块中心与个人入口之间的关系保持单向清晰：选模块在前，查个人与权限在后。</span>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-head">
+              <div>
+                <div class="label">结构关系</div>
+                <h2>把“从模块中心进入个人入口后会看到什么”讲清楚。</h2>
+                <p>这一段负责解释页面关系，避免用户把个人中心误解成另一个模块首页，或者把权限页误解成后台管理页。</p>
+              </div>
+            </div>
+
+            <div class="timeline-list">
+              <div class="timeline-item">
+                <div class="timeline-label">01. 入口来源</div>
+                <div>
+                  <strong>模块中心右上角头像进入</strong>
+                  <p>入口和模块选择解耦。用户不需要退出当前模块体系，只是从全局壳进入自己的个人信息与权限范围。</p>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-label">02. 第一层页面</div>
+                <div>
+                  <strong>先到个人中心总览</strong>
+                  <p>先给出资料、状态、访问范围概览，减少进入后立刻面对复杂权限结构的认知压力。</p>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-label">03. 第二层页面</div>
+                <div>
+                  <strong>再进入账户与权限页</strong>
+                  <p>当用户需要确认自己在某个模块里究竟能看什么、改什么、导出什么，再进入详细权限说明页。</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <div class="small">返回模块中心</div>
+              <div class="small">打开账户与权限页</div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

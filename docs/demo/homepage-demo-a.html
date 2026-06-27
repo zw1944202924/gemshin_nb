@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gemshin_nb 平台首页 Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #eef2f6;
+        --surface: #f7f9fb;
+        --surface-soft: #f1f4f7;
+        --shell: #111722;
+        --shell-soft: #182131;
+        --line: #dbe2ea;
+        --line-soft: #e7edf2;
+        --ink: #17202c;
+        --copy: #556173;
+        --muted: #7a8594;
+        --accent: #315f8f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+        background: var(--canvas);
+        color: var(--ink);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .page {
+        min-height: 100vh;
+      }
+
+      .hero {
+        padding: 18px 22px 64px;
+        background:
+          linear-gradient(180deg, var(--shell) 0%, var(--shell-soft) 60%, var(--surface) 60%, var(--surface) 100%);
+        color: rgba(246, 248, 251, 0.92);
+      }
+
+      .topbar,
+      .hero-grid,
+      .section {
+        width: min(1240px, 100%);
+        margin: 0 auto;
+      }
+
+      .topbar,
+      .nav,
+      .hero-actions,
+      .workflow,
+      .page-links,
+      .footnotes {
+        display: flex;
+      }
+
+      .topbar {
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 10px 0 26px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .brand-mark {
+        width: 12px;
+        height: 12px;
+        background: #d9e4f0;
+      }
+
+      .nav {
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+        color: rgba(233, 239, 246, 0.68);
+        font-size: 14px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(360px, 520px);
+        gap: 42px;
+        align-items: start;
+        padding-top: 34px;
+      }
+
+      .label {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: rgba(214, 223, 236, 0.58);
+      }
+
+      h1 {
+        max-width: 11ch;
+        margin-top: 16px;
+        font-size: clamp(46px, 7vw, 78px);
+        line-height: 0.96;
+        letter-spacing: -0.04em;
+        text-wrap: balance;
+      }
+
+      .intro {
+        max-width: 58ch;
+        margin-top: 18px;
+        color: rgba(224, 232, 244, 0.74);
+        font-size: 17px;
+        line-height: 1.9;
+      }
+
+      .hero-actions {
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 26px;
+      }
+
+      .button-primary,
+      .button-secondary,
+      .small-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0 16px;
+        font-weight: 700;
+      }
+
+      .button-primary {
+        background: #d9e2eb;
+        color: #16202c;
+      }
+
+      .button-secondary,
+      .small-link {
+        color: rgba(238, 243, 249, 0.86);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: transparent;
+      }
+
+      .hero-notes {
+        margin-top: 18px;
+        color: rgba(204, 214, 229, 0.62);
+        line-height: 1.72;
+        font-size: 14px;
+      }
+
+      .mockup {
+        border-left: 1px solid rgba(255, 255, 255, 0.08);
+        padding-left: 20px;
+      }
+
+      .mockup-shell {
+        background: #f2f5f8;
+        color: var(--ink);
+      }
+
+      .mockup-top {
+        display: grid;
+        grid-template-columns: 160px minmax(0, 1fr) 160px;
+        gap: 16px;
+        padding: 14px 16px;
+        background: var(--shell);
+        color: rgba(244, 247, 251, 0.9);
+        font-size: 13px;
+      }
+
+      .mockup-body {
+        display: grid;
+        grid-template-columns: 136px minmax(0, 1fr) 156px;
+        min-height: 390px;
+      }
+
+      .mockup-side {
+        padding: 16px 14px;
+        background: var(--shell-soft);
+        color: rgba(229, 236, 244, 0.74);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .mockup-main {
+        padding: 18px;
+        background: var(--surface);
+      }
+
+      .mockup-block {
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 14px;
+      }
+
+      .mockup-block:last-child {
+        margin-bottom: 0;
+        border-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .mockup-block h3 {
+        font-size: 18px;
+        line-height: 1.2;
+      }
+
+      .mockup-block p {
+        margin-top: 8px;
+        color: var(--copy);
+        line-height: 1.7;
+        font-size: 14px;
+      }
+
+      .section {
+        padding: 34px 0 0;
+        color: var(--ink);
+      }
+
+      .section h2 {
+        font-size: 28px;
+        line-height: 1.12;
+        letter-spacing: -0.03em;
+      }
+
+      .section p {
+        margin-top: 10px;
+        max-width: 66ch;
+        color: var(--copy);
+        line-height: 1.75;
+      }
+
+      .workflow {
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .workflow-step {
+        min-width: 150px;
+      }
+
+      .workflow-step strong {
+        display: block;
+        font-size: 15px;
+      }
+
+      .workflow-step span {
+        display: block;
+        margin-top: 8px;
+        color: var(--copy);
+        line-height: 1.65;
+        font-size: 14px;
+      }
+
+      .page-links {
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .page-link {
+        flex: 1 1 260px;
+        min-width: 240px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .page-link h3 {
+        font-size: 18px;
+      }
+
+      .page-link p {
+        margin-top: 8px;
+        color: var(--copy);
+        line-height: 1.7;
+        font-size: 14px;
+      }
+
+      .footnotes {
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: var(--copy);
+        font-size: 14px;
+      }
+
+      @media (max-width: 980px) {
+        .hero-grid,
+        .mockup-top,
+        .mockup-body {
+          grid-template-columns: 1fr;
+        }
+
+        .mockup {
+          border-left: 0;
+          padding-left: 0;
+        }
+
+        .mockup-side {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <section class="hero">
+        <header class="topbar">
+          <div class="brand">
+            <span class="brand-mark"></span>
+            <span>gemshin_nb</span>
+          </div>
+          <nav class="nav">
+            <span>产品能力</span>
+            <span>工作流</span>
+            <span>页面样例</span>
+            <span>文档</span>
+          </nav>
+        </header>
+
+        <div class="hero-grid">
+          <div>
+            <div class="label">平台入口页 Demo</div>
+            <h1>不是单一业务入口，而是一个可继续扩展的多模块平台。</h1>
+            <p class="intro">
+              gemshin_nb 首页现在明确只围绕 3 个已确认方向来表达：`AI 漫剧制作一站式系统`、`AI 股票分析系统`、`个人博客 / 个人内容库`。
+              首页负责讲清这 3 个方向共同构成当前的平台入口，登录后先进入模块中心，再选择进入某一个固定模块。
+            </p>
+            <div class="hero-actions">
+              <div class="button-primary">进入模块中心</div>
+              <div class="button-secondary">查看平台结构</div>
+            </div>
+            <p class="hero-notes">
+              首页虽然继续体现“多模块”，但这次不再泛化成开放式模块平台，而是只围绕这 3 个已确认方向来做入口表达。
+            </p>
+          </div>
+
+          <div class="mockup">
+            <div class="mockup-shell">
+              <div class="mockup-top">
+                <div>品牌 / 全局导航</div>
+                <div>当前项目 / 页面标题</div>
+                <div>个人入口 / 状态</div>
+              </div>
+              <div class="mockup-body">
+                <div class="mockup-side">
+                  阶段导航<br />
+                  导入<br />
+                  整理<br />
+                  生成<br />
+                  校验<br />
+                  导出
+                </div>
+                <div class="mockup-main">
+                  <div class="mockup-block">
+                    <h3>登录后先进入模块中心</h3>
+                    <p>第一层先做模块选择，再进入某个模块内部的项目中心，而不是直接落到单一业务页。</p>
+                  </div>
+                  <div class="mockup-block">
+                    <h3>模块中心只服务 3 个固定方向</h3>
+                    <p>模块中心直接展示 3 个已确认且可进入的业务入口，页面职责就是在这 3 个固定方向之间做选择。</p>
+                  </div>
+                  <div class="mockup-block">
+                    <h3>现有 3 个内页继续留在模块内部</h3>
+                    <p>项目中心、漫剧工作台、结果校验与导出页不推翻，只重新归位成“某个模块内部页面”。</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="label">当前 3 个方向</div>
+        <h2>先进入模块中心，再进入模块内项目和工作台。</h2>
+        <p>首页不再把单一业务流程当成全站主叙事，而是先说明这 3 个固定方向如何组织成统一入口，再下沉到模块内部页面层。</p>
+        <div class="workflow">
+          <div class="workflow-step">
+            <strong>AI 漫剧制作一站式系统</strong>
+            <span>当前最完整的代表模块，已具备项目中心、工作台和结果页链路。</span>
+          </div>
+          <div class="workflow-step">
+            <strong>AI 股票分析系统</strong>
+            <span>作为第二个固定方向出现，首页只表达入口和定位，不再写成未来可选能力。</span>
+          </div>
+          <div class="workflow-step">
+            <strong>个人博客 / 个人内容库</strong>
+            <span>作为第三个固定方向出现，和前两个方向一起构成当前平台入口。</span>
+          </div>
+          <div class="workflow-step">
+            <strong>模块中心</strong>
+            <span>登录后统一先到模块中心，再选择进入某个固定模块的内部项目页。</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="label">模块入口表达</div>
+        <h2>首页上的多模块表达，也只围绕这 3 个固定方向来组织。</h2>
+        <p>这里不再写“未来还会新增很多模块”，而是把当前已经确认的 3 个方向直接作为首页平台入口的主体内容。</p>
+        <div class="page-links">
+          <div class="page-link">
+            <h3>AI 漫剧制作一站式系统</h3>
+            <p>首个完整模块，进入后继续沿用现有 `模块内项目中心 -> 模块内工作台 -> 结果校验与导出` 结构。</p>
+          </div>
+          <div class="page-link">
+            <h3>AI 股票分析系统</h3>
+            <p>作为第二个固定方向出现，首页只表达入口和方向，强调它与其他两个方向一样都可直接进入。</p>
+          </div>
+          <div class="page-link">
+            <h3>个人博客 / 个人内容库</h3>
+            <p>作为第三个固定方向出现，强调内容沉淀与管理，而不是写成泛化的平台能力占位。</p>
+          </div>
+        </div>
+        <div class="footnotes">
+          <span>首页继续沿用深墨顶部和浅灰蓝画布，与模块中心和模块内页保持同一套语言。</span>
+          <span>当前首页的“多模块”只服务 `MYW-43` 已确认的 3 个方向，不再泛化成开放式能力平台。</span>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

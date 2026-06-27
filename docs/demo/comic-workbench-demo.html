@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gemshin_nb 模块内漫剧工作台 Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #eef2f6;
+        --surface: #f7f9fb;
+        --surface-soft: #f1f4f7;
+        --shell: #111722;
+        --shell-soft: #182131;
+        --line: #dbe2ea;
+        --line-soft: #e7edf2;
+        --ink: #17202c;
+        --copy: #556173;
+        --muted: #7a8594;
+        --accent: #315f8f;
+        --danger: #8d4d4f;
+        --warning: #8c6841;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+        background: var(--canvas);
+        color: var(--ink);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 20px;
+        align-items: center;
+        padding: 16px 22px;
+        background: var(--shell);
+        color: rgba(246, 248, 251, 0.9);
+      }
+
+      .brand,
+      .topnav,
+      .userbar,
+      .project-meta,
+      .actions {
+        display: flex;
+      }
+
+      .brand {
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .brand-mark {
+        width: 12px;
+        height: 12px;
+        background: #d9e4f0;
+      }
+
+      .topnav {
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: rgba(233, 239, 246, 0.68);
+        font-size: 14px;
+      }
+
+      .userbar {
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+      }
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .body {
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr) 280px;
+      }
+
+      .sidebar,
+      .status {
+        padding: 22px 18px;
+      }
+
+      .sidebar {
+        background: var(--shell-soft);
+        color: rgba(239, 243, 248, 0.84);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .status {
+        background: #f2f5f8;
+        border-left: 1px solid var(--line);
+      }
+
+      .label {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .navlist,
+      .shot-list,
+      .status-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .navlist {
+        margin-top: 16px;
+      }
+
+      .navitem {
+        padding: 12px 0;
+        color: rgba(239, 243, 248, 0.68);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .navitem.active {
+        color: #ffffff;
+      }
+
+      .sidebar-note,
+      .status-note {
+        margin-top: 18px;
+        line-height: 1.7;
+        font-size: 14px;
+        color: var(--copy);
+      }
+
+      .sidebar-note {
+        color: rgba(222, 229, 239, 0.68);
+      }
+
+      .main {
+        padding: 28px 28px 34px;
+        background: var(--surface);
+      }
+
+      .header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: start;
+      }
+
+      h1 {
+        font-size: 34px;
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+      }
+
+      .header p {
+        max-width: 64ch;
+        margin-top: 12px;
+        color: var(--copy);
+        line-height: 1.72;
+      }
+
+      .project-meta {
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--line);
+        color: var(--copy);
+        font-size: 14px;
+      }
+
+      .button-primary,
+      .button-secondary,
+      .small {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0 16px;
+        font-weight: 700;
+      }
+
+      .button-primary {
+        background: #d9e2eb;
+        color: #16202c;
+      }
+
+      .button-secondary,
+      .small {
+        color: #314154;
+        border: 1px solid var(--line);
+        background: transparent;
+      }
+
+      .actions {
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .workspace {
+        margin-top: 24px;
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+        gap: 22px;
+      }
+
+      .shot-list {
+        padding-right: 10px;
+      }
+
+      .shot {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line-soft);
+      }
+
+      .shot.active {
+        color: var(--ink);
+      }
+
+      .shot strong {
+        display: block;
+        font-size: 15px;
+      }
+
+      .shot p {
+        margin-top: 8px;
+        color: var(--copy);
+        line-height: 1.65;
+        font-size: 14px;
+      }
+
+      .shot .tone {
+        display: block;
+        margin-top: 8px;
+        font-size: 13px;
+      }
+
+      .tone.warning {
+        color: var(--warning);
+      }
+
+      .tone.danger {
+        color: var(--danger);
+      }
+
+      .editor {
+        display: grid;
+        gap: 20px;
+      }
+
+      .editor-main {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+        gap: 20px;
+      }
+
+      .block {
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .field {
+        margin-top: 14px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--line-soft);
+        color: var(--copy);
+        line-height: 1.68;
+      }
+
+      .preview {
+        padding-left: 12px;
+        border-left: 1px solid var(--line);
+      }
+
+      .preview-frame {
+        margin-top: 14px;
+        min-height: 240px;
+        padding: 18px;
+        display: grid;
+        align-content: end;
+        background: linear-gradient(180deg, #314357, #1a2531);
+        color: rgba(245, 248, 251, 0.9);
+      }
+
+      .subactions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+
+      .status-list {
+        margin-top: 16px;
+      }
+
+      .status-item {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .status-item strong {
+        display: block;
+        font-size: 15px;
+      }
+
+      .status-item p {
+        margin-top: 8px;
+        color: var(--copy);
+        line-height: 1.68;
+        font-size: 14px;
+      }
+
+      @media (max-width: 1180px) {
+        .body {
+          grid-template-columns: 200px minmax(0, 1fr);
+        }
+
+        .status {
+          grid-column: 1 / -1;
+          border-left: 0;
+          border-top: 1px solid var(--line);
+        }
+      }
+
+      @media (max-width: 920px) {
+        .body,
+        .header,
+        .workspace,
+        .editor-main {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          border-right: 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .preview {
+          padding-left: 0;
+          border-left: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>gemshin_nb</span>
+        </div>
+        <nav class="topnav">
+          <span>模块中心</span>
+          <span>内容导入</span>
+          <span>漫剧工作台</span>
+          <span>结果校验</span>
+        </nav>
+        <div class="userbar">
+          <span>项目：星港追影</span>
+          <div class="avatar">ZW</div>
+        </div>
+      </header>
+
+      <div class="body">
+        <aside class="sidebar">
+          <div class="label">模块内部导航</div>
+          <div class="navlist">
+            <div class="navitem">返回模块中心</div>
+            <div class="navitem">模块内项目中心</div>
+            <div class="navitem">内容导入</div>
+            <div class="navitem">剧情整理</div>
+            <div class="navitem active">漫剧工作台</div>
+            <div class="navitem">素材生成</div>
+            <div class="navitem">结果校验</div>
+          </div>
+          <p class="sidebar-note">在新的平台结构里，这条左侧导航已经明确下沉到“漫剧制作模块内部”，不再代表平台层入口。</p>
+        </aside>
+
+        <main class="main">
+          <section class="header">
+            <div>
+              <div class="label">模块内部页面</div>
+              <h1>模块内工作台继续承接具体生产链路。</h1>
+              <p>这页已经不是登录后的第一层，而是进入“漫剧制作”模块和具体项目之后的工作台页面。左侧阶段导航属于模块内部，不上浮到平台层。</p>
+              <div class="project-meta">
+                <span>第 3 幕 / 镜头 18-24</span>
+                <span>已确认分镜 24 / 31</span>
+                <span>自动保存 12 秒前</span>
+              </div>
+            </div>
+            <div class="actions">
+              <div class="button-secondary">查看剧情整理</div>
+              <div class="button-primary">确认并推进</div>
+            </div>
+          </section>
+
+          <section class="workspace">
+            <div class="shot-list">
+              <div class="shot">
+                <strong>镜头 18 · 夜港外景</strong>
+                <p>脚本已确认，视频生成中。</p>
+                <span class="tone">当前无缺口</span>
+              </div>
+
+              <div class="shot active">
+                <strong>镜头 19 · 码头对视</strong>
+                <p>台词刚被改写，现有配音和字幕都需要同步更新。</p>
+                <span class="tone warning">推进前需回补配音和字幕</span>
+              </div>
+
+              <div class="shot">
+                <strong>镜头 20 · 空镜转场</strong>
+                <p>图片第一次生成失败，建议先保留脚本，再单镜头重试。</p>
+                <span class="tone danger">图片失败</span>
+              </div>
+            </div>
+
+            <div class="editor">
+              <div class="editor-main">
+                <div class="block">
+                  <div class="label">当前镜头</div>
+                  <div class="field">镜头标题：码头对视，角色第一次正面冲突。</div>
+                  <div class="field">画面描述：冷色夜港，远景推近到双人对视，情绪克制但紧张。</div>
+                  <div class="field">台词 / 旁白：保留改写后的第 2 句，需要同步配音和字幕。</div>
+                  <div class="field">建议时长：8 秒，允许上下浮动 2 秒。</div>
+                  <div class="subactions">
+                    <div class="small">确认脚本修改</div>
+                    <div class="small">刷新配音</div>
+                    <div class="small">重生成视频</div>
+                  </div>
+                </div>
+
+                <div class="preview">
+                  <div class="label">当前预览</div>
+                  <div class="preview-frame">
+                    <h3>镜头 19 预览</h3>
+                    <p>这里不做播放器壳和多层面板，只保留结果感，突出“当前版本仍引用旧字幕”。</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="block">
+                <div class="label">推进条件</div>
+                <div class="field">当前镜头脚本已稳定，但配音与字幕未同步，所以主动作仍应理解为“继续回补”，而不是无条件推进。</div>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <aside class="status">
+          <div class="label">状态区</div>
+          <div class="status-list">
+            <div class="status-item">
+              <strong>当前阻塞</strong>
+              <p>镜头 19 的新台词还没完成配音和字幕同步，所以这次不能直接进入结果页。</p>
+            </div>
+
+            <div class="status-item">
+              <strong>异常汇总</strong>
+              <p>镜头 20 图片失败；镜头 21 视频处理中；还有 3 个镜头最终时长未确认。这些信息不再拆成状态胶囊阵列。</p>
+            </div>
+
+            <div class="status-item">
+              <strong>空状态</strong>
+              <p>如果还没有生成任何分镜，页面直接提示先回到剧情整理确认角色、场景和章节拆分，不保留空白工作区。</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </body>
+</html>

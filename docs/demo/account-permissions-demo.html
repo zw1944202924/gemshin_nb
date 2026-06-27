@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gemshin_nb 账户与权限页 Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #eef2f6;
+        --surface: #f7f9fb;
+        --surface-soft: #f1f4f7;
+        --shell: #111722;
+        --shell-soft: #182131;
+        --line: #dbe2ea;
+        --line-soft: #e7edf2;
+        --ink: #17202c;
+        --copy: #556173;
+        --muted: #7a8594;
+        --accent: #315f8f;
+        --warning: #8c6841;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+        background: var(--canvas);
+        color: var(--ink);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 20px;
+        align-items: center;
+        padding: 16px 22px;
+        background: var(--shell);
+        color: rgba(246, 248, 251, 0.9);
+      }
+
+      .brand,
+      .topnav,
+      .userbar,
+      .role-summary,
+      .permission-table-head,
+      .permission-row,
+      .notes,
+      .alerts,
+      .actions {
+        display: flex;
+      }
+
+      .brand {
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .brand-mark {
+        width: 12px;
+        height: 12px;
+        background: #d9e4f0;
+      }
+
+      .topnav {
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: rgba(233, 239, 246, 0.68);
+        font-size: 14px;
+      }
+
+      .userbar {
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+      }
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .body {
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+      }
+
+      .sidebar {
+        padding: 22px 18px;
+        background: var(--shell-soft);
+        color: rgba(239, 243, 248, 0.84);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .label {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .navlist,
+      .explain-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .navlist {
+        margin-top: 16px;
+      }
+
+      .navitem {
+        padding: 12px 0;
+        color: rgba(239, 243, 248, 0.68);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .navitem.active {
+        color: #ffffff;
+      }
+
+      .sidebar-note {
+        margin-top: 18px;
+        line-height: 1.7;
+        font-size: 14px;
+        color: rgba(222, 229, 239, 0.68);
+      }
+
+      .explain-list {
+        margin-top: 24px;
+      }
+
+      .explain-item {
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .main {
+        padding: 28px 28px 34px;
+        background: var(--surface);
+      }
+
+      .breadcrumb {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: start;
+        margin-top: 10px;
+      }
+
+      h1 {
+        font-size: 34px;
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+      }
+
+      .header p {
+        max-width: 65ch;
+        margin-top: 12px;
+        color: var(--copy);
+        line-height: 1.72;
+      }
+
+      .small {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0 16px;
+        font-weight: 700;
+        color: #314154;
+        border: 1px solid var(--line);
+        background: transparent;
+      }
+
+      .section {
+        margin-top: 26px;
+      }
+
+      .section-head {
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .section-head h2 {
+        font-size: 24px;
+        line-height: 1.14;
+        letter-spacing: -0.03em;
+      }
+
+      .section-head p {
+        margin-top: 8px;
+        color: var(--copy);
+        line-height: 1.7;
+        font-size: 14px;
+      }
+
+      .role-summary {
+        gap: 22px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .role-item {
+        flex: 1 1 240px;
+        min-width: 220px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--line-soft);
+      }
+
+      .role-item strong,
+      .alert-item strong,
+      .permission-row strong {
+        display: block;
+        font-size: 18px;
+        line-height: 1.2;
+      }
+
+      .role-item p,
+      .alert-item p,
+      .permission-row p {
+        margin-top: 8px;
+        color: var(--copy);
+        line-height: 1.7;
+        font-size: 14px;
+      }
+
+      .role-meta {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .alerts {
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .alert-item {
+        flex: 1 1 280px;
+        min-width: 260px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--line-soft);
+      }
+
+      .permission-table {
+        margin-top: 18px;
+      }
+
+      .permission-table-head,
+      .permission-row {
+        gap: 18px;
+        align-items: start;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line-soft);
+      }
+
+      .permission-table-head {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .permission-table-head div:nth-child(1),
+      .permission-row div:nth-child(1) {
+        flex: 1.1;
+      }
+
+      .permission-table-head div:nth-child(2),
+      .permission-row div:nth-child(2) {
+        flex: 0.8;
+      }
+
+      .permission-table-head div:nth-child(3),
+      .permission-row div:nth-child(3) {
+        flex: 1.1;
+      }
+
+      .permission-table-head div:nth-child(4),
+      .permission-row div:nth-child(4) {
+        flex: 1.4;
+      }
+
+      .permission-row:last-child {
+        border-bottom: 0;
+      }
+
+      .permission-meta {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .notes {
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: var(--copy);
+        font-size: 14px;
+      }
+
+      .actions {
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      @media (max-width: 980px) {
+        .body,
+        .header {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          border-right: 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+      }
+
+      @media (max-width: 760px) {
+        .permission-table-head {
+          display: none;
+        }
+
+        .permission-row {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>gemshin_nb</span>
+        </div>
+        <nav class="topnav">
+          <span>模块中心</span>
+          <span>个人中心</span>
+          <span>账户与权限</span>
+          <span>帮助</span>
+        </nav>
+        <div class="userbar">
+          <span>张炜</span>
+          <div class="avatar">ZW</div>
+        </div>
+      </header>
+
+      <div class="body">
+        <aside class="sidebar">
+          <div class="label">个人入口</div>
+          <div class="navlist">
+            <div class="navitem">个人中心</div>
+            <div class="navitem active">账户与权限</div>
+            <div class="navitem">登录与安全</div>
+            <div class="navitem">通知与偏好</div>
+          </div>
+          <p class="sidebar-note">这一页负责把“账号状态”和“权限表达方式”拆开说清楚。个人中心先给结论，这里再把角色、模块范围和能力边界展开。</p>
+
+          <div class="explain-list">
+            <div class="explain-item">
+              <div class="label">全局角色</div>
+              <div>主账号持有者</div>
+            </div>
+            <div class="explain-item">
+              <div class="label">模块数量</div>
+              <div>3 个固定方向</div>
+            </div>
+            <div class="explain-item">
+              <div class="label">表达原则</div>
+              <div>先讲可访问结果，再讲角色来源</div>
+            </div>
+          </div>
+        </aside>
+
+        <main class="main">
+          <div class="breadcrumb">模块中心 / 右上角个人入口 / 个人中心 / 账户与权限</div>
+
+          <div class="header">
+            <div>
+              <div class="label">账户与权限页</div>
+              <h1>权限不是抽象标签，而是“我在哪个模块里能做什么”。</h1>
+              <p>这一页把账号是否正常、你在 3 个固定模块中的可访问范围、以及能力边界如何表达拆成几个清晰段落。页面目标不是做后台管理，而是让当前用户迅速确认自己的使用边界。</p>
+            </div>
+            <div class="small">返回个人中心</div>
+          </div>
+
+          <section class="section">
+            <div class="section-head">
+              <div class="label">角色与状态</div>
+              <h2>先分清“账号状态”和“角色身份”，避免混成一句话。</h2>
+              <p>账号状态回答能不能正常使用；角色身份回答进入后能做哪些事。两个概念拆开写，用户更容易判断问题出在账号还是权限。</p>
+            </div>
+
+            <div class="role-summary">
+              <article class="role-item">
+                <strong>账号状态：正常</strong>
+                <p>当前账号可登录、会话有效、未被冻结，也没有等待补充验证的限制。</p>
+                <div class="role-meta">适合放即时状态和异常提醒，不在这里承载模块能力说明。</div>
+              </article>
+              <article class="role-item">
+                <strong>全局身份：主账号持有者</strong>
+                <p>这是全局层级的身份，用来说明你为什么默认能看到 3 个固定模块，但它不直接替代模块内权限。</p>
+                <div class="role-meta">角色是解释框架，不是最终展示结果。</div>
+              </article>
+              <article class="role-item">
+                <strong>默认使用方式：从模块中心进入</strong>
+                <p>个人入口不抢模块入口的位置，仍然通过模块中心进入具体业务，再回个人页查看账户和权限细节。</p>
+                <div class="role-meta">路径关系保持清晰：模块中心在前，个人入口在后。</div>
+              </article>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-head">
+              <div class="label">模块权限矩阵</div>
+              <h2>权限按模块逐项列出，避免只给一个含糊的“管理员”。</h2>
+              <p>每个模块都说明可否进入、模块内主要可执行范围，以及当前身份如何被解释。这样用户不用猜“管理员”到底意味着什么。</p>
+            </div>
+
+            <div class="permission-table">
+              <div class="permission-table-head">
+                <div>模块</div>
+                <div>访问结果</div>
+                <div>当前身份</div>
+                <div>可执行范围</div>
+              </div>
+
+              <div class="permission-row">
+                <div>
+                  <strong>AI 漫剧制作一站式系统</strong>
+                  <p>现有最完整的一条主链路，个人页里应明确它是当前权限说明的参照模块。</p>
+                </div>
+                <div class="permission-meta">可进入</div>
+                <div class="permission-meta">模块管理员</div>
+                <div class="permission-meta">可进入项目中心、漫剧工作台、结果校验与导出页；可管理项目、调整流程、执行导出。</div>
+              </div>
+
+              <div class="permission-row">
+                <div>
+                  <strong>AI 股票分析系统</strong>
+                  <p>作为第二个固定方向，页面里不做测试态表达，直接说明它当前也是正常可访问的业务模块。</p>
+                </div>
+                <div class="permission-meta">可进入</div>
+                <div class="permission-meta">模块使用者</div>
+                <div class="permission-meta">可查看模块首页、研究入口、记录结果；不在这里预设额外审批或团队配置能力。</div>
+              </div>
+
+              <div class="permission-row">
+                <div>
+                  <strong>个人博客 / 个人内容库</strong>
+                  <p>强调个人内容沉淀、整理与发布准备，权限语言更偏“内容维护”而不是“团队协作”。</p>
+                </div>
+                <div class="permission-meta">可进入</div>
+                <div class="permission-meta">内容维护者</div>
+                <div class="permission-meta">可整理内容、维护标签、准备发布；默认不把复杂审核流塞进这个通用权限页。</div>
+              </div>
+            </div>
+
+            <div class="notes">
+              <span>通用权限页只定义全局边界，不下沉到某个模块内部每一个按钮级别的权限点。</span>
+              <span>真正细粒度的模块内差异，后续应回到对应模块自己的页面里表达。</span>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-head">
+              <div class="label">异常与缺口反馈</div>
+              <h2>异常场景也要有位置，但不把整页做成告警中心。</h2>
+              <p>这里优先处理和账号、权限直接相关的问题，例如模块未开通、会话失效、权限与预期不符。页面只保留高信号反馈，不堆大量系统噪音。</p>
+            </div>
+
+            <div class="alerts">
+              <article class="alert-item">
+                <strong>模块未开通时</strong>
+                <p>不直接显示“空白访问失败”，而是在对应模块行里明确提示当前不可进入，并说明是账号范围问题还是模块尚未绑定。</p>
+              </article>
+              <article class="alert-item">
+                <strong>账号状态异常时</strong>
+                <p>把异常前置到第一段“角色与状态”里，例如登录失效、账号冻结、待补充验证，而不是散落在各模块描述中重复出现。</p>
+              </article>
+              <article class="alert-item">
+                <strong>权限理解有落差时</strong>
+                <p>给出“我以为能访问但实际不能”的反馈入口，建议挂在当前页底部，而不是强制跳客服流程。</p>
+              </article>
+            </div>
+
+            <div class="actions">
+              <div class="small">返回个人中心</div>
+              <div class="small">反馈权限问题</div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

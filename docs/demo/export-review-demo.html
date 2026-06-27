@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gemshin_nb 模块内结果校验与导出 Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #eef2f6;
+        --surface: #f7f9fb;
+        --surface-soft: #f1f4f7;
+        --shell: #111722;
+        --shell-soft: #182131;
+        --line: #dbe2ea;
+        --line-soft: #e7edf2;
+        --ink: #17202c;
+        --copy: #556173;
+        --muted: #7a8594;
+        --accent: #315f8f;
+        --danger: #8d4d4f;
+        --warning: #8c6841;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+        background: var(--canvas);
+        color: var(--ink);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 20px;
+        align-items: center;
+        padding: 16px 22px;
+        background: var(--shell);
+        color: rgba(246, 248, 251, 0.9);
+      }
+
+      .brand,
+      .topnav,
+      .userbar,
+      .summary,
+      .actions,
+      .inline-notes {
+        display: flex;
+      }
+
+      .brand {
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .brand-mark {
+        width: 12px;
+        height: 12px;
+        background: #d9e4f0;
+      }
+
+      .topnav {
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: rgba(233, 239, 246, 0.68);
+        font-size: 14px;
+      }
+
+      .userbar {
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+      }
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .body {
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr) 280px;
+      }
+
+      .sidebar,
+      .status {
+        padding: 22px 18px;
+      }
+
+      .sidebar {
+        background: var(--shell-soft);
+        color: rgba(239, 243, 248, 0.84);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .status {
+        background: #f2f5f8;
+        border-left: 1px solid var(--line);
+      }
+
+      .label {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .navlist,
+      .result-list,
+      .status-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .navlist {
+        margin-top: 16px;
+      }
+
+      .navitem {
+        padding: 12px 0;
+        color: rgba(239, 243, 248, 0.68);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .navitem.active {
+        color: #ffffff;
+      }
+
+      .sidebar-note,
+      .status-note {
+        margin-top: 18px;
+        line-height: 1.7;
+        font-size: 14px;
+        color: var(--copy);
+      }
+
+      .sidebar-note {
+        color: rgba(222, 229, 239, 0.68);
+      }
+
+      .main {
+        padding: 28px 28px 34px;
+        background: var(--surface);
+      }
+
+      .header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: start;
+      }
+
+      h1 {
+        font-size: 34px;
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+      }
+
+      .header p {
+        max-width: 64ch;
+        margin-top: 12px;
+        color: var(--copy);
+        line-height: 1.72;
+      }
+
+      .button-primary,
+      .button-secondary,
+      .small {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0 16px;
+        font-weight: 700;
+      }
+
+      .button-primary {
+        background: #d9e2eb;
+        color: #16202c;
+      }
+
+      .button-secondary,
+      .small {
+        color: #314154;
+        border: 1px solid var(--line);
+        background: transparent;
+      }
+
+      .actions {
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .summary {
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 22px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .summary-item strong {
+        display: block;
+        font-size: 24px;
+        line-height: 1;
+      }
+
+      .summary-item span {
+        display: block;
+        margin-top: 8px;
+        color: var(--copy);
+        font-size: 14px;
+      }
+
+      .section {
+        margin-top: 24px;
+      }
+
+      .result-list {
+        margin-top: 16px;
+      }
+
+      .result-item {
+        padding: 16px 0;
+        border-bottom: 1px solid var(--line-soft);
+      }
+
+      .result-item strong {
+        display: block;
+        font-size: 15px;
+      }
+
+      .result-item p {
+        margin-top: 8px;
+        color: var(--copy);
+        line-height: 1.68;
+        font-size: 14px;
+      }
+
+      .tone {
+        display: block;
+        margin-top: 8px;
+        font-size: 13px;
+      }
+
+      .tone.warning {
+        color: var(--warning);
+      }
+
+      .tone.danger {
+        color: var(--danger);
+      }
+
+      .inline-notes {
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+        color: var(--copy);
+        font-size: 14px;
+      }
+
+      .status-list {
+        margin-top: 16px;
+      }
+
+      .status-item {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .status-item strong {
+        display: block;
+        font-size: 15px;
+      }
+
+      .status-item p {
+        margin-top: 8px;
+        color: var(--copy);
+        line-height: 1.68;
+        font-size: 14px;
+      }
+
+      @media (max-width: 1180px) {
+        .body {
+          grid-template-columns: 200px minmax(0, 1fr);
+        }
+
+        .status {
+          grid-column: 1 / -1;
+          border-left: 0;
+          border-top: 1px solid var(--line);
+        }
+      }
+
+      @media (max-width: 920px) {
+        .body,
+        .header {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          border-right: 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>gemshin_nb</span>
+        </div>
+        <nav class="topnav">
+          <span>模块中心</span>
+          <span>漫剧工作台</span>
+          <span>结果校验</span>
+          <span>导出记录</span>
+        </nav>
+        <div class="userbar">
+          <span>项目：雨巷回声</span>
+          <div class="avatar">ZW</div>
+        </div>
+      </header>
+
+      <div class="body">
+        <aside class="sidebar">
+          <div class="label">模块内部导航</div>
+          <div class="navlist">
+            <div class="navitem">返回模块中心</div>
+            <div class="navitem">模块内项目中心</div>
+            <div class="navitem">内容导入</div>
+            <div class="navitem">剧情整理</div>
+            <div class="navitem">漫剧工作台</div>
+            <div class="navitem active">结果校验</div>
+            <div class="navitem">导出记录</div>
+          </div>
+          <p class="sidebar-note">结果校验与导出页现在明确属于“漫剧制作模块内部”的最后一段，而不是整个平台的全局结果层。</p>
+        </aside>
+
+        <main class="main">
+          <section class="header">
+            <div>
+              <div class="label">模块内部页面</div>
+              <h1>结果校验与导出页继续归在模块内部链路里。</h1>
+              <p>这页现在明确属于“模块内项目 -> 工作台 -> 结果校验”的最后一段，不再代表整个平台的全局结果层，而是某个业务模块内部的导出判断页面。</p>
+            </div>
+            <div class="actions">
+              <div class="button-secondary">切换草稿导出</div>
+              <div class="button-primary">标准导出</div>
+            </div>
+          </section>
+
+          <section class="summary">
+            <div class="summary-item">
+              <strong>84%</strong>
+              <span>导出准备度</span>
+            </div>
+            <div class="summary-item">
+              <strong>31 / 34</strong>
+              <span>镜头完整度</span>
+            </div>
+            <div class="summary-item">
+              <strong>草稿版</strong>
+              <span>当前可导出类型</span>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="label">当前缺口</div>
+            <div class="result-list">
+              <div class="result-item">
+                <strong>assets/audio/</strong>
+                <p>仍缺 3 条配音，影响标准导出，但不阻断草稿导出。</p>
+                <span class="tone warning">需回补配音</span>
+              </div>
+
+              <div class="result-item">
+                <strong>subtitles/</strong>
+                <p>镜头 19、22 的字幕仍是旧台词版本，必须刷新后才能进入标准导出。</p>
+                <span class="tone danger">字幕版本过期</span>
+              </div>
+
+              <div class="result-item">
+                <strong>manifest.csv</strong>
+                <p>最新素材路径和缺口说明还没写入 manifest，导出后会影响后续人工接力。</p>
+                <span class="tone">待刷新 manifest</span>
+              </div>
+            </div>
+
+            <div class="inline-notes">
+              <span>标准导出要求脚本、图片、视频、音频、字幕、manifest 全量齐备。</span>
+              <span>草稿导出允许带缺口，但必须把缺失项写进说明。</span>
+            </div>
+          </section>
+        </main>
+
+        <aside class="status">
+          <div class="label">状态区</div>
+          <div class="status-list">
+            <div class="status-item">
+              <strong>当前判断</strong>
+              <p>现在只能草稿导出，主按钮与说明都需要明确区分“标准导出”和“草稿导出”，不再用彩色状态胶囊强调。</p>
+            </div>
+
+            <div class="status-item">
+              <strong>回补入口</strong>
+              <p>配音缺失回到工作台刷新配音；字幕过期回到镜头页同步台词；manifest 未刷新则在导出前重新生成清单。</p>
+            </div>
+
+            <div class="status-item">
+              <strong>空状态</strong>
+              <p>如果还没有任何结果产物，页面直接提示先完成至少一个可用分镜并生成素材，而不是显示一组空白分类框。</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gemshin_nb 固定模块中心 Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #eef2f6;
+        --surface: #f7f9fb;
+        --surface-soft: #f1f4f7;
+        --shell: #111722;
+        --shell-soft: #182131;
+        --line: #dbe2ea;
+        --line-soft: #e7edf2;
+        --ink: #17202c;
+        --copy: #556173;
+        --muted: #7a8594;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+        background: var(--canvas);
+        color: var(--ink);
+      }
+      h1, h2, h3, p { margin: 0; }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 20px;
+        align-items: center;
+        padding: 16px 22px;
+        background: var(--shell);
+        color: rgba(246, 248, 251, 0.9);
+      }
+
+      .brand, .topnav, .userbar, .summary, .module-grid, .module-meta, .actions, .notes {
+        display: flex;
+      }
+
+      .brand {
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .brand-mark {
+        width: 12px;
+        height: 12px;
+        background: #d9e4f0;
+      }
+
+      .topnav {
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: rgba(233, 239, 246, 0.68);
+        font-size: 14px;
+      }
+
+      .userbar {
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+      }
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .body {
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+      }
+
+      .sidebar {
+        padding: 22px 18px;
+      }
+
+      .sidebar {
+        background: var(--shell-soft);
+        color: rgba(239, 243, 248, 0.84);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .label {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .navlist {
+        display: grid;
+        gap: 8px;
+      }
+
+      .navlist { margin-top: 16px; }
+      .navitem {
+        padding: 12px 0;
+        color: rgba(239, 243, 248, 0.68);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .navitem.active { color: #ffffff; }
+
+      .sidebar-note {
+        margin-top: 18px;
+        line-height: 1.7;
+        font-size: 14px;
+        color: rgba(222, 229, 239, 0.68);
+      }
+
+      .main {
+        padding: 28px 28px 34px;
+        background: var(--surface);
+      }
+
+      .header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: start;
+      }
+
+      h1 {
+        font-size: 34px;
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+      }
+
+      .header p {
+        max-width: 64ch;
+        margin-top: 12px;
+        color: var(--copy);
+        line-height: 1.72;
+      }
+
+      .small {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0 16px;
+        font-weight: 700;
+      }
+
+      .small {
+        color: #314154;
+        border: 1px solid var(--line);
+        background: transparent;
+      }
+
+      .section { margin-top: 24px; }
+      .module-grid {
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+
+      .module-card {
+        flex: 1 1 280px;
+        min-width: 260px;
+        padding: 18px 0;
+        border-bottom: 1px solid var(--line-soft);
+      }
+
+      .module-card h3 {
+        font-size: 18px;
+        line-height: 1.2;
+      }
+
+      .module-card p {
+        margin-top: 8px;
+        color: var(--copy);
+        line-height: 1.7;
+        font-size: 14px;
+      }
+
+      .module-meta {
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .actions {
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+      }
+
+      .notes {
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: var(--copy);
+        font-size: 14px;
+      }
+
+      @media (max-width: 1180px) {
+        .body { grid-template-columns: 220px minmax(0, 1fr); }
+      }
+
+      @media (max-width: 920px) {
+        .body, .header { grid-template-columns: 1fr; }
+        .sidebar {
+          border-right: 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>gemshin_nb</span>
+        </div>
+        <nav class="topnav">
+          <span>模块中心</span>
+          <span>三大方向</span>
+          <span>模块入口</span>
+          <span>文档</span>
+        </nav>
+        <div class="userbar">
+          <span>已登录</span>
+          <div class="avatar">ZW</div>
+        </div>
+      </header>
+
+      <div class="body">
+        <aside class="sidebar">
+          <div class="label">固定模块</div>
+          <div class="navlist">
+            <div class="navitem active">AI 漫剧制作一站式系统</div>
+            <div class="navitem">AI 股票分析系统</div>
+            <div class="navitem">个人博客 / 个人内容库</div>
+          </div>
+          <p class="sidebar-note">模块中心这次只服务 `MYW-43` 已确认的 3 个固定业务方向。左侧不再是通用平台导航，而是这 3 个模块的固定切换项。</p>
+        </aside>
+
+        <main class="main">
+          <section class="header">
+            <div>
+              <div class="label">模块中心</div>
+              <h1>先从 3 个固定业务方向里选一个，再进入对应模块。</h1>
+              <p>模块中心仍然是登录后的第一落点，但现在不再表达“可扩展的开放平台”，而是明确围绕 3 个已确认方向组织：漫剧制作、股票分析、个人博客 / 内容库。</p>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="label">业务模块卡片</div>
+            <div class="module-grid">
+              <article class="module-card">
+                <h3>AI 漫剧制作一站式系统</h3>
+                <p>围绕内容导入、分镜工作台、结果校验与导出构成完整主链路。进入后先到模块内项目中心，再进入具体项目。</p>
+                <div class="module-meta">
+                  <span>12 个项目</span>
+                  <span>7 个待处理</span>
+                  <span>已可执行</span>
+                </div>
+                <div class="actions">
+                  <div class="small">进入模块</div>
+                  <div class="small">查看最近项目</div>
+                </div>
+              </article>
+
+              <article class="module-card">
+                <h3>AI 股票分析系统</h3>
+                <p>以股票研究、策略判断和持续跟踪为主线，后续进入后应直接承接股票分析模块自己的项目和工作台链路。</p>
+                <div class="module-meta">
+                  <span>模块入口已确认</span>
+                  <span>已可执行</span>
+                </div>
+                <div class="actions">
+                  <div class="small">进入模块</div>
+                  <div class="small">查看模块说明</div>
+                </div>
+              </article>
+
+              <article class="module-card">
+                <h3>个人博客 / 个人内容库</h3>
+                <p>围绕个人内容沉淀、整理、发布与复用展开，作为第三个固定方向出现，不再被表达成“以后可能新增的模块”。</p>
+                <div class="module-meta">
+                  <span>模块入口已确认</span>
+                  <span>已可执行</span>
+                </div>
+                <div class="actions">
+                  <div class="small">进入模块</div>
+                  <div class="small">查看模块说明</div>
+                </div>
+              </article>
+            </div>
+
+            <div class="notes">
+              <span>模块中心只负责“选模块”，不提前展开模块内部阶段链路。</span>
+              <span>当前页面只保留 3 个固定、可直接进入的模块入口。</span>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
