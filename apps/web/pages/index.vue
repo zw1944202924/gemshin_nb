@@ -3,11 +3,38 @@ definePageMeta({
   layout: "shell"
 })
 
-const { isAuthenticated } = useAuth()
+const { isAuthenticated, user, login, pending, logout } = useAuth()
+const router = useRouter()
+const route = useRoute()
 
-// 未登录时携带 redirect=/story，确保登录后直接进入项目中心而非旧 /dashboard
-const ctaTarget = computed(() => isAuthenticated.value ? "/story" : "/login?redirect=/story")
-const ctaLabel = computed(() => isAuthenticated.value ? "进入项目中心" : "登录后开始")
+// 登录表单
+const loginForm = reactive({ username: "", password: "" })
+const loginError = ref("")
+const loginLoading = ref(false)
+
+const handleLogin = async () => {
+  loginError.value = ""
+  loginLoading.value = true
+  try {
+    await login(loginForm)
+    // 登录成功后跳转到 redirect 参数指定的目标，否则留在首页
+    const target = typeof route.query.redirect === "string" ? route.query.redirect : "/"
+    await router.push(target)
+  } catch (error: any) {
+    const detail =
+      error?.data?.detail
+        ? String(error.data.detail)
+        : ""
+    loginError.value = detail || "登录失败，请稍后重试"
+  } finally {
+    loginLoading.value = false
+  }
+}
+
+const handleLogout = async () => {
+  await logout()
+  await router.push("/")
+}
 
 const workflowSteps = [
   { name: "导入", detail: "导入小说正文、章节或梗概，建立项目起点。" },
@@ -40,21 +67,66 @@ const valuePoints = [
           <h1>不是再做一个 AI 工具页，而是做一个真正能推进项目的生产界面。</h1>
           <p class="hero-intro">
             gemshin_nb 把内容导入、整理、生成、校验和导出组织成稳定主链路。
-            首页先建立产品感，登录后直接进入工作台，而不是让用户在模板式页面里找入口。
+            首页先建立产品感，登录后直接进入工作台。
           </p>
 
-          <div class="hero-actions">
-            <NuxtLink :to="ctaTarget" class="btn-primary btn-large">{{ ctaLabel }}</NuxtLink>
-            <a href="#workflow" class="btn-secondary">查看工作流</a>
-          </div>
+          <!-- 已登录状态 -->
+          <template v-if="isAuthenticated">
+            <div class="welcome-banner">
+              <span class="welcome-text">欢迎回来，{{ user?.display_name || user?.username }}</span>
+            </div>
+
+            <div class="hero-actions">
+              <NuxtLink to="/modules" class="btn-primary btn-large">进入模块中心</NuxtLink>
+              <NuxtLink to="/assistant" class="btn-secondary btn-large">AI 助手</NuxtLink>
+            </div>
+
+            <div class="quick-row">
+              <button class="logout-link" type="button" @click="handleLogout">退出登录</button>
+            </div>
+          </template>
+
+          <!-- 未登录状态：内联登录表单 -->
+          <template v-else>
+            <form class="login-form" @submit.prevent="handleLogin">
+              <div class="login-fields">
+                <label class="login-field">
+                  <span class="login-label">用户名</span>
+                  <input
+                    v-model="loginForm.username"
+                    type="text"
+                    autocomplete="username"
+                    placeholder="请输入用户名"
+                    :disabled="loginLoading"
+                  />
+                </label>
+                <label class="login-field">
+                  <span class="login-label">密码</span>
+                  <input
+                    v-model="loginForm.password"
+                    type="password"
+                    autocomplete="current-password"
+                    placeholder="请输入密码"
+                    :disabled="loginLoading"
+                  />
+                </label>
+              </div>
+
+              <p v-if="loginError" class="login-error">{{ loginError }}</p>
+
+              <button class="btn-primary btn-large login-submit" type="submit" :disabled="loginLoading">
+                {{ loginLoading ? "登录中..." : "登录并开始" }}
+              </button>
+            </form>
+          </template>
 
           <ul class="hero-chips">
             <li v-for="item in valuePoints" :key="item">{{ item }}</li>
           </ul>
         </div>
 
-        <!-- 产品壳预览 -->
-        <section class="mockup" aria-label="登录后产品壳预览">
+        <!-- 产品壳预览（已登录状态显示） / 未登录时不显示 mockup，登录表单在左侧 -->
+        <section v-if="isAuthenticated" class="mockup" aria-label="登录后产品壳预览">
           <div class="mockup-top">
             <div class="mockup-dots" aria-hidden="true">
               <span /><span /><span />
@@ -119,6 +191,23 @@ const valuePoints = [
             </aside>
           </div>
         </section>
+
+        <!-- 未登录状态：右侧展示品牌预告 -->
+        <section v-else class="mockup mockup-preview" aria-label="产品预览">
+          <div class="mockup-top">
+            <div class="mockup-dots" aria-hidden="true">
+              <span /><span /><span />
+            </div>
+            <div class="mockup-title">gemshin_nb</div>
+            <div class="mockup-status">即将开始</div>
+          </div>
+          <div class="mockup-body mockup-body-single">
+            <div class="preview-message">
+              <p class="preview-big">登录后即可使用全部功能</p>
+              <p class="preview-small">项目中心 · 漫剧工作台 · AI 助手 · 结果校验与导出</p>
+            </div>
+          </div>
+        </section>
       </div>
     </section>
 
@@ -155,21 +244,21 @@ const valuePoints = [
     <!-- 设计说明区域 -->
     <section id="why" class="content-section why-section">
       <div class="why-copy">
-        <h2>这版实现想验证的不是"好不好看"，而是"有没有正式产品感"。</h2>
+        <h2>登录即进入，进入即开始工作。</h2>
         <p>
-          视觉上采用深色首屏、强标题、少量说明和真实界面预览，避免落回模板式 Hero。
-          结构上把首页入口与登录后工作台连成一条连续路径，让用户从第一眼到真正开始工作都在同一套产品语境里。
+          所有交互都在首页完成：登录表单即是入口，登录后立即看到模块中心入口和 AI 助手。
+          没有多余跳转，没有模板式 Auth 页面，从第一眼到开始工作都在同一套产品语境里。
         </p>
       </div>
 
       <div class="why-notes">
         <div class="note-card">
           <strong>避免什么</strong>
-          <p>单 Hero 承载全部信息、渐变卡片堆叠、技术栈抢首屏、过度营销化文案。</p>
+          <p>独立的登录页、单 Hero 承载全部信息、渐变卡片堆叠、技术栈抢首屏、过度营销化文案。</p>
         </div>
         <div class="note-card">
           <strong>保留什么</strong>
-          <p>强首屏、明确主按钮、稳定工作流、登录后统一产品壳，以及任务导向的状态反馈。</p>
+          <p>首页集成登录、强首屏、明确主按钮、稳定工作流、登录后统一产品壳，以及任务导向的状态反馈。</p>
         </div>
       </div>
     </section>
@@ -204,7 +293,7 @@ const valuePoints = [
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(400px, 560px);
   gap: 48px;
-  align-items: center;
+  align-items: start;
   width: min(1320px, calc(100% - 48px));
   margin: 0 auto;
   padding-top: 72px;
@@ -240,11 +329,88 @@ const valuePoints = [
   line-height: 1.85;
 }
 
+/* ── 已登录欢迎 ── */
+.welcome-banner {
+  margin-top: 24px;
+  padding: 14px 20px;
+  border-radius: 14px;
+  background: rgba(114, 162, 255, 0.1);
+  border: 1px solid rgba(194, 214, 255, 0.12);
+}
+
+.welcome-text {
+  color: var(--ink-primary);
+  font-size: 15px;
+  font-weight: 500;
+}
+
 .hero-actions {
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
-  margin-top: 32px;
+  margin-top: 24px;
+}
+
+.quick-row {
+  margin-top: 12px;
+}
+
+.logout-link {
+  border: none;
+  background: none;
+  color: var(--ink-muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.logout-link:hover {
+  color: var(--ink-copy);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent-gradient);
+  color: #081120;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+  text-decoration: none;
+}
+.btn-primary:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: rgba(9, 18, 31, 0.4);
+  color: rgba(244, 248, 255, 0.92);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-decoration: none;
+}
+.btn-secondary:hover {
+  background: rgba(247, 250, 255, 0.08);
 }
 
 .btn-large {
@@ -254,6 +420,92 @@ const valuePoints = [
   border-radius: 14px;
 }
 
+/* ── 登录表单（内联在 Hero 中） ── */
+.login-form {
+  margin-top: 24px;
+}
+
+.login-fields {
+  display: grid;
+  gap: 14px;
+}
+
+.login-field {
+  display: grid;
+  gap: 8px;
+}
+
+.login-label {
+  color: var(--ink-copy);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.login-field input {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(194, 214, 255, 0.18);
+  background: rgba(9, 18, 31, 0.5);
+  color: rgba(247, 250, 255, 0.96);
+  font: inherit;
+  font-size: 15px;
+  transition: border-color 0.15s;
+}
+
+.login-field input::placeholder {
+  color: rgba(186, 202, 227, 0.4);
+}
+
+.login-field input:focus {
+  outline: none;
+  border-color: rgba(132, 182, 255, 0.6);
+  background: rgba(9, 18, 31, 0.7);
+}
+
+.login-error {
+  margin: 12px 0 0;
+  color: #f87171;
+  font-size: 13px;
+}
+
+.login-submit {
+  margin-top: 20px;
+  width: 100%;
+}
+
+/* ── 未登录预览 ── */
+.mockup-preview {
+  display: flex;
+  flex-direction: column;
+}
+
+.mockup-body-single {
+  grid-template-columns: 1fr !important;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-message {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.preview-big {
+  color: var(--ink-primary);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.preview-small {
+  color: var(--ink-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ── Hero Chips ── */
 .hero-chips {
   display: flex;
   gap: 12px;
@@ -642,6 +894,10 @@ const valuePoints = [
   .hero-actions,
   .hero-chips {
     flex-direction: column;
+  }
+
+  .login-fields {
+    grid-template-columns: 1fr;
   }
 
   .btn-primary,
