@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI动画制作系统 · 创作空间 Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #eef2f6;
+        --surface: #f7f9fb;
+        --surface-soft: #f1f4f7;
+        --surface-strong: #e8edf3;
+        --shell: #111722;
+        --shell-soft: #182131;
+        --line: #dbe2ea;
+        --line-soft: #e7edf2;
+        --ink: #17202c;
+        --copy: #556173;
+        --muted: #7a8594;
+        --accent: #315f8f;
+        --accent-soft: #dce7f2;
+        --success: #2f6d4c;
+        --warning: #8c6841;
+        --danger: #8d4d4f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+        background: var(--canvas);
+        color: var(--ink);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 20px;
+        align-items: center;
+        padding: 16px 22px;
+        background: var(--shell);
+        color: rgba(246, 248, 251, 0.9);
+      }
+
+      .brand,
+      .topnav,
+      .userbar,
+      .entry-actions,
+      .hero-meta,
+      .segment,
+      .card-meta,
+      .status-points,
+      .project-grid,
+      .footer-notes {
+        display: flex;
+      }
+
+      .brand {
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .brand-mark {
+        width: 12px;
+        height: 12px;
+        background: #d9e4f0;
+      }
+
+      .topnav {
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: rgba(233, 239, 246, 0.68);
+        font-size: 14px;
+      }
+
+      .userbar {
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+      }
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .body {
+        width: min(1240px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 24px 0 36px;
+      }
+
+      .hero,
+      .resume-card,
+      .projects,
+      .empty-state {
+        border: 1px solid var(--line);
+        background: var(--surface);
+      }
+
+      .hero {
+        padding: 28px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 24px;
+        align-items: start;
+      }
+
+      .label {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      h1 {
+        margin-top: 12px;
+        max-width: 12ch;
+        font-size: 42px;
+        line-height: 1.02;
+        letter-spacing: -0.04em;
+        text-wrap: balance;
+      }
+
+      .hero-copy {
+        margin-top: 14px;
+        max-width: 58ch;
+        color: var(--copy);
+        line-height: 1.78;
+        font-size: 15px;
+      }
+
+      .entry-actions {
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .button-primary,
+      .button-secondary,
+      .ghost-link,
+      .card-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0 16px;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .button-primary {
+        background: var(--accent);
+        color: #f7fbff;
+      }
+
+      .button-secondary,
+      .ghost-link,
+      .card-action {
+        color: #314154;
+        border: 1px solid var(--line);
+        background: transparent;
+      }
+
+      .hero-meta {
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: var(--copy);
+        font-size: 14px;
+      }
+
+      .hero-meta span {
+        padding: 10px 12px;
+        background: var(--surface-soft);
+      }
+
+      .resume-card {
+        margin-top: 18px;
+        padding: 22px 24px;
+      }
+
+      .resume-head,
+      .resume-main,
+      .resume-footer {
+        display: grid;
+        gap: 16px;
+      }
+
+      .resume-head {
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+      }
+
+      .resume-badge {
+        padding: 6px 10px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+
+      .resume-footnote {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .resume-main {
+        grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.9fr);
+        align-items: start;
+      }
+
+      .resume-title {
+        font-size: 28px;
+        line-height: 1.06;
+        letter-spacing: -0.03em;
+      }
+
+      .resume-copy {
+        margin-top: 10px;
+        max-width: 46ch;
+        color: var(--copy);
+        line-height: 1.72;
+        font-size: 15px;
+      }
+
+      .status-points {
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .status-points span {
+        padding: 8px 11px;
+        background: var(--surface-soft);
+        color: var(--copy);
+        font-size: 13px;
+      }
+
+      .resume-side {
+        padding: 18px;
+        background: var(--surface-soft);
+      }
+
+      .side-metric {
+        display: grid;
+        gap: 14px;
+      }
+
+      .metric-row {
+        display: grid;
+        gap: 8px;
+      }
+
+      .metric-row strong {
+        font-size: 24px;
+        line-height: 1;
+      }
+
+      .metric-row span,
+      .metric-row p {
+        color: var(--copy);
+        font-size: 14px;
+        line-height: 1.64;
+      }
+
+      .progress-track {
+        height: 8px;
+        background: #d7dee6;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        width: 68%;
+        background: var(--accent);
+      }
+
+      .resume-footer {
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        padding-top: 12px;
+        border-top: 1px solid var(--line-soft);
+      }
+
+      .resume-footer p {
+        color: var(--copy);
+        line-height: 1.68;
+        font-size: 14px;
+      }
+
+      .projects,
+      .empty-state {
+        margin-top: 18px;
+        padding: 24px;
+      }
+
+      .section-head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 16px;
+        align-items: end;
+      }
+
+      .section-head h2 {
+        margin-top: 10px;
+        font-size: 28px;
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+      }
+
+      .section-head p {
+        margin-top: 10px;
+        color: var(--copy);
+        line-height: 1.72;
+        font-size: 14px;
+      }
+
+      .segment {
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .segment span {
+        padding: 9px 12px;
+        color: var(--copy);
+        background: var(--surface-soft);
+        font-size: 14px;
+      }
+
+      .segment .active {
+        background: var(--shell);
+        color: rgba(246, 248, 251, 0.94);
+      }
+
+      .project-grid {
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+      }
+
+      .project-card {
+        flex: 1 1 280px;
+        min-width: 260px;
+        padding: 18px;
+        border: 1px solid var(--line-soft);
+        background: #fbfcfd;
+      }
+
+      .card-cover {
+        aspect-ratio: 16 / 9;
+        background:
+          linear-gradient(135deg, rgba(49, 95, 143, 0.28), rgba(17, 23, 34, 0.14)),
+          linear-gradient(180deg, #dbe5ef, #c7d2de);
+      }
+
+      .card-head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: start;
+        margin-top: 14px;
+      }
+
+      .card-head strong {
+        display: block;
+        font-size: 17px;
+        line-height: 1.2;
+      }
+
+      .card-head p {
+        margin-top: 8px;
+        color: var(--copy);
+        line-height: 1.66;
+        font-size: 14px;
+      }
+
+      .state-pill {
+        padding: 5px 8px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .state-running {
+        color: var(--accent);
+        background: var(--accent-soft);
+      }
+
+      .state-ready {
+        color: var(--success);
+        background: rgba(47, 109, 76, 0.14);
+      }
+
+      .state-warning {
+        color: var(--warning);
+        background: rgba(140, 104, 65, 0.14);
+      }
+
+      .card-meta {
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        color: var(--copy);
+        font-size: 13px;
+      }
+
+      .card-meta span {
+        padding: 7px 10px;
+        background: var(--surface-soft);
+      }
+
+      .mini-progress {
+        margin-top: 14px;
+      }
+
+      .mini-progress-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        color: var(--copy);
+        font-size: 13px;
+      }
+
+      .mini-track {
+        height: 6px;
+        margin-top: 8px;
+        background: #d9e0e7;
+        overflow: hidden;
+      }
+
+      .mini-fill-100,
+      .mini-fill-45,
+      .mini-fill-8 {
+        height: 100%;
+        background: var(--accent);
+      }
+
+      .mini-fill-100 {
+        width: 100%;
+      }
+
+      .mini-fill-45 {
+        width: 45%;
+      }
+
+      .mini-fill-8 {
+        width: 8%;
+      }
+
+      .card-footer {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: center;
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line-soft);
+      }
+
+      .card-footer span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .empty-state {
+        display: none;
+      }
+
+      .empty-state strong {
+        display: block;
+        margin-top: 12px;
+        font-size: 22px;
+        line-height: 1.18;
+      }
+
+      .empty-state p {
+        margin-top: 10px;
+        max-width: 48ch;
+        color: var(--copy);
+        line-height: 1.72;
+      }
+
+      .footer-notes {
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: var(--copy);
+        font-size: 14px;
+      }
+
+      @media (max-width: 960px) {
+        .hero-grid,
+        .resume-main,
+        .resume-footer,
+        .section-head,
+        .card-footer {
+          grid-template-columns: 1fr;
+        }
+
+        .entry-actions {
+          justify-content: flex-start;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .topbar {
+          grid-template-columns: 1fr;
+          justify-items: start;
+        }
+
+        .body {
+          width: min(100%, calc(100% - 24px));
+          padding: 12px 0 28px;
+        }
+
+        .hero,
+        .resume-card,
+        .projects,
+        .empty-state {
+          padding: 20px;
+        }
+
+        h1 {
+          font-size: 34px;
+        }
+
+        .resume-title {
+          font-size: 24px;
+        }
+
+        .section-head h2 {
+          font-size: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>gemshin_nb</span>
+        </div>
+        <nav class="topnav">
+          <span>AI动画制作系统</span>
+          <span>创作空间</span>
+          <span>当前作品</span>
+          <span>导出结果</span>
+        </nav>
+        <div class="userbar">
+          <span>创作中</span>
+          <div class="avatar">ZW</div>
+        </div>
+      </header>
+
+      <main class="body">
+        <section class="hero">
+          <div class="hero-grid">
+            <div>
+              <div class="label">模块内入口页</div>
+              <h1>创作空间先负责进入和继续，不负责把后台摊满。</h1>
+              <p class="hero-copy">
+                这版 Demo 按“轻入口页 + 必要状态信息”收口。用户进入后只需要快速完成三件事：建立新项目、判断哪个作品该继续、直接进入当前作品处理卡点。
+              </p>
+              <div class="hero-meta">
+                <span>适用场景：开始新项目</span>
+                <span>适用场景：继续处理中作品</span>
+                <span>关键状态：分镜数量 / 处理进度</span>
+              </div>
+            </div>
+            <div class="entry-actions">
+              <div class="button-secondary">从模版开始</div>
+              <div class="button-primary">建立空白项目</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="resume-card">
+          <div class="resume-head">
+            <span class="resume-badge">建议继续</span>
+            <span class="resume-footnote">基于最近编辑、处理中状态与未完成进度推荐</span>
+            <span class="label">优先入口</span>
+          </div>
+
+          <div class="resume-main">
+            <div>
+              <h2 class="resume-title">《海边便利店》样片第一集</h2>
+              <p class="resume-copy">
+                当前停在视频生成阶段，12 / 18 个镜头已经处理完成。用户不需要先翻列表找项目，应该直接从这里继续回到最需要处理的镜头。
+              </p>
+              <div class="status-points">
+                <span>24 个分镜</span>
+                <span>上次编辑：2 小时前</span>
+                <span>当前阶段：视频生成</span>
+                <span>异常：2 个镜头待回补</span>
+              </div>
+            </div>
+
+            <div class="resume-side">
+              <div class="side-metric">
+                <div class="metric-row">
+                  <span>当前处理进度</span>
+                  <strong>68%</strong>
+                  <div class="progress-track">
+                    <div class="progress-fill"></div>
+                  </div>
+                </div>
+                <div class="metric-row">
+                  <span>继续后默认落点</span>
+                  <p>直接进入失败镜头列表，而不是中间概览页。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="resume-footer">
+            <p>这块是首页核心差异点：它帮助用户在 3 秒内判断“先继续哪个”，避免把创作空间做成只有卡片列表的普通入口页。</p>
+            <div class="button-primary">继续创作</div>
+          </div>
+        </section>
+
+        <section class="projects">
+          <div class="section-head">
+            <div>
+              <div class="label">项目入口</div>
+              <h2>最近项目与已有作品放在同一层，但信息保持克制。</h2>
+              <p>首版不展开复杂筛选器和任务中心，只保留帮助用户决策的最小信息：项目名、分镜数量、处理进度、最近编辑时间和继续入口。</p>
+            </div>
+            <div class="segment">
+              <span class="active">最近项目</span>
+              <span>已有作品</span>
+            </div>
+          </div>
+
+          <div class="project-grid">
+            <article class="project-card">
+              <div class="card-cover"></div>
+              <div class="card-head">
+                <div>
+                  <strong>《夏日短剧》试播包</strong>
+                  <p>分镜和字幕已经同步完成，适合继续做镜头校对或直接进入精修。</p>
+                </div>
+                <span class="state-pill state-ready">已完成</span>
+              </div>
+              <div class="card-meta">
+                <span>12 个分镜</span>
+                <span>最近编辑：昨天</span>
+              </div>
+              <div class="mini-progress">
+                <div class="mini-progress-head">
+                  <span>处理进度</span>
+                  <strong>100%</strong>
+                </div>
+                <div class="mini-track">
+                  <div class="mini-fill-100"></div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <span>可直接进入当前作品</span>
+                <div class="card-action">继续创作</div>
+              </div>
+            </article>
+
+            <article class="project-card">
+              <div class="card-cover"></div>
+              <div class="card-head">
+                <div>
+                  <strong>《夜班咖啡馆》概念样片</strong>
+                  <p>图片生成正在处理中，当前最大价值是让用户快速看到哪些镜头仍然待确认。</p>
+                </div>
+                <span class="state-pill state-running">处理中</span>
+              </div>
+              <div class="card-meta">
+                <span>36 个分镜</span>
+                <span>最近编辑：4 小时前</span>
+              </div>
+              <div class="mini-progress">
+                <div class="mini-progress-head">
+                  <span>处理进度</span>
+                  <strong>45%</strong>
+                </div>
+                <div class="mini-track">
+                  <div class="mini-fill-45"></div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <span>仍有 3 个镜头待确认</span>
+                <div class="card-action">继续创作</div>
+              </div>
+            </article>
+
+            <article class="project-card">
+              <div class="card-cover"></div>
+              <div class="card-head">
+                <div>
+                  <strong>《城市雨幕》角色测试片</strong>
+                  <p>刚完成内容导入，仍属于待开始状态，信息上只保留最基础判断，不提前塞入任务管理。</p>
+                </div>
+                <span class="state-pill state-warning">待开始</span>
+              </div>
+              <div class="card-meta">
+                <span>18 个分镜</span>
+                <span>最近编辑：3 天前</span>
+              </div>
+              <div class="mini-progress">
+                <div class="mini-progress-head">
+                  <span>处理进度</span>
+                  <strong>8%</strong>
+                </div>
+                <div class="mini-track">
+                  <div class="mini-fill-8"></div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <span>下一步：进入剧情整理</span>
+                <div class="card-action">继续创作</div>
+              </div>
+            </article>
+          </div>
+
+          <div class="footer-notes">
+            <span>空状态时只保留一个清晰引导：先创建第一个项目。</span>
+            <span>失败态保留在项目卡片和继续入口上暴露，不把首页扩成任务记录页。</span>
+            <span>这页是进入和选择，不展开素材库、任务记录和 AI 调用控制中心。</span>
+          </div>
+        </section>
+
+        <section class="empty-state">
+          <div class="label">首次使用</div>
+          <strong>还没有开始中的动画项目。</strong>
+          <p>从空白项目或模版开始即可。空状态不做复杂说明，也不展示后台式统计面板，只引导用户进入第一步。</p>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
