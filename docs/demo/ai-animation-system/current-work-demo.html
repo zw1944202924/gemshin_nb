@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI动画制作系统 · 当前作品 Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #eef2f6;
+        --surface: #f7f9fb;
+        --surface-elevated: #fbfcfd;
+        --surface-soft: #eff3f7;
+        --shell: #111722;
+        --shell-soft: #182131;
+        --line: #d7e0e8;
+        --line-soft: #e5ebf1;
+        --ink: #16202c;
+        --copy: #566273;
+        --muted: #7a8593;
+        --accent: #2f5f8f;
+        --accent-soft: #dbe6f2;
+        --success: #2f6c4d;
+        --warning: #8c6841;
+        --danger: #8d4a4f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+        background: var(--canvas);
+        color: var(--ink);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 20px;
+        align-items: center;
+        padding: 16px 22px;
+        background: var(--shell);
+        color: rgba(246, 248, 251, 0.92);
+      }
+
+      .brand,
+      .topnav,
+      .userbar,
+      .project-meta,
+      .toolbar-actions,
+      .status-pills,
+      .stage-tabs,
+      .shot-tags,
+      .panel-tags,
+      .queue-list,
+      .footer-notes {
+        display: flex;
+      }
+
+      .brand {
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .brand-mark {
+        width: 12px;
+        height: 12px;
+        background: #d9e4f0;
+      }
+
+      .topnav {
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: rgba(233, 239, 246, 0.68);
+        font-size: 14px;
+      }
+
+      .topnav .active {
+        color: #ffffff;
+      }
+
+      .userbar {
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+      }
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .body {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr) 320px;
+        gap: 18px;
+        width: min(1440px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 20px 0 28px;
+      }
+
+      .sidebar,
+      .main,
+      .inspector {
+        min-width: 0;
+      }
+
+      .sidebar,
+      .panel,
+      .workstage,
+      .inspector-stack > section {
+        border: 1px solid var(--line);
+        background: var(--surface);
+      }
+
+      .sidebar,
+      .panel,
+      .workstage,
+      .inspector-stack > section {
+        padding: 20px;
+      }
+
+      .label {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .project-title {
+        margin-top: 10px;
+        font-size: 30px;
+        line-height: 1.06;
+        letter-spacing: -0.03em;
+      }
+
+      .project-copy,
+      .section-copy,
+      .shot-note,
+      .inspector-stack p,
+      .queue-list span,
+      .footer-notes span {
+        color: var(--copy);
+        line-height: 1.68;
+        font-size: 14px;
+      }
+
+      .project-copy {
+        margin-top: 12px;
+        max-width: 46ch;
+      }
+
+      .project-meta,
+      .status-pills,
+      .stage-tabs,
+      .shot-tags,
+      .panel-tags,
+      .footer-notes {
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .project-meta {
+        margin-top: 16px;
+      }
+
+      .project-meta span,
+      .shot-tags span,
+      .panel-tags span {
+        padding: 8px 11px;
+        background: var(--surface-soft);
+        color: var(--copy);
+        font-size: 13px;
+      }
+
+      .toolbar {
+        margin-top: 18px;
+        padding: 18px;
+        background: linear-gradient(180deg, rgba(47, 95, 143, 0.06), rgba(47, 95, 143, 0)),
+          var(--surface-soft);
+      }
+
+      .toolbar-grid,
+      .workstage-head,
+      .shot-head,
+      .inspector-head,
+      .queue-head,
+      .metric-row,
+      .frame-grid,
+      .footer-grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .toolbar-grid {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+      }
+
+      .toolbar-title {
+        font-size: 19px;
+        line-height: 1.2;
+      }
+
+      .toolbar-actions {
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .button-primary,
+      .button-secondary,
+      .button-ghost,
+      .chip-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0 16px;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .button-primary {
+        background: var(--accent);
+        color: #f7fbff;
+      }
+
+      .button-secondary,
+      .button-ghost,
+      .chip-button {
+        border: 1px solid var(--line);
+        background: transparent;
+        color: #314154;
+      }
+
+      .status-pills {
+        margin-top: 14px;
+      }
+
+      .status-pills span {
+        padding: 7px 10px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .pill-running {
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+
+      .pill-warning {
+        background: rgba(140, 104, 65, 0.14);
+        color: var(--warning);
+      }
+
+      .pill-danger {
+        background: rgba(141, 74, 79, 0.14);
+        color: var(--danger);
+      }
+
+      .sidebar {
+        display: grid;
+        gap: 18px;
+        align-content: start;
+      }
+
+      .stage-tabs {
+        margin-top: 12px;
+      }
+
+      .stage-tabs span {
+        padding: 9px 12px;
+        background: var(--surface-soft);
+        color: var(--copy);
+        font-size: 14px;
+      }
+
+      .stage-tabs .active {
+        background: var(--shell);
+        color: rgba(246, 248, 251, 0.94);
+      }
+
+      .shot-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .shot-card {
+        border: 1px solid var(--line-soft);
+        background: var(--surface-elevated);
+        padding: 14px;
+      }
+
+      .shot-card.active {
+        background: linear-gradient(180deg, rgba(47, 95, 143, 0.06), rgba(47, 95, 143, 0)),
+          var(--surface-elevated);
+      }
+
+      .shot-head {
+        grid-template-columns: 1fr auto;
+        align-items: start;
+      }
+
+      .shot-card strong {
+        display: block;
+        font-size: 16px;
+        line-height: 1.2;
+      }
+
+      .shot-note {
+        margin-top: 8px;
+      }
+
+      .shot-state {
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .state-ready {
+        background: rgba(47, 108, 77, 0.14);
+        color: var(--success);
+      }
+
+      .state-review {
+        background: rgba(140, 104, 65, 0.14);
+        color: var(--warning);
+      }
+
+      .state-failed {
+        background: rgba(141, 74, 79, 0.14);
+        color: var(--danger);
+      }
+
+      .workstage {
+        display: grid;
+        gap: 18px;
+      }
+
+      .workstage-head {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+      }
+
+      .section-title {
+        margin-top: 10px;
+        font-size: 26px;
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+      }
+
+      .section-copy {
+        margin-top: 10px;
+        max-width: 56ch;
+      }
+
+      .frame-grid {
+        grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+      }
+
+      .frame-stage,
+      .script-panel,
+      .generation-panel,
+      .timeline-panel,
+      .inspector-stack > section {
+        border: 1px solid var(--line-soft);
+        background: var(--surface-elevated);
+      }
+
+      .frame-stage,
+      .script-panel,
+      .generation-panel,
+      .timeline-panel,
+      .inspector-stack > section {
+        padding: 18px;
+      }
+
+      .frame-stage {
+        min-height: 360px;
+        display: grid;
+        align-content: space-between;
+        background:
+          linear-gradient(135deg, rgba(47, 95, 143, 0.22), rgba(17, 23, 34, 0.14)),
+          linear-gradient(180deg, #d9e2eb, #c6d0db);
+      }
+
+      .frame-stage strong {
+        font-size: 22px;
+        line-height: 1.2;
+      }
+
+      .frame-stage p {
+        max-width: 42ch;
+        color: rgba(22, 32, 44, 0.82);
+        line-height: 1.72;
+        font-size: 14px;
+      }
+
+      .frame-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        color: rgba(22, 32, 44, 0.76);
+        font-size: 13px;
+      }
+
+      .panel {
+        display: grid;
+        gap: 18px;
+      }
+
+      .queue-list {
+        gap: 8px;
+        flex-direction: column;
+      }
+
+      .queue-list span {
+        padding: 10px 12px;
+        background: var(--surface-soft);
+      }
+
+      .metric-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line-soft);
+      }
+
+      .metric-row:last-child {
+        padding-bottom: 0;
+        border-bottom: 0;
+      }
+
+      .metric-row strong {
+        font-size: 22px;
+        line-height: 1;
+      }
+
+      .inspector-stack {
+        display: grid;
+        gap: 18px;
+      }
+
+      .inspector-head,
+      .queue-head,
+      .footer-grid {
+        grid-template-columns: 1fr auto;
+        align-items: start;
+      }
+
+      .footer-notes {
+        margin-top: 18px;
+      }
+
+      @media (max-width: 1200px) {
+        .body {
+          grid-template-columns: 260px minmax(0, 1fr);
+        }
+
+        .inspector {
+          grid-column: 1 / -1;
+        }
+      }
+
+      @media (max-width: 900px) {
+        .body,
+        .frame-grid,
+        .toolbar-grid,
+        .workstage-head,
+        .inspector-head,
+        .queue-head,
+        .footer-grid,
+        .metric-row,
+        .shot-head {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .topbar {
+          grid-template-columns: 1fr;
+          justify-items: start;
+        }
+
+        .body {
+          width: min(100%, calc(100% - 24px));
+          padding: 12px 0 24px;
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar,
+        .panel,
+        .workstage,
+        .inspector-stack > section {
+          padding: 18px;
+        }
+
+        .project-title {
+          font-size: 26px;
+        }
+
+        .section-title {
+          font-size: 22px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>gemshin_nb</span>
+        </div>
+        <nav class="topnav">
+          <span>创作空间</span>
+          <span class="active">当前作品</span>
+          <span>素材库</span>
+          <span>任务记录</span>
+        </nav>
+        <div class="userbar">
+          <span>项目处理中</span>
+          <div class="avatar">ZW</div>
+        </div>
+      </header>
+
+      <main class="body">
+        <aside class="sidebar">
+          <div>
+            <div class="label">当前项目</div>
+            <h1 class="project-title">《海边便利店》样片第一集</h1>
+            <p class="project-copy">
+              这是项目内真正的主工作台。用户从创作空间进入后，应在这里继续剧情整理、镜头生成、单镜头校对与导出前处理，而不是再回到列表页。
+            </p>
+            <div class="project-meta">
+              <span>24 个分镜</span>
+              <span>当前阶段：视频生成</span>
+              <span>上次编辑：2 小时前</span>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div>
+              <div class="label">阶段切换</div>
+              <div class="stage-tabs">
+                <span>剧情整理</span>
+                <span>分镜脚本</span>
+                <span>图片生成</span>
+                <span class="active">视频生成</span>
+                <span>导出检查</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="label">镜头列表</div>
+              <div class="shot-list">
+                <article class="shot-card active">
+                  <div class="shot-head">
+                    <div>
+                      <strong>镜头 12 · 店门推入</strong>
+                      <p class="shot-note">当前失败镜头，需回补镜头运动和人物视线。</p>
+                    </div>
+                    <span class="shot-state state-failed">待回补</span>
+                  </div>
+                  <div class="shot-tags">
+                    <span>7 秒</span>
+                    <span>夜景</span>
+                    <span>主角出场</span>
+                  </div>
+                </article>
+
+                <article class="shot-card">
+                  <div class="shot-head">
+                    <div>
+                      <strong>镜头 13 · 收银台对话</strong>
+                      <p class="shot-note">视频已生成，等待对白节奏校对。</p>
+                    </div>
+                    <span class="shot-state state-review">待校对</span>
+                  </div>
+                  <div class="shot-tags">
+                    <span>9 秒</span>
+                    <span>双人对话</span>
+                    <span>配音已入队</span>
+                  </div>
+                </article>
+
+                <article class="shot-card">
+                  <div class="shot-head">
+                    <div>
+                      <strong>镜头 14 · 冰柜特写</strong>
+                      <p class="shot-note">当前镜头已通过，可直接进入下一镜头。</p>
+                    </div>
+                    <span class="shot-state state-ready">已通过</span>
+                  </div>
+                  <div class="shot-tags">
+                    <span>4 秒</span>
+                    <span>静物细节</span>
+                    <span>可导出</span>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <section class="main">
+          <div class="toolbar">
+            <div class="toolbar-grid">
+              <div>
+                <div class="label">主工作台</div>
+                <strong class="toolbar-title">先围绕单个镜头处理，而不是把项目管理、资源管理、任务排查同时塞在一页里。</strong>
+                <div class="status-pills">
+                  <span class="pill-running">视频生成中</span>
+                  <span class="pill-warning">2 个镜头待校对</span>
+                  <span class="pill-danger">1 个失败镜头待回补</span>
+                </div>
+              </div>
+              <div class="toolbar-actions">
+                <div class="button-secondary">返回创作空间</div>
+                <div class="button-ghost">打开素材库</div>
+                <div class="button-primary">提交重生成</div>
+              </div>
+            </div>
+          </div>
+
+          <section class="workstage">
+            <div class="workstage-head">
+              <div>
+                <div class="label">镜头工作区</div>
+                <h2 class="section-title">镜头 12 需要回补镜头运动与人物视线一致性。</h2>
+                <p class="section-copy">
+                  这一页的重点不是项目列表，而是让用户清楚看到当前正在处理的镜头、当前阶段的输入输出，以及下一步该改哪里、重新提什么任务。
+                </p>
+              </div>
+              <div class="toolbar-actions">
+                <div class="chip-button">上一镜头</div>
+                <div class="chip-button">下一镜头</div>
+              </div>
+            </div>
+
+            <div class="frame-grid">
+              <section class="frame-stage">
+                <div>
+                  <div class="label">当前画面预览</div>
+                  <strong>店门推入镜头</strong>
+                  <p>镜头从门外推进到收银台，当前问题是角色进入时视线略偏，导致后续对话镜头衔接不自然。</p>
+                </div>
+                <div class="frame-meta">
+                  <span>参考图：已锁定 2 张</span>
+                  <span>视频版本：v3</span>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="script-panel">
+                  <div class="label">分镜脚本</div>
+                  <p class="section-copy">镜头从夜色街口缓慢推进，店门玻璃反光中先出现主角轮廓，再切入店内暖色灯光与收银台区域。</p>
+                  <div class="panel-tags">
+                    <span>镜头运动：推进</span>
+                    <span>时长：7 秒</span>
+                    <span>景别：中景转近景</span>
+                  </div>
+                </div>
+
+                <div class="generation-panel">
+                  <div class="label">本轮生成策略</div>
+                  <div class="queue-list">
+                    <span>保留场景与光线，不改底图。</span>
+                    <span>只调整人物视线、门口停顿与推进速度。</span>
+                    <span>重生成后直接进入相邻对话镜头的衔接校验。</span>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <section class="panel timeline-panel">
+              <div class="queue-head">
+                <div>
+                  <div class="label">阶段内队列</div>
+                  <h3 class="section-title">当前作品只保留与本项目直接相关的任务与衔接信息。</h3>
+                  <p class="section-copy">全局任务的异常详情放到 `任务记录`，但当前镜头周边需要感知的队列、失败原因和下一步建议，仍然要在这里轻量可见。</p>
+                </div>
+                <div class="button-ghost">查看完整任务记录</div>
+              </div>
+              <div class="queue-list">
+                <span>镜头 12：视频重生成待提交，缺口是人物视线与推进节奏。</span>
+                <span>镜头 13：对白配音已完成，等待口型和节奏校对。</span>
+                <span>镜头 14：已通过，可纳入导出前检查批次。</span>
+              </div>
+            </section>
+
+            <div class="footer-notes">
+              <span>当前作品是项目主链路页面，负责镜头推进与阶段操作。</span>
+              <span>素材筛选与跨项目资源复用交给素材库，不在这里摊成第二套管理中心。</span>
+              <span>失败排障的完整日志交给任务记录，这里只保留与当前镜头直接相关的信息。</span>
+            </div>
+          </section>
+        </section>
+
+        <aside class="inspector">
+          <div class="inspector-stack">
+            <section>
+              <div class="inspector-head">
+                <div>
+                  <div class="label">右侧检查区</div>
+                  <strong class="toolbar-title">本镜头关键指标</strong>
+                </div>
+                <div class="chip-button">锁定版本</div>
+              </div>
+              <div class="metric-row">
+                <div>
+                  <strong>68%</strong>
+                  <p>项目处理进度</p>
+                </div>
+                <span>全项目</span>
+              </div>
+              <div class="metric-row">
+                <div>
+                  <strong>1</strong>
+                  <p>当前镜头待回补问题</p>
+                </div>
+                <span>镜头 12</span>
+              </div>
+              <div class="metric-row">
+                <div>
+                  <strong>2</strong>
+                  <p>相邻镜头待联动检查</p>
+                </div>
+                <span>12-13-14</span>
+              </div>
+            </section>
+
+            <section>
+              <div class="label">导出前检查</div>
+              <p>当前作品页只保留和当前项目直接相关的导出缺口，帮助用户提前知道哪些镜头还不能进入最终导出。</p>
+              <div class="queue-list">
+                <span>镜头 12 通过后，再统一校对 12-14 的节奏连续性。</span>
+                <span>当前批次字幕草稿已齐，等待配音版本回填。</span>
+              </div>
+            </section>
+
+            <section>
+              <div class="label">跨页分流</div>
+              <div class="footer-grid">
+                <div>
+                  <strong class="toolbar-title">这页不做什么</strong>
+                  <p>不承担跨项目素材管理，也不承接全局任务日志；需要深入处理时，用户从这里跳去 `素材库` 或 `任务记录`。</p>
+                </div>
+                <div class="toolbar-actions">
+                  <div class="button-ghost">去素材库</div>
+                  <div class="button-ghost">去任务记录</div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </aside>
+      </main>
+    </div>
+  </body>
+</html>

@@ -5,15 +5,19 @@
 当前文件：
 
 - `creation-space-demo.html`：`创作空间` 入口页，负责新建、继续、判断优先处理对象，并给出后续骨架入口。
-
-建议后续沿同一路径继续补：
-
-- `current-work-demo.html`
-- `asset-library-demo.html`
-- `task-history-demo.html`
+- `current-work-demo.html`：`当前作品` 主工作台，负责单项目内的剧情整理、分镜推进、镜头生成与导出前处理。
+- `asset-library-demo.html`：`素材库` 资源中心，负责角色、场景、镜头参考、音频与项目复用素材的集中管理。
+- `task-history-demo.html`：`任务记录` 状态中心，负责生成任务、失败回补、重试队列与导出任务追踪。
 
 命名原则：
 
 - 只放该业务线页面
 - 文件名直接体现页面职责
 - 平台级 demo 继续保留在 `docs/demo/` 根目录
+
+职责边界：
+
+- `creation-space` 只负责进入、继续与分流，不承担深度编辑。
+- `current-work` 承担项目主链路，是进入具体镜头与阶段操作的第一工作台。
+- `asset-library` 只管资源组织与检索，不负责任务排查。
+- `task-history` 只管任务状态与异常处理，不替代项目编辑页。

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI动画制作系统 · 素材库 Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #eef2f6;
+        --surface: #f7f9fb;
+        --surface-elevated: #fbfcfd;
+        --surface-soft: #eff3f7;
+        --shell: #111722;
+        --line: #d8e0e8;
+        --line-soft: #e5ebf1;
+        --ink: #16202c;
+        --copy: #566273;
+        --muted: #7b8693;
+        --accent: #2f5f8f;
+        --accent-soft: #dbe6f2;
+        --success: #2f6c4d;
+        --warning: #8c6841;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+        background: var(--canvas);
+        color: var(--ink);
+      }
+
+      h1, h2, h3, p { margin: 0; }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 20px;
+        align-items: center;
+        padding: 16px 22px;
+        background: var(--shell);
+        color: rgba(246, 248, 251, 0.92);
+      }
+
+      .brand, .topnav, .userbar, .filter-row, .asset-grid, .asset-meta, .footer-notes {
+        display: flex;
+      }
+
+      .brand {
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .brand-mark {
+        width: 12px;
+        height: 12px;
+        background: #d9e4f0;
+      }
+
+      .topnav {
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: rgba(233, 239, 246, 0.68);
+        font-size: 14px;
+      }
+
+      .topnav .active { color: #ffffff; }
+
+      .userbar {
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+      }
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .body {
+        width: min(1360px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 20px 0 28px;
+      }
+
+      .hero, .library-panel, .boundary-panel {
+        border: 1px solid var(--line);
+        background: var(--surface);
+        padding: 22px;
+      }
+
+      .library-panel, .boundary-panel {
+        margin-top: 18px;
+      }
+
+      .label {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .title {
+        margin-top: 10px;
+        font-size: 32px;
+        line-height: 1.06;
+        letter-spacing: -0.03em;
+      }
+
+      .copy, .asset-card p, .boundary-panel p, .footer-notes span {
+        color: var(--copy);
+        line-height: 1.7;
+        font-size: 14px;
+      }
+
+      .copy {
+        margin-top: 12px;
+        max-width: 58ch;
+      }
+
+      .filter-row, .asset-meta, .footer-notes {
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .filter-row { margin-top: 18px; }
+
+      .chip, .asset-meta span {
+        padding: 8px 11px;
+        background: var(--surface-soft);
+        color: var(--copy);
+        font-size: 13px;
+      }
+
+      .chip.active {
+        background: var(--shell);
+        color: rgba(246, 248, 251, 0.94);
+      }
+
+      .asset-grid {
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .asset-card {
+        flex: 1 1 280px;
+        min-width: 260px;
+        border: 1px solid var(--line-soft);
+        background: var(--surface-elevated);
+        padding: 18px;
+      }
+
+      .asset-preview {
+        aspect-ratio: 4 / 3;
+        background:
+          linear-gradient(135deg, rgba(47, 95, 143, 0.2), rgba(17, 23, 34, 0.1)),
+          linear-gradient(180deg, #dde6ef, #cad4de);
+      }
+
+      .asset-card strong {
+        display: block;
+        margin-top: 14px;
+        font-size: 18px;
+        line-height: 1.2;
+      }
+
+      .asset-card p {
+        margin-top: 8px;
+      }
+
+      .asset-meta {
+        margin-top: 12px;
+      }
+
+      .boundary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .boundary-card {
+        border: 1px solid var(--line-soft);
+        background: var(--surface-elevated);
+        padding: 18px;
+      }
+
+      .boundary-card strong {
+        display: block;
+        font-size: 18px;
+        line-height: 1.2;
+      }
+
+      .boundary-card p { margin-top: 10px; }
+
+      .footer-notes { margin-top: 16px; }
+
+      @media (max-width: 900px) {
+        .boundary-grid { grid-template-columns: 1fr; }
+      }
+
+      @media (max-width: 720px) {
+        .topbar {
+          grid-template-columns: 1fr;
+          justify-items: start;
+        }
+
+        .body {
+          width: min(100%, calc(100% - 24px));
+          padding: 12px 0 24px;
+        }
+
+        .hero, .library-panel, .boundary-panel { padding: 18px; }
+        .title { font-size: 26px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>gemshin_nb</span>
+        </div>
+        <nav class="topnav">
+          <span>创作空间</span>
+          <span>当前作品</span>
+          <span class="active">素材库</span>
+          <span>任务记录</span>
+        </nav>
+        <div class="userbar">
+          <span>资源整理中</span>
+          <div class="avatar">ZW</div>
+        </div>
+      </header>
+
+      <main class="body">
+        <section class="hero">
+          <div class="label">资源工作区</div>
+          <h1 class="title">素材库只负责资源的组织、筛选与复用，不替代任务排查或镜头编辑。</h1>
+          <p class="copy">
+            这页承接角色图、场景图、镜头参考、音频与项目复用素材。用户来到这里是为了找资源、换资源、确认某类素材能不能进入当前镜头，而不是为了看全局任务日志。
+          </p>
+          <div class="filter-row">
+            <span class="chip active">项目内素材</span>
+            <span class="chip">角色设定</span>
+            <span class="chip">场景背景</span>
+            <span class="chip">参考视频</span>
+            <span class="chip">音频 / 配音</span>
+          </div>
+        </section>
+
+        <section class="library-panel">
+          <div class="label">资源列表</div>
+          <div class="asset-grid">
+            <article class="asset-card">
+              <div class="asset-preview"></div>
+              <strong>女主角夜班立绘</strong>
+              <p>当前项目内正在使用的主角立绘，可直接挂到镜头 12 与 13 的视频生成任务中。</p>
+              <div class="asset-meta">
+                <span>角色素材</span>
+                <span>已入项目</span>
+                <span>最近使用：镜头 13</span>
+              </div>
+            </article>
+
+            <article class="asset-card">
+              <div class="asset-preview"></div>
+              <strong>便利店门口夜景参考</strong>
+              <p>用于镜头 12 推门镜头的场景参考图，主要帮助统一门外夜景光线与玻璃反光。</p>
+              <div class="asset-meta">
+                <span>场景素材</span>
+                <span>参考图</span>
+                <span>已锁定 2 张</span>
+              </div>
+            </article>
+
+            <article class="asset-card">
+              <div class="asset-preview"></div>
+              <strong>收银台对白配音片段</strong>
+              <p>镜头 13 对话片段的配音测试版本，当前只作为口型和节奏校对输入，不在任务页重复展示。</p>
+              <div class="asset-meta">
+                <span>音频素材</span>
+                <span>待确认</span>
+                <span>时长：9 秒</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="boundary-panel">
+          <div class="label">职责边界</div>
+          <div class="boundary-grid">
+            <article class="boundary-card">
+              <strong>这页负责什么</strong>
+              <p>管理素材本身，包括筛选、复用、替换、标记与项目内挂接。</p>
+            </article>
+            <article class="boundary-card">
+              <strong>这页不负责什么</strong>
+              <p>不展示完整的失败任务链路，也不承担镜头脚本编辑和项目阶段推进。</p>
+            </article>
+            <article class="boundary-card">
+              <strong>与其他页关系</strong>
+              <p>从 `当前作品` 跳入找资源，选定后再回项目；若要排查生成失败或重试队列，跳去 `任务记录`。</p>
+            </article>
+          </div>
+
+          <div class="footer-notes">
+            <span>素材库是资源中心，不是项目主工作台。</span>
+            <span>跨项目复用和项目内挂接可在这里做，但任务异常不在这里展开。</span>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

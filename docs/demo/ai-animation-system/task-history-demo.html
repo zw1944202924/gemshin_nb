@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI动画制作系统 · 任务记录 Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #eef2f6;
+        --surface: #f7f9fb;
+        --surface-elevated: #fbfcfd;
+        --surface-soft: #eff3f7;
+        --shell: #111722;
+        --line: #d8e0e8;
+        --line-soft: #e5ebf1;
+        --ink: #16202c;
+        --copy: #566273;
+        --muted: #7b8693;
+        --accent: #2f5f8f;
+        --accent-soft: #dbe6f2;
+        --warning: #8c6841;
+        --danger: #8d4a4f;
+        --success: #2f6c4d;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+        background: var(--canvas);
+        color: var(--ink);
+      }
+
+      h1, h2, h3, p { margin: 0; }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 20px;
+        align-items: center;
+        padding: 16px 22px;
+        background: var(--shell);
+        color: rgba(246, 248, 251, 0.92);
+      }
+
+      .brand, .topnav, .userbar, .queue-tabs, .task-meta, .footer-notes {
+        display: flex;
+      }
+
+      .brand {
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .brand-mark {
+        width: 12px;
+        height: 12px;
+        background: #d9e4f0;
+      }
+
+      .topnav {
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: rgba(233, 239, 246, 0.68);
+        font-size: 14px;
+      }
+
+      .topnav .active { color: #ffffff; }
+
+      .userbar {
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+      }
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .body {
+        width: min(1380px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 20px 0 28px;
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 18px;
+      }
+
+      .hero, .task-list, .detail-panel, .boundary-panel {
+        border: 1px solid var(--line);
+        background: var(--surface);
+        padding: 22px;
+      }
+
+      .task-list, .boundary-panel { margin-top: 18px; }
+
+      .label {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .title {
+        margin-top: 10px;
+        font-size: 32px;
+        line-height: 1.06;
+        letter-spacing: -0.03em;
+      }
+
+      .copy, .task-card p, .detail-panel p, .boundary-card p, .footer-notes span {
+        color: var(--copy);
+        line-height: 1.7;
+        font-size: 14px;
+      }
+
+      .copy {
+        margin-top: 12px;
+        max-width: 56ch;
+      }
+
+      .queue-tabs, .task-meta, .footer-notes {
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .queue-tabs { margin-top: 18px; }
+
+      .queue-tabs span, .task-meta span {
+        padding: 8px 11px;
+        background: var(--surface-soft);
+        color: var(--copy);
+        font-size: 13px;
+      }
+
+      .queue-tabs .active {
+        background: var(--shell);
+        color: rgba(246, 248, 251, 0.94);
+      }
+
+      .task-stack {
+        display: grid;
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .task-card, .boundary-card {
+        border: 1px solid var(--line-soft);
+        background: var(--surface-elevated);
+        padding: 18px;
+      }
+
+      .task-head, .detail-head {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: start;
+      }
+
+      .task-card strong, .boundary-card strong {
+        display: block;
+        font-size: 18px;
+        line-height: 1.2;
+      }
+
+      .task-card p, .boundary-card p { margin-top: 10px; }
+
+      .state-chip {
+        padding: 5px 9px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .state-failed {
+        background: rgba(141, 74, 79, 0.14);
+        color: var(--danger);
+      }
+
+      .state-running {
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+
+      .state-ready {
+        background: rgba(47, 108, 77, 0.14);
+        color: var(--success);
+      }
+
+      .task-meta { margin-top: 12px; }
+
+      .detail-panel {
+        display: grid;
+        gap: 18px;
+        align-content: start;
+      }
+
+      .detail-section {
+        border: 1px solid var(--line-soft);
+        background: var(--surface-elevated);
+        padding: 18px;
+      }
+
+      .detail-section strong {
+        display: block;
+        font-size: 18px;
+        line-height: 1.2;
+      }
+
+      .detail-section p { margin-top: 10px; }
+
+      .boundary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .footer-notes { margin-top: 16px; }
+
+      @media (max-width: 980px) {
+        .body, .task-head, .detail-head, .boundary-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .topbar {
+          grid-template-columns: 1fr;
+          justify-items: start;
+        }
+
+        .body {
+          width: min(100%, calc(100% - 24px));
+          padding: 12px 0 24px;
+        }
+
+        .hero, .task-list, .detail-panel, .boundary-panel { padding: 18px; }
+        .title { font-size: 26px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>gemshin_nb</span>
+        </div>
+        <nav class="topnav">
+          <span>创作空间</span>
+          <span>当前作品</span>
+          <span>素材库</span>
+          <span class="active">任务记录</span>
+        </nav>
+        <div class="userbar">
+          <span>任务排查中</span>
+          <div class="avatar">ZW</div>
+        </div>
+      </header>
+
+      <main class="body">
+        <section>
+          <section class="hero">
+            <div class="label">状态中心</div>
+            <h1 class="title">任务记录负责看清生成状态、失败原因与重试队列，不替代项目编辑。</h1>
+            <p class="copy">
+              当用户要排查失败镜头、查看排队任务、确认导出批次或批量重试时，才进入这页。它是任务视角，不再重复镜头脚本和素材编辑能力。
+            </p>
+            <div class="queue-tabs">
+              <span class="active">失败任务</span>
+              <span>处理中</span>
+              <span>已完成</span>
+              <span>导出任务</span>
+            </div>
+          </section>
+
+          <section class="task-list">
+            <div class="label">任务列表</div>
+            <div class="task-stack">
+              <article class="task-card">
+                <div class="task-head">
+                  <div>
+                    <strong>镜头 12 · 视频重生成失败</strong>
+                    <p>主问题是人物视线偏离与推进节奏不稳，需回到当前作品调整策略后重新提交。</p>
+                  </div>
+                  <span class="state-chip state-failed">失败</span>
+                </div>
+                <div class="task-meta">
+                  <span>项目：《海边便利店》</span>
+                  <span>阶段：视频生成</span>
+                  <span>失败时间：10 分钟前</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="task-head">
+                  <div>
+                    <strong>镜头 13 · 配音口型校对中</strong>
+                    <p>音频版本已就绪，等待当前作品页回填节奏确认后再进入导出批次。</p>
+                  </div>
+                  <span class="state-chip state-running">处理中</span>
+                </div>
+                <div class="task-meta">
+                  <span>项目：《海边便利店》</span>
+                  <span>阶段：配音校对</span>
+                  <span>队列位置：2</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="task-head">
+                  <div>
+                    <strong>第一集导出预检查</strong>
+                    <p>镜头 14 已可纳入导出批次，但镜头 12 通过前整集仍不能进入最终导出。</p>
+                  </div>
+                  <span class="state-chip state-ready">待完成</span>
+                </div>
+                <div class="task-meta">
+                  <span>项目：《海边便利店》</span>
+                  <span>阶段：导出前校验</span>
+                  <span>批次：EP01</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="boundary-panel">
+            <div class="label">职责边界</div>
+            <div class="boundary-grid">
+              <article class="boundary-card">
+                <strong>这页负责什么</strong>
+                <p>看任务状态、失败原因、排队顺序、重试入口与导出批次追踪。</p>
+              </article>
+              <article class="boundary-card">
+                <strong>这页不负责什么</strong>
+                <p>不承担分镜脚本编辑、不直接替换素材，也不作为项目总览页存在。</p>
+              </article>
+              <article class="boundary-card">
+                <strong>与其他页关系</strong>
+                <p>发现失败原因后回到 `当前作品` 调镜头；需要替换参考图或音频则跳去 `素材库`。</p>
+              </article>
+            </div>
+
+            <div class="footer-notes">
+              <span>任务记录是状态中心，不是项目编辑页。</span>
+              <span>全局排障和重试在这里集中完成，避免把首页和工作台都做成半套监控界面。</span>
+            </div>
+          </section>
+        </section>
+
+        <aside class="detail-panel">
+          <div class="detail-head">
+            <div>
+              <div class="label">任务详情</div>
+              <strong class="title" style="font-size: 24px; margin-top: 8px;">镜头 12 失败原因摘要</strong>
+            </div>
+            <span class="state-chip state-failed">需处理</span>
+          </div>
+
+          <section class="detail-section">
+            <strong>失败原因</strong>
+            <p>人物视线与镜头推进方向不一致，导致后续与镜头 13 的对话节奏衔接异常。当前不建议直接重复提交同一参数。</p>
+          </section>
+
+          <section class="detail-section">
+            <strong>推荐动作</strong>
+            <p>先回 `current-work-demo` 调整镜头 12 的提示词与运动策略，再从当前作品重新提交生成任务。</p>
+          </section>
+
+          <section class="detail-section">
+            <strong>相关依赖</strong>
+            <p>镜头 13 的配音口型校对与整集导出检查，都依赖镜头 12 通过后才能继续推进。</p>
+          </section>
+        </aside>
+      </main>
+    </div>
+  </body>
+</html>
