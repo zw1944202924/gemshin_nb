@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gemshin_nb 模块内项目中心 Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #eef2f6;
+        --surface: #f7f9fb;
+        --surface-soft: #f1f4f7;
+        --shell: #111722;
+        --shell-soft: #182131;
+        --line: #dbe2ea;
+        --line-soft: #e7edf2;
+        --ink: #17202c;
+        --copy: #556173;
+        --muted: #7a8594;
+        --accent: #315f8f;
+        --danger: #8d4d4f;
+        --warning: #8c6841;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+        background: var(--canvas);
+        color: var(--ink);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 20px;
+        align-items: center;
+        padding: 16px 22px;
+        background: var(--shell);
+        color: rgba(246, 248, 251, 0.9);
+      }
+
+      .brand,
+      .topnav,
+      .userbar,
+      .summary,
+      .filters,
+      .actions,
+      .inline-notes {
+        display: flex;
+      }
+
+      .brand {
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .brand-mark {
+        width: 12px;
+        height: 12px;
+        background: #d9e4f0;
+      }
+
+      .topnav {
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: rgba(233, 239, 246, 0.68);
+        font-size: 14px;
+      }
+
+      .userbar {
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+      }
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .body {
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr) 280px;
+        min-height: 0;
+      }
+
+      .sidebar,
+      .status {
+        padding: 22px 18px;
+        background: var(--shell-soft);
+        color: rgba(239, 243, 248, 0.84);
+      }
+
+      .sidebar {
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .status {
+        border-left: 1px solid var(--line);
+        background: #f2f5f8;
+        color: var(--ink);
+      }
+
+      .label {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .navlist,
+      .project-list,
+      .status-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .navlist {
+        margin-top: 16px;
+      }
+
+      .navitem {
+        padding: 12px 0;
+        color: rgba(239, 243, 248, 0.68);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .navitem.active {
+        color: #ffffff;
+      }
+
+      .sidebar-note,
+      .status-note {
+        margin-top: 18px;
+        color: var(--copy);
+        line-height: 1.7;
+        font-size: 14px;
+      }
+
+      .sidebar-note {
+        color: rgba(222, 229, 239, 0.68);
+      }
+
+      .main {
+        padding: 28px 28px 34px;
+        background: var(--surface);
+      }
+
+      .header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: start;
+      }
+
+      h1 {
+        font-size: 34px;
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+      }
+
+      .header p {
+        max-width: 64ch;
+        margin-top: 12px;
+        color: var(--copy);
+        line-height: 1.72;
+      }
+
+      .button-primary,
+      .button-secondary,
+      .small {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0 16px;
+        font-weight: 700;
+      }
+
+      .button-primary {
+        background: #d9e2eb;
+        color: #16202c;
+      }
+
+      .button-secondary,
+      .small {
+        color: #314154;
+        border: 1px solid var(--line);
+        background: transparent;
+      }
+
+      .summary {
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 22px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .summary-item strong {
+        display: block;
+        font-size: 24px;
+        line-height: 1;
+      }
+
+      .summary-item span {
+        display: block;
+        margin-top: 8px;
+        color: var(--copy);
+        font-size: 14px;
+      }
+
+      .section {
+        margin-top: 24px;
+      }
+
+      .filters {
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        color: var(--copy);
+        font-size: 14px;
+      }
+
+      .filter {
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .project-list {
+        margin-top: 16px;
+      }
+
+      .project {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) 96px 84px 120px auto;
+        gap: 14px;
+        align-items: center;
+        padding: 18px 0;
+        border-bottom: 1px solid var(--line-soft);
+      }
+
+      .project-name strong {
+        display: block;
+        font-size: 16px;
+      }
+
+      .project-name span,
+      .cell {
+        color: var(--copy);
+        font-size: 14px;
+      }
+
+      .tone {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .tone.warning {
+        color: var(--warning);
+      }
+
+      .tone.danger {
+        color: var(--danger);
+      }
+
+      .progress {
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      .actions {
+        gap: 8px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+      }
+
+      .inline-notes {
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+        color: var(--copy);
+        font-size: 14px;
+      }
+
+      .status-list {
+        margin-top: 16px;
+      }
+
+      .status-item {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .status-item strong {
+        display: block;
+        font-size: 15px;
+      }
+
+      .status-item p {
+        margin-top: 8px;
+        color: var(--copy);
+        line-height: 1.68;
+        font-size: 14px;
+      }
+
+      @media (max-width: 1180px) {
+        .body {
+          grid-template-columns: 200px minmax(0, 1fr);
+        }
+
+        .status {
+          grid-column: 1 / -1;
+          border-left: 0;
+          border-top: 1px solid var(--line);
+        }
+      }
+
+      @media (max-width: 920px) {
+        .body,
+        .header,
+        .project {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          border-right: 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .actions {
+          justify-content: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>gemshin_nb</span>
+        </div>
+        <nav class="topnav">
+          <span>模块中心</span>
+          <span>工作流</span>
+          <span>素材状态</span>
+          <span>结果导出</span>
+        </nav>
+        <div class="userbar">
+          <span>漫剧阶段一</span>
+          <div class="avatar">ZW</div>
+        </div>
+      </header>
+
+      <div class="body">
+        <aside class="sidebar">
+          <div class="label">模块内部导航</div>
+          <div class="navlist">
+            <div class="navitem">返回模块中心</div>
+            <div class="navitem active">漫剧项目中心</div>
+            <div class="navitem">内容导入</div>
+            <div class="navitem">剧情整理</div>
+            <div class="navitem">漫剧工作台</div>
+            <div class="navitem">结果校验</div>
+            <div class="navitem">导出记录</div>
+          </div>
+          <p class="sidebar-note">这页已经明确归到“漫剧制作模块内部”。左侧导航负责模块内页面切换，不再代表整个平台的登录后第一层。</p>
+        </aside>
+
+        <main class="main">
+          <section class="header">
+            <div>
+              <div class="label">模块内部页面</div>
+              <h1>进入模块后，再在模块内项目中心选择具体项目。</h1>
+              <p>这页不再代表整个平台的登录后第一层，而是明确归到“漫剧制作模块内部”。保留最必要的摘要、筛选和项目列表，负责承接模块内的项目选择。</p>
+            </div>
+            <div class="actions">
+              <div class="button-secondary">导入旧项目</div>
+              <div class="button-primary">新建项目</div>
+            </div>
+          </section>
+
+          <section class="summary">
+            <div class="summary-item">
+              <strong>12</strong>
+              <span>当前项目</span>
+            </div>
+            <div class="summary-item">
+              <strong>7</strong>
+              <span>待处理</span>
+            </div>
+            <div class="summary-item">
+              <strong>3</strong>
+              <span>失败项</span>
+            </div>
+            <div class="summary-item">
+              <strong>2</strong>
+              <span>可导出</span>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="label">筛选</div>
+            <div class="filters">
+              <div class="filter">搜索项目名 / 角色 / 场景</div>
+              <div class="filter">阶段：待处理优先</div>
+              <div class="filter">排序：最近更新时间</div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="label">最近项目</div>
+            <div class="project-list">
+              <div class="project">
+                <div class="project-name">
+                  <strong>《星港追影》第一卷</strong>
+                  <span>镜头 18-24 的视频生成仍需回补。</span>
+                </div>
+                <div class="cell">素材生成</div>
+                <div class="progress">74%</div>
+                <div class="tone warning">2 个失败任务</div>
+                <div class="actions">
+                  <div class="small">继续处理</div>
+                </div>
+              </div>
+
+              <div class="project">
+                <div class="project-name">
+                  <strong>《旧城旅店》概念样片</strong>
+                  <span>剧情整理完成，等待确认分镜脚本。</span>
+                </div>
+                <div class="cell">分镜工作台</div>
+                <div class="progress">48%</div>
+                <div class="tone danger">3 个镜头需更新</div>
+                <div class="actions">
+                  <div class="small">继续处理</div>
+                </div>
+              </div>
+
+              <div class="project">
+                <div class="project-name">
+                  <strong>《雨巷回声》试播包</strong>
+                  <span>结果检查已完成，可进入导出。</span>
+                </div>
+                <div class="cell">结果校验</div>
+                <div class="progress">96%</div>
+                <div class="tone">标准导出可用</div>
+                <div class="actions">
+                  <div class="small">查看结果</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="inline-notes">
+              <span>空状态时只保留一条引导：从新建项目开始进入导入流程。</span>
+              <span>风险与缺口不再拆成 3 张解释卡，统一收进列表和右侧状态区。</span>
+            </div>
+          </section>
+        </main>
+
+        <aside class="status">
+          <div class="label">状态区</div>
+          <div class="status-list">
+            <div class="status-item">
+              <strong>当前优先处理</strong>
+              <p>《星港追影》有 2 个视频任务失败，继续处理按钮应直接进入失败镜头，不再额外跳中间页。</p>
+            </div>
+
+            <div class="status-item">
+              <strong>导出前缺口</strong>
+              <p>有 1 个项目仍不可标准导出，原因是字幕和 manifest 未同步，提前在这里暴露，不单独拆成提示卡阵列。</p>
+            </div>
+
+            <div class="status-item">
+              <strong>异常处理方式</strong>
+              <p>搜索无结果时保留筛选条件并提供清空操作；接口异常只局部提示，不让整页变成错误态。</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </body>
+</html>

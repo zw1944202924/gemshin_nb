@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI动画制作系统 · 创作空间 Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #eef2f6;
+        --surface: #f7f9fb;
+        --surface-elevated: #fbfcfd;
+        --surface-soft: #f0f4f7;
+        --shell: #111722;
+        --shell-soft: #182131;
+        --line: #d9e1e9;
+        --line-soft: #e6edf2;
+        --ink: #17202c;
+        --copy: #566172;
+        --muted: #7d8794;
+        --accent: #2f5f8f;
+        --accent-soft: #dce7f3;
+        --success: #2d6b4b;
+        --warning: #8c6841;
+        --danger: #8c4a4f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 18%),
+          var(--canvas);
+        color: var(--ink);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 20px;
+        align-items: center;
+        padding: 16px 22px;
+        background: var(--shell);
+        color: rgba(246, 248, 251, 0.9);
+      }
+
+      .brand,
+      .topnav,
+      .userbar,
+      .entry-actions,
+      .hero-meta,
+      .flow-chips,
+      .workspace-grid,
+      .project-grid,
+      .card-meta,
+      .footer-notes {
+        display: flex;
+      }
+
+      .brand {
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .brand-mark {
+        width: 12px;
+        height: 12px;
+        background: #d9e4f0;
+      }
+
+      .topnav {
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: rgba(233, 239, 246, 0.68);
+        font-size: 14px;
+      }
+
+      .userbar {
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+      }
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .body {
+        width: min(1280px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 24px 0 36px;
+      }
+
+      .hero,
+      .resume-card,
+      .workspace-map,
+      .projects,
+      .state-block {
+        border: 1px solid var(--line);
+        background: var(--surface);
+      }
+
+      .hero,
+      .resume-card,
+      .workspace-map,
+      .projects,
+      .state-block {
+        padding: 24px;
+      }
+
+      .hero-grid,
+      .resume-grid,
+      .section-head,
+      .state-grid {
+        display: grid;
+        gap: 20px;
+      }
+
+      .hero-grid {
+        grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+        align-items: start;
+      }
+
+      .label {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      h1 {
+        margin-top: 12px;
+        max-width: 12ch;
+        font-size: 40px;
+        line-height: 1.04;
+        letter-spacing: -0.04em;
+        text-wrap: balance;
+      }
+
+      .hero-copy,
+      .section-head p,
+      .workspace-card p,
+      .project-card p,
+      .state-card p {
+        color: var(--copy);
+        line-height: 1.72;
+        font-size: 14px;
+      }
+
+      .hero-copy {
+        margin-top: 14px;
+        max-width: 58ch;
+        font-size: 15px;
+      }
+
+      .hero-meta,
+      .flow-chips,
+      .card-meta,
+      .footer-notes {
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .hero-meta {
+        margin-top: 18px;
+      }
+
+      .hero-meta span,
+      .flow-chips span,
+      .card-meta span {
+        padding: 8px 11px;
+        background: var(--surface-soft);
+        color: var(--copy);
+        font-size: 13px;
+      }
+
+      .entry-panel {
+        padding: 20px;
+        background: linear-gradient(180deg, rgba(47, 95, 143, 0.06), rgba(47, 95, 143, 0)),
+          var(--surface-soft);
+      }
+
+      .entry-panel strong {
+        display: block;
+        font-size: 18px;
+        line-height: 1.2;
+      }
+
+      .entry-panel p {
+        margin-top: 10px;
+        color: var(--copy);
+        line-height: 1.72;
+        font-size: 14px;
+      }
+
+      .entry-actions {
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .button-primary,
+      .button-secondary,
+      .button-ghost,
+      .card-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0 16px;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .button-primary {
+        background: var(--accent);
+        color: #f7fbff;
+      }
+
+      .button-secondary,
+      .button-ghost,
+      .card-action {
+        border: 1px solid var(--line);
+        background: transparent;
+        color: #314154;
+      }
+
+      .resume-card,
+      .workspace-map,
+      .projects,
+      .state-block {
+        margin-top: 18px;
+      }
+
+      .resume-grid {
+        grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.7fr);
+        align-items: start;
+      }
+
+      .resume-top {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .resume-badge,
+      .state-pill {
+        padding: 5px 9px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+
+      .resume-badge {
+        color: var(--accent);
+        background: var(--accent-soft);
+      }
+
+      .resume-note {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .resume-title {
+        margin-top: 18px;
+        font-size: 30px;
+        line-height: 1.06;
+        letter-spacing: -0.03em;
+      }
+
+      .resume-copy {
+        margin-top: 10px;
+        max-width: 48ch;
+        color: var(--copy);
+        line-height: 1.72;
+        font-size: 15px;
+      }
+
+      .flow-chips {
+        margin-top: 16px;
+      }
+
+      .resume-side {
+        padding: 18px;
+        background: var(--surface-soft);
+      }
+
+      .side-stack {
+        display: grid;
+        gap: 14px;
+      }
+
+      .metric-row {
+        display: grid;
+        gap: 8px;
+      }
+
+      .metric-row strong {
+        font-size: 24px;
+        line-height: 1;
+      }
+
+      .metric-row span,
+      .metric-row p {
+        color: var(--copy);
+        line-height: 1.64;
+        font-size: 14px;
+      }
+
+      .progress-track,
+      .mini-track {
+        overflow: hidden;
+        background: #d7dee6;
+      }
+
+      .progress-track {
+        height: 8px;
+      }
+
+      .progress-fill,
+      .mini-fill-100,
+      .mini-fill-58,
+      .mini-fill-14 {
+        height: 100%;
+        background: var(--accent);
+      }
+
+      .progress-fill {
+        width: 68%;
+      }
+
+      .workspace-grid,
+      .project-grid {
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .workspace-card,
+      .project-card,
+      .state-card {
+        background: var(--surface-elevated);
+        border: 1px solid var(--line-soft);
+      }
+
+      .workspace-card {
+        flex: 1 1 230px;
+        min-width: 220px;
+        padding: 18px;
+      }
+
+      .workspace-card strong,
+      .project-card strong,
+      .state-card strong {
+        display: block;
+        font-size: 18px;
+        line-height: 1.2;
+      }
+
+      .workspace-card p,
+      .project-card p,
+      .state-card p {
+        margin-top: 10px;
+      }
+
+      .workspace-foot {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin-top: 18px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line-soft);
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .workspace-card.active {
+        background: linear-gradient(180deg, rgba(47, 95, 143, 0.06), rgba(47, 95, 143, 0)),
+          var(--surface-elevated);
+      }
+
+      .section-head {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
+      }
+
+      .section-head h2 {
+        margin-top: 10px;
+        font-size: 28px;
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+      }
+
+      .project-card {
+        flex: 1 1 300px;
+        min-width: 280px;
+        padding: 18px;
+      }
+
+      .card-cover {
+        aspect-ratio: 16 / 9;
+        background:
+          linear-gradient(135deg, rgba(47, 95, 143, 0.24), rgba(17, 23, 34, 0.12)),
+          linear-gradient(180deg, #dce6ef, #cdd8e3);
+      }
+
+      .card-head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: start;
+        margin-top: 14px;
+      }
+
+      .card-meta {
+        margin-top: 14px;
+      }
+
+      .mini-progress {
+        margin-top: 14px;
+      }
+
+      .mini-progress-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        color: var(--copy);
+        font-size: 13px;
+      }
+
+      .mini-track {
+        height: 6px;
+        margin-top: 8px;
+      }
+
+      .mini-fill-100 {
+        width: 100%;
+      }
+
+      .mini-fill-58 {
+        width: 58%;
+      }
+
+      .mini-fill-14 {
+        width: 14%;
+      }
+
+      .card-footer {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line-soft);
+      }
+
+      .card-footer span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .state-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-top: 18px;
+      }
+
+      .state-card {
+        padding: 18px;
+      }
+
+      .state-card strong + p {
+        margin-top: 10px;
+      }
+
+      .state-pill {
+        margin-top: 14px;
+        display: inline-flex;
+      }
+
+      .state-running {
+        color: var(--accent);
+        background: var(--accent-soft);
+      }
+
+      .state-ready {
+        color: var(--success);
+        background: rgba(45, 107, 75, 0.14);
+      }
+
+      .state-warning {
+        color: var(--warning);
+        background: rgba(140, 104, 65, 0.14);
+      }
+
+      .state-danger {
+        color: var(--danger);
+        background: rgba(140, 74, 79, 0.14);
+      }
+
+      .footer-notes {
+        margin-top: 16px;
+        color: var(--copy);
+        font-size: 14px;
+      }
+
+      @media (max-width: 980px) {
+        .hero-grid,
+        .resume-grid,
+        .section-head,
+        .card-footer,
+        .workspace-foot,
+        .state-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .topbar {
+          grid-template-columns: 1fr;
+          justify-items: start;
+        }
+
+        .body {
+          width: min(100%, calc(100% - 24px));
+          padding: 12px 0 28px;
+        }
+
+        .hero,
+        .resume-card,
+        .workspace-map,
+        .projects,
+        .state-block {
+          padding: 20px;
+        }
+
+        h1 {
+          font-size: 34px;
+        }
+
+        .resume-title {
+          font-size: 25px;
+        }
+
+        .section-head h2 {
+          font-size: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>gemshin_nb</span>
+        </div>
+        <nav class="topnav">
+          <span>AI动画制作系统</span>
+          <span>创作空间</span>
+          <span>当前作品</span>
+          <span>任务记录</span>
+        </nav>
+        <div class="userbar">
+          <span>创作中</span>
+          <div class="avatar">ZW</div>
+        </div>
+      </header>
+
+      <main class="body">
+        <section class="hero">
+          <div class="hero-grid">
+            <div>
+              <div class="label">业务线独立入口</div>
+              <h1>创作空间负责进入、判断优先级，再把人送进真正的制作工作台。</h1>
+              <p class="hero-copy">
+                这版页面不再沿用平台项目中心语义，而是围绕 AI 动画工作流的第一跳来组织。首页只做三件事：创建新项目、继续最近正在处理的作品、快速分流到当前作品 / 素材库 / 任务记录。
+              </p>
+              <div class="hero-meta">
+                <span>入口角色：开始或继续创作</span>
+                <span>首屏不摊开后台统计</span>
+                <span>优先暴露阻塞镜头与继续落点</span>
+              </div>
+            </div>
+
+            <div class="entry-panel">
+              <div class="label">当前动作</div>
+              <strong>先把用户带到下一步，不先把所有功能并列摊开。</strong>
+              <p>入口页默认给出推荐继续项，同时保留模板创建和空白创建。更深的项目编辑、素材筛选和任务排查，都由对应工作区承接。</p>
+              <div class="entry-actions">
+                <div class="button-secondary">从模板创建</div>
+                <div class="button-primary">建立空白项目</div>
+                <div class="button-ghost">导入已有脚本</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="resume-card">
+          <div class="resume-top">
+            <span class="resume-badge">建议继续</span>
+            <span class="resume-note">基于最近编辑、处理中状态与失败镜头数量推荐</span>
+            <span class="label">优先入口</span>
+          </div>
+
+          <div class="resume-grid">
+            <div>
+              <h2 class="resume-title">《海边便利店》样片第一集</h2>
+              <p class="resume-copy">
+                当前停在视频生成阶段，18 个镜头里已有 12 个完成。创作空间不要求用户再翻列表，它应该直接帮用户判断“先回到哪一个作品、优先补哪类问题”。
+              </p>
+              <div class="flow-chips">
+                <span>24 个分镜</span>
+                <span>当前阶段：视频生成</span>
+                <span>2 个失败镜头待回补</span>
+                <span>上次编辑：2 小时前</span>
+              </div>
+            </div>
+
+            <aside class="resume-side">
+              <div class="side-stack">
+                <div class="metric-row">
+                  <span>当前处理进度</span>
+                  <strong>68%</strong>
+                  <div class="progress-track">
+                    <div class="progress-fill"></div>
+                  </div>
+                </div>
+                <div class="metric-row">
+                  <span>继续后默认落点</span>
+                  <p>直接进入失败镜头列表，而不是中间概览页，减少一次无意义跳转。</p>
+                </div>
+                <div class="button-primary">继续创作</div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="workspace-map">
+          <div class="section-head">
+            <div>
+              <div class="label">一级骨架</div>
+              <h2>在创作空间里先给出四个后续工作区的清晰分流。</h2>
+              <p>这里不把功能做成平级导航堆栈，而是按“进入创作后通常要去哪”来组织，让当前作品优先，素材与任务做成辅助入口。</p>
+            </div>
+            <div class="button-ghost">查看工作流总览</div>
+          </div>
+
+          <div class="workspace-grid">
+            <article class="workspace-card active">
+              <div class="label">主工作区</div>
+              <strong>当前作品</strong>
+              <p>进入项目后的核心工作台，承接剧情整理、分镜脚本、图片生成、视频生成与精修处理。</p>
+              <div class="workspace-foot">
+                <span>默认从推荐继续项进入</span>
+                <div class="card-action">进入工作台</div>
+              </div>
+            </article>
+
+            <article class="workspace-card">
+              <div class="label">资源工作区</div>
+              <strong>素材库</strong>
+              <p>承接角色图、背景图、参考视频、配音片段和项目内复用资产，不在首页提前展开复杂筛选。</p>
+              <div class="workspace-foot">
+                <span>适合从项目内或异常提示跳入</span>
+                <div class="card-action">查看素材</div>
+              </div>
+            </article>
+
+            <article class="workspace-card">
+              <div class="label">排障工作区</div>
+              <strong>任务记录</strong>
+              <p>集中查看生成任务、失败原因、重试入口和处理进度，避免把首页拉成监控面板。</p>
+              <div class="workspace-foot">
+                <span>失败态从这里统一承接</span>
+                <div class="card-action">查看任务</div>
+              </div>
+            </article>
+
+            <article class="workspace-card">
+              <div class="label">入口本身</div>
+              <strong>创作空间</strong>
+              <p>负责建立新项目、推荐继续项、展示最近作品与首要异常，不承担深度编辑职责。</p>
+              <div class="workspace-foot">
+                <span>保持轻入口，而不是后台首页</span>
+                <div class="card-action">返回首屏</div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="projects">
+          <div class="section-head">
+            <div>
+              <div class="label">最近作品</div>
+              <h2>作品列表保留决策必需信息，但不抢走首屏重点。</h2>
+              <p>这一层只保留项目名、当前阶段、处理进度、最近编辑时间和继续入口。更复杂的筛选与批量管理，留给后续的任务记录或当前作品内部处理。</p>
+            </div>
+            <div class="button-ghost">查看全部作品</div>
+          </div>
+
+          <div class="project-grid">
+            <article class="project-card">
+              <div class="card-cover"></div>
+              <div class="card-head">
+                <div>
+                  <strong>《夏日短剧》试播包</strong>
+                  <p>字幕与镜头已同步完成，适合从创作空间直接继续进入镜头精修或导出前检查。</p>
+                </div>
+                <span class="state-pill state-ready">已完成</span>
+              </div>
+              <div class="card-meta">
+                <span>12 个分镜</span>
+                <span>最近编辑：昨天</span>
+                <span>下一步：导出前校验</span>
+              </div>
+              <div class="mini-progress">
+                <div class="mini-progress-head">
+                  <span>处理进度</span>
+                  <strong>100%</strong>
+                </div>
+                <div class="mini-track">
+                  <div class="mini-fill-100"></div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <span>可直接进入当前作品</span>
+                <div class="card-action">继续创作</div>
+              </div>
+            </article>
+
+            <article class="project-card">
+              <div class="card-cover"></div>
+              <div class="card-head">
+                <div>
+                  <strong>《夜班咖啡馆》概念样片</strong>
+                  <p>图片生成仍在处理中，当前价值是快速告诉用户哪些镜头需要补 prompt 或重新提交任务。</p>
+                </div>
+                <span class="state-pill state-running">处理中</span>
+              </div>
+              <div class="card-meta">
+                <span>36 个分镜</span>
+                <span>最近编辑：4 小时前</span>
+                <span>3 个镜头待确认</span>
+              </div>
+              <div class="mini-progress">
+                <div class="mini-progress-head">
+                  <span>处理进度</span>
+                  <strong>58%</strong>
+                </div>
+                <div class="mini-track">
+                  <div class="mini-fill-58"></div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <span>建议从失败镜头继续</span>
+                <div class="card-action">继续创作</div>
+              </div>
+            </article>
+
+            <article class="project-card">
+              <div class="card-cover"></div>
+              <div class="card-head">
+                <div>
+                  <strong>《城市雨幕》角色测试片</strong>
+                  <p>刚完成内容导入，仍属于待开始状态。这里仅保留最基础判断，不把首页做成任务编排页。</p>
+                </div>
+                <span class="state-pill state-warning">待开始</span>
+              </div>
+              <div class="card-meta">
+                <span>18 个分镜</span>
+                <span>最近编辑：3 天前</span>
+                <span>下一步：剧情整理</span>
+              </div>
+              <div class="mini-progress">
+                <div class="mini-progress-head">
+                  <span>处理进度</span>
+                  <strong>14%</strong>
+                </div>
+                <div class="mini-track">
+                  <div class="mini-fill-14"></div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <span>首次进入优先补设定</span>
+                <div class="card-action">开始创作</div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="state-block">
+          <div class="section-head">
+            <div>
+              <div class="label">状态与异常</div>
+              <h2>首页只暴露最关键的状态，不替代后续工作区。</h2>
+              <p>空状态、失败态和待处理态都在创作空间被轻量表达，真正的排障与处理动作交给后面的页面承接。</p>
+            </div>
+            <div class="button-ghost">查看状态策略</div>
+          </div>
+
+          <div class="state-grid">
+            <article class="state-card">
+              <strong>首次使用</strong>
+              <p>没有项目时，只保留一个清晰入口：从空白项目或模板开始，不展示空统计卡阵列。</p>
+              <span class="state-pill state-ready">空状态</span>
+            </article>
+
+            <article class="state-card">
+              <strong>局部失败</strong>
+              <p>镜头失败只在推荐继续项和项目卡片上暴露，再把用户导向任务记录，不让首页整体进入错误页。</p>
+              <span class="state-pill state-danger">失败态</span>
+            </article>
+
+            <article class="state-card">
+              <strong>处理中</strong>
+              <p>当后台仍在生成时，首页显示阶段和大概进度即可，避免把任务日志和排队细节塞满入口页。</p>
+              <span class="state-pill state-running">进行中</span>
+            </article>
+          </div>
+
+          <div class="footer-notes">
+            <span>创作空间是业务入口，不是平台项目中心翻版。</span>
+            <span>素材库和任务记录都已经留出骨架入口，但不抢占首屏优先级。</span>
+            <span>后续扩页时按同一目录继续补充，不再混入平台级 demo 文件。</span>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
