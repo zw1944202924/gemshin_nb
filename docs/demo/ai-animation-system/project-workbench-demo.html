@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI动画制作系统 · 项目工作台 Demo</title>
+    <link rel="stylesheet" href="./demo-theme.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a href="../homepage-demo-a.html" class="brand">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <span>gemshin_nb</span>
+          </a>
+          <nav class="topnav" aria-label="平台导航">
+            <a href="../homepage-demo-a.html">首页</a>
+            <a href="./module-center-entry-demo.html" class="active">模块中心</a>
+            <a href="../personal-center-demo.html">AI 助手</a>
+            <a href="../personal-center-demo.html">个人中心</a>
+            <a href="../account-permissions-demo.html">账户与权限</a>
+          </nav>
+          <div class="top-actions">
+            <span class="ghost-note">项目层</span>
+            <a class="btn-primary" href="./shot-refine-demo.html">进入镜头精修</a>
+          </div>
+        </div>
+      </header>
+
+      <main class="page-frame">
+        <section class="page-header">
+          <div>
+            <div class="breadcrumbs">
+              <span>gemshin_nb</span><span>/</span><span>模块中心</span><span>/</span><span>AI动画制作系统</span><span>/</span><span>海港追光</span>
+            </div>
+            <h1>海港追光</h1>
+            <p>项目工作台承接章节、分镜、项目素材、项目任务和导出阻塞。这里是项目层，不再承担系统级公共资源和跨项目总队列。</p>
+            <div class="stat-row">
+              <div class="stat-card"><strong>3 / 5</strong><span>当前推进章节</span></div>
+              <div class="stat-card"><strong>27 / 36</strong><span>当前镜头进度</span></div>
+              <div class="stat-card"><strong>2</strong><span>项目内阻塞项</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <a class="btn-primary" href="./shot-refine-demo.html">继续镜头 27</a>
+            <a class="btn-secondary" href="./system-home-demo.html">回系统首页</a>
+          </div>
+        </section>
+
+        <section class="band">
+          <div class="subnav" aria-label="系统导航">
+            <a href="./system-home-demo.html">系统首页</a>
+            <a href="./system-home-demo.html#global-assets">全局素材</a>
+            <a href="./system-home-demo.html#global-tasks">全局任务</a>
+            <a href="./system-home-demo.html#system-settings">系统设置</a>
+          </div>
+          <div class="project-nav" aria-label="项目导航" style="margin-top: 12px">
+            <a href="./project-workbench-demo.html" class="active">项目总览</a>
+            <a href="./shot-refine-demo.html">章节分镜</a>
+            <a href="./project-workbench-demo.html#project-assets">项目素材</a>
+            <a href="./project-workbench-demo.html#project-tasks">项目任务</a>
+            <a href="./project-workbench-demo.html#export">导出</a>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="workspace-grid">
+            <aside class="panel">
+              <h3>章节与分镜</h3>
+              <p>项目层先组织章节，再在章节内切换分镜与镜头。</p>
+              <div class="list-stack">
+                <div class="tree-row">
+                  <div>
+                    <strong>第一章 · 港口夜行</strong>
+                    <p>已完成 8 个镜头，进入导出校验。</p>
+                  </div>
+                  <span class="status-pill success">完成</span>
+                </div>
+                <div class="tree-row">
+                  <div>
+                    <strong>第二章 · 雨中会面</strong>
+                    <p>进行到镜头 21，夜景与对白已锁定。</p>
+                  </div>
+                  <span class="status-pill">进行中</span>
+                </div>
+                <div class="tree-row">
+                  <div>
+                    <strong>第三章 · 灯塔回声</strong>
+                    <p>镜头 27 待精修，镜头 28 等待同章节风格确认。</p>
+                  </div>
+                  <span class="status-pill warning">待处理</span>
+                </div>
+              </div>
+            </aside>
+
+            <section class="panel">
+              <div class="section-header">
+                <div>
+                  <h2>当前章节工作区</h2>
+                  <p>这里处理当前项目的章节结构、分镜摘要和镜头推进，不直接进入单镜头编辑器。</p>
+                </div>
+                <a class="chip-link" href="./shot-refine-demo.html">打开镜头 27</a>
+              </div>
+              <div class="card-grid" style="margin-top: 16px">
+                <article class="shot-card">
+                  <div class="meta-row">
+                    <span class="tag">镜头 26</span>
+                    <span class="status-pill success">待导演确认</span>
+                  </div>
+                  <h3 style="margin-top: 12px">码头推轨</h3>
+                  <p>角色边缘补帧完成，准备合入第三章终稿节奏。</p>
+                </article>
+                <article class="shot-card">
+                  <div class="meta-row">
+                    <span class="tag">镜头 27</span>
+                    <span class="status-pill warning">需精修</span>
+                  </div>
+                  <h3 style="margin-top: 12px">灯塔对望</h3>
+                  <p>字幕安全区与夜景高光仍需校正，当前镜头作为本章关键卡点。</p>
+                  <div class="toolbar">
+                    <a class="btn-primary" href="./shot-refine-demo.html">进入精修</a>
+                  </div>
+                </article>
+                <article class="shot-card">
+                  <div class="meta-row">
+                    <span class="tag">镜头 28</span>
+                    <span class="status-pill">排队中</span>
+                  </div>
+                  <h3 style="margin-top: 12px">海面转场</h3>
+                  <p>等待镜头 27 的风格锁定后再批量生成后续波纹和字幕节奏。</p>
+                </article>
+              </div>
+            </section>
+
+            <aside class="panel" id="project-tasks">
+              <h3>项目任务</h3>
+              <p>项目层只看当前项目的任务队列与导出阻塞。</p>
+              <div class="list-stack">
+                <div class="task-row">
+                  <div>
+                    <strong>第三章镜头 27 校正</strong>
+                    <p>等待镜头精修结果回写后，项目任务将自动解除阻塞。</p>
+                  </div>
+                  <span class="status-pill danger">阻塞</span>
+                </div>
+                <div class="task-row">
+                  <div>
+                    <strong>章节终稿导出</strong>
+                    <p>第三章批次 2407-03 依赖镜头 27 与 28 的统一风格确认。</p>
+                  </div>
+                  <span class="status-pill warning">等待中</span>
+                </div>
+                <div class="task-row">
+                  <div>
+                    <strong>配音合成</strong>
+                    <p>第二章已完成对白清洗，待和最新镜头节奏合并。</p>
+                  </div>
+                  <span class="status-pill success">处理中</span>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="grid-2" style="margin-top: 26px">
+          <section class="section soft" id="project-assets">
+            <div class="section-header">
+              <div>
+                <h2>项目素材</h2>
+                <p>项目素材承接当前项目已经挂接或待补齐的实例资源。</p>
+              </div>
+            </div>
+            <div class="card-grid" style="margin-top: 16px">
+              <article class="asset-card">
+                <div class="meta-row">
+                  <span class="tag">场景实例</span>
+                  <span class="status-pill success">已挂接</span>
+                </div>
+                <h3 style="margin-top: 12px">海港夜景 matte v2</h3>
+                <p>已挂到镜头 26、27、28，当前项目内版本一致。</p>
+              </article>
+              <article class="asset-card">
+                <div class="meta-row">
+                  <span class="tag">角色实例</span>
+                  <span class="status-pill warning">待确认</span>
+                </div>
+                <h3 style="margin-top: 12px">主角夜景立绘 v4</h3>
+                <p>镜头 27 确认后才能批量复制到第三章其余镜头。</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="section" id="export">
+            <div class="section-header">
+              <div>
+                <h2>导出与交付</h2>
+                <p>导出属于项目导航的一部分，在项目层统一查看章节状态和交付清单。</p>
+              </div>
+            </div>
+            <div class="list-stack">
+              <div class="list-row">
+                <div>
+                  <strong>第三章导出批次 2407-03</strong>
+                  <p>当前等待镜头 27 校正完成后继续终审导出。</p>
+                </div>
+                <span class="status-pill danger">阻塞</span>
+              </div>
+              <div class="list-row">
+                <div>
+                  <strong>第一章交付包</strong>
+                  <p>图片、视频、字幕和结构化产物包已归档，可供剪辑侧继续使用。</p>
+                </div>
+                <span class="status-pill success">已交付</span>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+
+      <footer class="page-footer">
+        <p>静态 Demo 路径：`docs/demo/ai-animation-system/project-workbench-demo.html`</p>
+        <p>定位：项目层工作台，承接章节、分镜、项目素材、项目任务和导出。</p>
+      </footer>
+    </div>
+  </body>
+</html>

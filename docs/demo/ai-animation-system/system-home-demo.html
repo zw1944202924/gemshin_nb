@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI动画制作系统 · 系统首页 Demo</title>
+    <link rel="stylesheet" href="./demo-theme.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a href="../homepage-demo-a.html" class="brand">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <span>gemshin_nb</span>
+          </a>
+          <nav class="topnav" aria-label="平台导航">
+            <a href="../homepage-demo-a.html">首页</a>
+            <a href="./module-center-entry-demo.html" class="active">模块中心</a>
+            <a href="../personal-center-demo.html">AI 助手</a>
+            <a href="../personal-center-demo.html">个人中心</a>
+            <a href="../account-permissions-demo.html">账户与权限</a>
+          </nav>
+          <div class="top-actions">
+            <span class="ghost-note">AI动画制作系统</span>
+            <a class="btn-primary" href="./project-workbench-demo.html">进入最近项目</a>
+          </div>
+        </div>
+      </header>
+
+      <main class="page-frame">
+        <section class="page-header">
+          <div>
+            <div class="breadcrumbs"><span>gemshin_nb</span><span>/</span><span>模块中心</span><span>/</span><span>AI动画制作系统</span></div>
+            <h1>AI动画制作系统</h1>
+            <p>系统首页承接项目中心、全局素材和全局任务。用户先在这里判断当前要进入哪个项目，还是先处理跨项目公共对象。</p>
+            <div class="stat-row">
+              <div class="stat-card"><strong>12</strong><span>进行中的项目</span></div>
+              <div class="stat-card"><strong>86</strong><span>可复用公共素材</span></div>
+              <div class="stat-card"><strong>7</strong><span>全局任务排队中</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <a class="btn-primary" href="./project-workbench-demo.html">继续《海港追光》</a>
+            <a class="btn-secondary" href="./module-center-entry-demo.html">返回模块中心</a>
+          </div>
+        </section>
+
+        <section class="band">
+          <nav class="subnav" aria-label="系统导航">
+            <a href="./system-home-demo.html" class="active">系统首页</a>
+            <a href="./system-home-demo.html#global-assets">全局素材</a>
+            <a href="./system-home-demo.html#global-tasks">全局任务</a>
+            <a href="./system-home-demo.html#system-settings">系统设置</a>
+          </nav>
+        </section>
+
+        <section class="grid-2" style="margin-top: 26px">
+          <section class="section">
+            <div class="section-header">
+              <div>
+                <h2>最近项目</h2>
+                <p>系统层优先展示项目入口，而不是直接把镜头编辑器铺满首页。</p>
+              </div>
+              <a class="chip-link" href="./project-workbench-demo.html">项目总览</a>
+            </div>
+            <div class="list-stack">
+              <div class="list-row">
+                <div>
+                  <strong>《海港追光》</strong>
+                  <p>第三章推进到镜头 27，当前阻塞是字幕安全区和夜景层融合。</p>
+                </div>
+                <span class="status-pill warning">待处理</span>
+              </div>
+              <div class="list-row">
+                <div>
+                  <strong>《城市风铃》</strong>
+                  <p>章节脚本已定稿，待补齐角色夜景变体和配音草样。</p>
+                </div>
+                <span class="status-pill">制作中</span>
+              </div>
+              <div class="list-row">
+                <div>
+                  <strong>《云桥试播片》</strong>
+                  <p>导出批次等待修正镜头 12 的口型漂移与字幕时间轴偏差。</p>
+                </div>
+                <span class="status-pill danger">导出阻塞</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="section soft" id="global-tasks">
+            <div class="section-header">
+              <div>
+                <h2>全局任务</h2>
+                <p>这里看跨项目的公共队列、失败重试和导出批次，不混入某个项目的章节树。</p>
+              </div>
+            </div>
+            <div class="list-stack">
+              <div class="task-row">
+                <div>
+                  <strong>公共素材超分批次</strong>
+                  <p>3 个项目共用的港口夜景场景包正在补跑高分辨率版本。</p>
+                </div>
+                <span class="status-pill">排队中</span>
+              </div>
+              <div class="task-row">
+                <div>
+                  <strong>《云桥试播片》导出批次 2407-03</strong>
+                  <p>等待镜头 12 与镜头 27 的校正结果合并后继续。</p>
+                </div>
+                <span class="status-pill danger">等待修正</span>
+              </div>
+              <div class="task-row">
+                <div>
+                  <strong>角色库标签重建</strong>
+                  <p>面向多个项目的角色搜索索引在后台刷新，完成后公共素材会同步更新。</p>
+                </div>
+                <span class="status-pill success">处理中</span>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="section" id="global-assets">
+          <div class="section-header">
+            <div>
+              <h2>全局素材</h2>
+              <p>系统首页承接可被多个项目复用的角色、场景、音频和参考库。</p>
+            </div>
+          </div>
+          <div class="card-grid" style="margin-top: 16px">
+            <article class="asset-card">
+              <div class="meta-row">
+                <span class="tag">角色库</span>
+                <span class="status-pill success">已上线</span>
+              </div>
+              <h3 style="margin-top: 12px">夜景角色集</h3>
+              <p>12 组角色夜景立绘、动作变体和口型参考，已被 5 个项目复用。</p>
+            </article>
+            <article class="asset-card">
+              <div class="meta-row">
+                <span class="tag">场景库</span>
+                <span class="status-pill warning">待补版本</span>
+              </div>
+              <h3 style="margin-top: 12px">海港夜景场景包</h3>
+              <p>主场景 matte v2 已就绪，超分资源仍在队列中，补齐后自动同步到项目素材。</p>
+            </article>
+            <article class="asset-card">
+              <div class="meta-row">
+                <span class="tag">音频库</span>
+                <span class="status-pill">可复用</span>
+              </div>
+              <h3 style="margin-top: 12px">环境音与过场 BGM</h3>
+              <p>港口夜景、城市白噪和片头 BGM 已完成标签化，可直接拖入项目。</p>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="page-footer">
+        <p>静态 Demo 路径：`docs/demo/ai-animation-system/system-home-demo.html`</p>
+        <p>定位：业务系统层首页，承接项目中心、全局素材和全局任务。</p>
+      </footer>
+    </div>
+  </body>
+</html>

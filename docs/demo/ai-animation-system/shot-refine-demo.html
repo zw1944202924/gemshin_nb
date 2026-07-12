@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI动画制作系统 · 镜头精修 Demo</title>
+    <link rel="stylesheet" href="./demo-theme.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a href="../homepage-demo-a.html" class="brand">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <span>gemshin_nb</span>
+          </a>
+          <nav class="topnav" aria-label="平台导航">
+            <a href="../homepage-demo-a.html">首页</a>
+            <a href="./module-center-entry-demo.html" class="active">模块中心</a>
+            <a href="../personal-center-demo.html">AI 助手</a>
+            <a href="../personal-center-demo.html">个人中心</a>
+            <a href="../account-permissions-demo.html">账户与权限</a>
+          </nav>
+          <div class="top-actions">
+            <span class="ghost-note">镜头层</span>
+            <a class="btn-primary" href="./project-workbench-demo.html">返回项目工作台</a>
+          </div>
+        </div>
+      </header>
+
+      <main class="page-frame">
+        <section class="page-header">
+          <div>
+            <div class="breadcrumbs">
+              <span>gemshin_nb</span><span>/</span><span>模块中心</span><span>/</span><span>AI动画制作系统</span><span>/</span><span>海港追光</span><span>/</span><span>第三章</span><span>/</span><span>镜头 27</span>
+            </div>
+            <h1>镜头 27 · 灯塔对望</h1>
+            <p>镜头精修层围绕单镜头处理画面、参数、镜头素材和镜头任务。用户在这里修改版本，不再回到系统层或项目总览找当前镜头的操作入口。</p>
+            <div class="stat-row">
+              <div class="stat-card"><strong>v4</strong><span>当前画面版本</span></div>
+              <div class="stat-card"><strong>2</strong><span>待比较候选结果</span></div>
+              <div class="stat-card"><strong>1</strong><span>镜头级失败任务</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <a class="btn-primary" href="./shot-refine-demo.html#versions">比较版本</a>
+            <a class="btn-secondary" href="./project-workbench-demo.html#project-tasks">查看项目任务</a>
+          </div>
+        </section>
+
+        <section class="band">
+          <div class="subnav" aria-label="系统导航">
+            <a href="./system-home-demo.html">系统首页</a>
+            <a href="./system-home-demo.html#global-assets">全局素材</a>
+            <a href="./system-home-demo.html#global-tasks">全局任务</a>
+            <a href="./system-home-demo.html#system-settings">系统设置</a>
+          </div>
+          <div class="project-nav" aria-label="项目导航" style="margin-top: 12px">
+            <a href="./project-workbench-demo.html">项目总览</a>
+            <a href="./shot-refine-demo.html" class="active">章节分镜</a>
+            <a href="./project-workbench-demo.html#project-assets">项目素材</a>
+            <a href="./project-workbench-demo.html#project-tasks">项目任务</a>
+            <a href="./project-workbench-demo.html#export">导出</a>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="workspace-grid">
+            <aside class="panel">
+              <h3>章节内镜头</h3>
+              <p>镜头层通过同章节上下文保持当前位置，而不是再新增一套一级导航。</p>
+              <div class="list-stack">
+                <div class="tree-row">
+                  <div>
+                    <strong>镜头 26 · 码头推轨</strong>
+                    <p>已等待导演确认，可回看前一镜头节奏。</p>
+                  </div>
+                  <span class="status-pill success">前镜头</span>
+                </div>
+                <div class="tree-row">
+                  <div>
+                    <strong>镜头 27 · 灯塔对望</strong>
+                    <p>当前镜头，夜景高光与字幕安全区待校正。</p>
+                  </div>
+                  <span class="status-pill warning">当前</span>
+                </div>
+                <div class="tree-row">
+                  <div>
+                    <strong>镜头 28 · 海面转场</strong>
+                    <p>等待当前镜头风格锁定后再继续批量生成。</p>
+                  </div>
+                  <span class="status-pill">后镜头</span>
+                </div>
+              </div>
+            </aside>
+
+            <section class="panel">
+              <div class="section-header">
+                <div>
+                  <h2>画面与参数</h2>
+                  <p>中心区域聚焦单镜头画面、分层参数和版本切换。</p>
+                </div>
+                <div class="tag-row">
+                  <span class="status-pill warning">需二次校正</span>
+                  <span class="tag">镜头级工作区</span>
+                </div>
+              </div>
+              <div class="canvas" style="margin-top: 16px"></div>
+              <div class="grid-2" style="margin-top: 16px">
+                <article class="editor-block">
+                  <h3>构图与剧情目标</h3>
+                  <p>人物在灯塔下短暂停顿，远处轮船灯迹和近景逆光轮廓需要同时保留，字幕安全区必须让出下三分之一焦点。</p>
+                </article>
+                <article class="editor-block">
+                  <h3>当前修正点</h3>
+                  <p>夜景高光偏硬，人物字幕上移后仍溢出 6px；优先调整字幕，再重跑风格融合。</p>
+                </article>
+              </div>
+              <div class="grid-2" style="margin-top: 16px" id="versions">
+                <article class="editor-block">
+                  <h3>版本 v3</h3>
+                  <p>夜景层次较稳，但人物边缘略发灰，字幕位置安全。</p>
+                </article>
+                <article class="editor-block">
+                  <h3>版本 v4</h3>
+                  <p>人物轮廓更自然，但高光偏亮，字幕安全区仍需二次收敛。</p>
+                </article>
+              </div>
+              <div class="toolbar">
+                <button>重跑夜景融合</button>
+                <button>替换角色立绘</button>
+                <button>提交导演复核</button>
+              </div>
+            </section>
+
+            <aside class="panel">
+              <h3>镜头素材与任务</h3>
+              <div class="list-stack">
+                <div class="task-row">
+                  <div>
+                    <strong>主角夜景立绘 v4</strong>
+                    <p>当前镜头挂接版本，若改动将自动影响镜头 28 的候选生成。</p>
+                  </div>
+                  <span class="status-pill">已挂接</span>
+                </div>
+                <div class="task-row">
+                  <div>
+                    <strong>字幕安全区校验</strong>
+                    <p>最近一次校验失败，建议先回写字幕区域参数后重试。</p>
+                  </div>
+                  <span class="status-pill danger">失败</span>
+                </div>
+                <div class="task-row">
+                  <div>
+                    <strong>夜景风格融合</strong>
+                    <p>等待当前参数重新提交后，系统会生成新的候选版本并回到版本区。</p>
+                  </div>
+                  <span class="status-pill warning">待重跑</span>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+      </main>
+
+      <footer class="page-footer">
+        <p>静态 Demo 路径：`docs/demo/ai-animation-system/shot-refine-demo.html`</p>
+        <p>定位：镜头层精修工作区，承接单镜头画面、参数、素材和镜头任务。</p>
+      </footer>
+    </div>
+  </body>
+</html>
