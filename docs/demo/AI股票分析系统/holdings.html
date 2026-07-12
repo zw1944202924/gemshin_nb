@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI股票分析系统 - 持仓管理 Demo</title>
+    <link rel="stylesheet" href="./demo.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a class="brand" href="./index.html">
+            <span class="brand-mark"></span>
+            <span class="brand-text"><strong>gemshin_nb</strong><span>AI股票分析系统</span></span>
+          </a>
+          <nav class="topnav" aria-label="页面导航">
+            <a href="./index.html">首页</a>
+            <a class="is-active" href="./holdings.html">持仓管理</a>
+            <a href="./watchlist.html">自选股</a>
+            <a href="./analysis.html">AI股票分析</a>
+            <a href="./reports.html">历史分析报告</a>
+          </nav>
+          <div class="topbar-meta">
+            <div class="meta-pill">主账户 / 美元口径</div>
+            <div class="meta-pill"><span class="meta-avatar">ZW</span> 已同步到 15:30</div>
+          </div>
+          <button class="menu-button" type="button" data-menu-toggle aria-label="展开导航">菜单</button>
+        </div>
+      </header>
+      <div class="workspace">
+        <aside class="sidebar">
+          <section class="sidebar-panel">
+            <span class="eyebrow">页面职责</span>
+            <h2>仓位快照、待处理动作、重点持仓列表</h2>
+            <p class="sidebar-note">不加入交易执行、交易流水和复杂收益归因。页面重点是“哪只该先处理、为什么”。</p>
+          </section>
+          <section class="sidebar-panel">
+            <span class="eyebrow">一级导航</span>
+            <nav class="module-nav">
+              <a href="./index.html"><strong>首页</strong><span>资产总览与 AI 重点提示</span></a>
+              <a class="is-active" href="./holdings.html"><strong>持仓管理</strong><span>重点持仓与待处理动作</span></a>
+              <a href="./watchlist.html"><strong>自选股</strong><span>观察池优先级</span></a>
+              <a href="./analysis.html"><strong>AI股票分析</strong><span>单标的分析骨架</span></a>
+              <a href="./reports.html"><strong>历史分析报告</strong><span>复盘与归档</span></a>
+            </nav>
+          </section>
+        </aside>
+        <main class="content">
+          <section class="panel">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">持仓管理</span>
+                <h1 style="font-size: 32px; line-height: 1.1; letter-spacing: -0.03em;">先看主账户仓位，再逐只处理高关注标的</h1>
+                <p class="panel-subtitle">页面把主账户结构、待处理动作和重点持仓压成一个连续流程。用户不需要翻页找结论，先判断仓位，再决定动作。</p>
+              </div>
+              <div class="toolbar">
+                <button class="btn-ghost" type="button">导入持仓快照</button>
+                <button class="btn-ghost" type="button">批量更新成本</button>
+                <a class="btn-primary" href="./analysis.html">查看 AI 分析</a>
+              </div>
+            </div>
+            <div class="grid-four" style="margin-top: 18px;">
+              <div class="stat-card">
+                <strong>87.4%</strong>
+                <span>仓位利用率，仍保留 12.6% 现金待命。</span>
+              </div>
+              <div class="stat-card">
+                <strong>54%</strong>
+                <span>成长仓占比，当前波动和收益都主要来自这部分。</span>
+              </div>
+              <div class="stat-card">
+                <strong>2 只</strong>
+                <span>高关注标的，建议今天先复核 NVDA 与 TSM。</span>
+              </div>
+              <div class="stat-card">
+                <strong>+12.4%</strong>
+                <span>年内组合收益，只保留聚合快照，不展开收益归因。</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="layout-split">
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">仓位快照</span>
+                  <h2>先回答“现在仓位结构怎样”</h2>
+                </div>
+              </div>
+              <div class="grid-three" style="margin-top: 16px;">
+                <div class="metric-card">
+                  <strong>集中度 31%</strong>
+                  <span>前两大持仓 NVDA + AAPL，占比已接近上限。</span>
+                </div>
+                <div class="metric-card">
+                  <strong>防御仓 33%</strong>
+                  <span>由 AAPL、MSFT 承担，回撤期提供缓冲。</span>
+                </div>
+                <div class="metric-card">
+                  <strong>待命现金 12.6%</strong>
+                  <span>适合在市场回撤时补位，不建议财报周全用完。</span>
+                </div>
+              </div>
+            </article>
+            <aside class="rail-panel">
+              <span class="eyebrow">待处理动作</span>
+              <div class="rail-list" style="margin-top: 8px;">
+                <div class="rail-item">
+                  <strong>复核 NVDA 风险阈值</strong>
+                  <p>财报前仓位过高，先决定是否把上限从 18% 调整到 15%。</p>
+                </div>
+                <div class="rail-item">
+                  <strong>补一轮 TSM 事件跟踪</strong>
+                  <p>验证供给链改善是否还能支持当前目标位。</p>
+                </div>
+                <div class="rail-item">
+                  <strong>标记 AAPL 已复核</strong>
+                  <p>继续作为防守仓，不需要立刻调整动作。</p>
+                </div>
+              </div>
+            </aside>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow">重点持仓列表</span>
+                <h2>一行内同时给出仓位、盈亏、风险和 AI 摘要</h2>
+                <p class="panel-subtitle">列表优先服务人工判断，不追求金融终端式密度。重点信息应该在 3 秒内扫完。</p>
+              </div>
+            </div>
+            <div class="table" style="margin-top: 18px;">
+              <div class="table-head">
+                <div>标的</div>
+                <div>仓位 / 盈亏</div>
+                <div>成本与现价</div>
+                <div>AI 摘要</div>
+                <div>下一步</div>
+              </div>
+              <article class="table-row">
+                <div>
+                  <strong>NVDA</strong>
+                  <span>英伟达 / AI 芯片</span>
+                </div>
+                <div>
+                  <strong>18.4%</strong>
+                  <span>浮盈 +21.7%</span>
+                  <span class="status-pill status-warning">高波动</span>
+                </div>
+                <div>
+                  <strong>$106.5 → $129.6</strong>
+                  <span>市值 $262K</span>
+                </div>
+                <div>
+                  <strong>财报前集中度偏高</strong>
+                  <p>建议改成“减仓到 15% 上限”，避免单只事件拖累组合。</p>
+                </div>
+                <div>
+                  <strong>先复核</strong>
+                  <div class="row-actions">
+                    <a class="btn-ghost" href="./analysis.html">查看分析</a>
+                  </div>
+                </div>
+              </article>
+              <article class="table-row">
+                <div>
+                  <strong>AAPL</strong>
+                  <span>苹果 / 防御底仓</span>
+                </div>
+                <div>
+                  <strong>13.2%</strong>
+                  <span>浮盈 +5.1%</span>
+                  <span class="status-pill status-positive">稳定持有</span>
+                </div>
+                <div>
+                  <strong>$188.2 → $197.8</strong>
+                  <span>市值 $188K</span>
+                </div>
+                <div>
+                  <strong>继续承担稳定底盘</strong>
+                  <p>服务业务韧性仍在，短期不建议主动加仓或减仓。</p>
+                </div>
+                <div>
+                  <strong>标记已复核</strong>
+                  <div class="row-actions">
+                    <button class="btn-ghost" type="button">已完成</button>
+                  </div>
+                </div>
+              </article>
+              <article class="table-row">
+                <div>
+                  <strong>TSM</strong>
+                  <span>台积电 / 先进制程</span>
+                </div>
+                <div>
+                  <strong>11.8%</strong>
+                  <span>浮盈 +8.4%</span>
+                  <span class="status-pill status-info">事件跟踪</span>
+                </div>
+                <div>
+                  <strong>$161.1 → $174.6</strong>
+                  <span>市值 $167K</span>
+                </div>
+                <div>
+                  <strong>供给链改善需验证持续性</strong>
+                  <p>建议在现价附近先不追高，补一轮事件后复盘。</p>
+                </div>
+                <div>
+                  <strong>补跟踪</strong>
+                  <div class="row-actions">
+                    <a class="btn-ghost" href="./analysis.html">进入分析</a>
+                  </div>
+                </div>
+              </article>
+              <article class="table-row">
+                <div>
+                  <strong>MSFT</strong>
+                  <span>微软 / 云与平台</span>
+                </div>
+                <div>
+                  <strong>10.4%</strong>
+                  <span>浮盈 +6.8%</span>
+                  <span class="status-pill status-positive">稳健</span>
+                </div>
+                <div>
+                  <strong>$416.5 → $444.9</strong>
+                  <span>市值 $148K</span>
+                </div>
+                <div>
+                  <strong>继续作为防守与增长平衡仓</strong>
+                  <p>估值不便宜，但确定性高，适合作为持仓底座。</p>
+                </div>
+                <div>
+                  <strong>继续持有</strong>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="panel" data-demo-group>
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow">状态与异常场景</span>
+                <h2>区分“尚未导入持仓”和“同步失败”</h2>
+              </div>
+              <div class="segmented">
+                <button class="toggle-button is-active" type="button" data-demo-toggle="empty">空状态</button>
+                <button class="toggle-button" type="button" data-demo-toggle="error">失败态</button>
+              </div>
+            </div>
+            <div class="demo-panel" data-demo-panel="empty" style="margin-top: 16px;">
+              <div class="state-card state-empty">
+                <h3>空状态：用户还没导入持仓</h3>
+                <p class="state-copy">页面仍保留仓位快照和列表骨架说明，主动作明确是“导入第一份持仓快照”，而不是笼统的“暂无数据”。</p>
+                <div class="state-actions">
+                  <button class="btn-primary" type="button">导入第一份持仓快照</button>
+                </div>
+              </div>
+            </div>
+            <div class="demo-panel" data-demo-panel="error" hidden style="margin-top: 16px;">
+              <div class="state-card state-error">
+                <h3>失败态：行情或持仓同步失败</h3>
+                <p class="state-copy">保留上一次成功快照，并在局部显示“同步失败于 15:26，可重试或查看原因”。这样用户知道不是没数据，而是更新失败。</p>
+                <div class="state-actions">
+                  <button class="btn-primary" type="button">重试同步</button>
+                  <button class="btn-ghost" type="button">查看失败说明</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+    <div class="mobile-backdrop" data-mobile-backdrop></div>
+    <script src="./demo.js"></script>
+  </body>
+</html>

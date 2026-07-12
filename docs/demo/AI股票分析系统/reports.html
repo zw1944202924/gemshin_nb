@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI股票分析系统 - 历史分析报告 Demo</title>
+    <link rel="stylesheet" href="./demo.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a class="brand" href="./index.html">
+            <span class="brand-mark"></span>
+            <span class="brand-text"><strong>gemshin_nb</strong><span>AI股票分析系统</span></span>
+          </a>
+          <nav class="topnav" aria-label="页面导航">
+            <a href="./index.html">首页</a>
+            <a href="./holdings.html">持仓管理</a>
+            <a href="./watchlist.html">自选股</a>
+            <a href="./analysis.html">AI股票分析</a>
+            <a class="is-active" href="./reports.html">历史分析报告</a>
+          </nav>
+          <div class="topbar-meta">
+            <div class="meta-pill">近 30 天 12 份报告</div>
+            <div class="meta-pill"><span class="meta-avatar">ZW</span> 3 份待复核</div>
+          </div>
+          <button class="menu-button" type="button" data-menu-toggle aria-label="展开导航">菜单</button>
+        </div>
+      </header>
+      <div class="workspace">
+        <aside class="sidebar">
+          <section class="sidebar-panel">
+            <span class="eyebrow">页面职责</span>
+            <h2>把历史报告做成复盘入口，不做复杂归档系统</h2>
+            <p class="sidebar-note">当前阶段只保留轻筛选、报告列表和摘要预览，避免越界进入编辑、批注和高级检索。</p>
+          </section>
+          <section class="sidebar-panel">
+            <span class="eyebrow">统一导航</span>
+            <nav class="module-nav">
+              <a href="./index.html"><strong>首页</strong><span>资产与重点提示</span></a>
+              <a href="./holdings.html"><strong>持仓管理</strong><span>仓位结构与动作</span></a>
+              <a href="./watchlist.html"><strong>自选股</strong><span>观察池队列</span></a>
+              <a href="./analysis.html"><strong>AI股票分析</strong><span>单标的四层结构</span></a>
+              <a class="is-active" href="./reports.html"><strong>历史分析报告</strong><span>列表、摘要与复盘</span></a>
+            </nav>
+          </section>
+        </aside>
+        <main class="content">
+          <section class="panel">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">历史分析报告</span>
+                <h1 style="font-size: 32px; line-height: 1.1; letter-spacing: -0.03em;">报告页负责回看结论变化，不负责重新做研究</h1>
+                <p class="panel-subtitle">因此结构保持克制：轻筛选条、列表、摘要预览和待复核标记，足够支撑复盘，不膨胀成知识库系统。</p>
+              </div>
+              <div class="toolbar">
+                <button class="btn-ghost" type="button">筛选日期</button>
+                <button class="btn-ghost" type="button">仅看待复核</button>
+                <a class="btn-primary" href="./analysis.html">返回分析页</a>
+              </div>
+            </div>
+            <div class="filter-strip" style="margin-top: 18px;">
+              <span class="filter-chip">全部标的</span>
+              <span class="filter-chip">近 30 天</span>
+              <span class="filter-chip">待复核 3 份</span>
+              <span class="filter-chip">财报前模板</span>
+            </div>
+          </section>
+
+          <section class="report-grid">
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">报告列表</span>
+                  <h2>按时间和动作优先级浏览，不按文件夹思维组织</h2>
+                </div>
+              </div>
+              <div class="report-list" style="margin-top: 16px;">
+                <article class="report-item">
+                  <div class="item-title">
+                    <strong>2026-07-12 / NVDA 季前风险复核</strong>
+                    <span class="status-pill status-warning">待复核</span>
+                  </div>
+                  <p>结论从“继续持有”调整为“减仓到 15% 上限”，是今天最需要人工确认的一份。</p>
+                  <div class="report-meta">
+                    <span class="metric-chip">标的：NVDA</span>
+                    <span class="metric-chip">模板：财报前复核</span>
+                    <span class="metric-chip">生成时间：09:20</span>
+                  </div>
+                </article>
+                <article class="report-item">
+                  <div class="item-title">
+                    <strong>2026-07-11 / META 候选转正式分析</strong>
+                    <span class="status-pill status-positive">已归档</span>
+                  </div>
+                  <p>建议从观察池转为正式分析，后续需要补广告恢复持续性证据。</p>
+                  <div class="report-meta">
+                    <span class="metric-chip">标的：META</span>
+                    <span class="metric-chip">模板：候选转正</span>
+                    <span class="metric-chip">生成时间：16:40</span>
+                  </div>
+                </article>
+                <article class="report-item">
+                  <div class="item-title">
+                    <strong>2026-07-09 / TSM 事件后跟踪</strong>
+                    <span class="status-pill status-info">待观察</span>
+                  </div>
+                  <p>供给链改善方向成立，但尚不足以支持继续追高，维持观察位。</p>
+                  <div class="report-meta">
+                    <span class="metric-chip">标的：TSM</span>
+                    <span class="metric-chip">模板：事件后跟踪</span>
+                    <span class="metric-chip">生成时间：10:15</span>
+                  </div>
+                </article>
+              </div>
+            </article>
+
+            <aside class="rail-panel">
+              <span class="eyebrow">报告摘要预览</span>
+              <div class="rail-list" style="margin-top: 8px;">
+                <div class="rail-item">
+                  <strong>最新变化</strong>
+                  <p>NVDA 是近 7 天唯一一份从“继续持有”转成“减仓”的报告，需要优先复盘。</p>
+                </div>
+                <div class="rail-item">
+                  <strong>连续性价值</strong>
+                  <p>用户在这里看的是“结论有没有变化、为什么变”，而不是重新阅读完整推理。</p>
+                </div>
+                <div class="rail-item">
+                  <strong>下一步</strong>
+                  <p>从列表直接回到持仓管理或分析页，完成人工确认与动作闭环。</p>
+                </div>
+              </div>
+            </aside>
+          </section>
+
+          <section class="grid-two">
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">本周复盘时间线</span>
+                  <h2>帮助用户快速扫过结论变化</h2>
+                </div>
+              </div>
+              <div class="timeline" style="margin-top: 16px;">
+                <article class="timeline-item">
+                  <strong>周一</strong>
+                  <p>META 从观察池进入正式分析，建议继续收集广告恢复与 AI 投入的证据。</p>
+                </article>
+                <article class="timeline-item">
+                  <strong>周三</strong>
+                  <p>TSM 补做事件后跟踪，结论仍是继续观察，不立刻追高。</p>
+                </article>
+                <article class="timeline-item">
+                  <strong>周五</strong>
+                  <p>NVDA 在财报前被提升为最高优先级复盘对象，核心变化是集中度风险。</p>
+                </article>
+              </div>
+            </article>
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">设计说明</span>
+                  <h2>为什么这里只做中保真稳定结构</h2>
+                </div>
+              </div>
+              <div class="detail-list" style="margin-top: 16px;">
+                <article class="detail-card">
+                  <h3>不做复杂归档</h3>
+                  <p>当前需求只需要“能找到最近报告并复盘”，还不需要标签体系、批注或交叉检索。</p>
+                </article>
+                <article class="detail-card">
+                  <h3>不做报告编辑</h3>
+                  <p>避免过早进入正式生产流程，把精力放在信息结构是否合理上。</p>
+                </article>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel" data-demo-group>
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow">状态演示</span>
+                <h2>报告页同样需要默认、空和失败三类表达</h2>
+              </div>
+              <div class="segmented">
+                <button class="toggle-button is-active" type="button" data-demo-toggle="default">默认态</button>
+                <button class="toggle-button" type="button" data-demo-toggle="empty">空状态</button>
+                <button class="toggle-button" type="button" data-demo-toggle="error">失败态</button>
+              </div>
+            </div>
+            <div class="demo-panel" data-demo-panel="default" style="margin-top: 16px;">
+              <div class="state-card">
+                <h3>默认态</h3>
+                <p class="state-copy">报告有内容时，优先露出最新变化、待复核数量和能直接回到动作页的入口。</p>
+              </div>
+            </div>
+            <div class="demo-panel" data-demo-panel="empty" hidden style="margin-top: 16px;">
+              <div class="state-card state-empty">
+                <h3>空状态：还没有生成过历史报告</h3>
+                <p class="state-copy">不是简单地写“暂无报告”，而是解释这意味着用户还没跑过第一轮分析，并提供返回分析页的入口。</p>
+                <div class="state-actions">
+                  <a class="btn-primary" href="./analysis.html">去生成第一份分析</a>
+                </div>
+              </div>
+            </div>
+            <div class="demo-panel" data-demo-panel="error" hidden style="margin-top: 16px;">
+              <div class="state-card state-error">
+                <h3>失败态：报告列表拉取失败</h3>
+                <p class="state-copy">页面保留筛选条与上一次缓存摘要，同时明确说明报告列表未更新，避免用户误以为今天没有新增。</p>
+                <div class="state-actions">
+                  <button class="btn-primary" type="button">重试加载</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+    <div class="mobile-backdrop" data-mobile-backdrop></div>
+    <script src="./demo.js"></script>
+  </body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI股票分析系统 - 自选股 Demo</title>
+    <link rel="stylesheet" href="./demo.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a class="brand" href="./index.html">
+            <span class="brand-mark"></span>
+            <span class="brand-text"><strong>gemshin_nb</strong><span>AI股票分析系统</span></span>
+          </a>
+          <nav class="topnav" aria-label="页面导航">
+            <a href="./index.html">首页</a>
+            <a href="./holdings.html">持仓管理</a>
+            <a class="is-active" href="./watchlist.html">自选股</a>
+            <a href="./analysis.html">AI股票分析</a>
+            <a href="./reports.html">历史分析报告</a>
+          </nav>
+          <div class="topbar-meta">
+            <div class="meta-pill">观察池 8 只</div>
+            <div class="meta-pill"><span class="meta-avatar">ZW</span> 今日已刷新</div>
+          </div>
+          <button class="menu-button" type="button" data-menu-toggle aria-label="展开导航">菜单</button>
+        </div>
+      </header>
+      <div class="workspace">
+        <aside class="sidebar">
+          <section class="sidebar-panel">
+            <span class="eyebrow">页面职责</span>
+            <h2>让观察池像候选队列，不像研究工具箱</h2>
+            <p class="sidebar-note">页面要帮助判断哪些标的该进正式分析，哪些继续观察，哪些该降级移出。</p>
+          </section>
+          <section class="sidebar-panel">
+            <span class="eyebrow">统一导航</span>
+            <nav class="module-nav">
+              <a href="./index.html"><strong>首页</strong><span>资产与重点提示</span></a>
+              <a href="./holdings.html"><strong>持仓管理</strong><span>重点仓位与动作</span></a>
+              <a class="is-active" href="./watchlist.html"><strong>自选股</strong><span>观察池与优先级</span></a>
+              <a href="./analysis.html"><strong>AI股票分析</strong><span>四层分析结构</span></a>
+              <a href="./reports.html"><strong>历史分析报告</strong><span>报告归档</span></a>
+            </nav>
+          </section>
+        </aside>
+        <main class="content">
+          <section class="panel">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">自选股</span>
+                <h1 style="font-size: 32px; line-height: 1.1; letter-spacing: -0.03em;">先看观察池结构，再决定哪只进入下一轮分析</h1>
+                <p class="panel-subtitle">页面不做选股器，也不做复杂评分模型。重点是让用户清楚知道：今天应该推进哪几只，为什么。</p>
+              </div>
+              <div class="toolbar">
+                <button class="btn-ghost" type="button">添加观察标的</button>
+                <button class="btn-ghost" type="button">刷新异动快照</button>
+                <a class="btn-primary" href="./analysis.html">进入 AI 分析</a>
+              </div>
+            </div>
+            <div class="watch-summary" style="margin-top: 18px;">
+              <span class="status-pill status-info">优先级 A 3 只</span>
+              <span class="status-pill status-warning">待降级 2 只</span>
+              <span class="status-pill status-positive">本周已转正 1 只</span>
+            </div>
+          </section>
+
+          <section class="watch-grid">
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">今日优先观察</span>
+                  <h2>优先判断哪些应该进入正式分析</h2>
+                </div>
+              </div>
+              <div class="watch-cards" style="margin-top: 16px;">
+                <article class="watch-card">
+                  <div class="item-title">
+                    <strong>META</strong>
+                    <span class="ticker-code">优先级 A / 观察第 14 天</span>
+                    <span class="status-pill status-info">建议转正式分析</span>
+                  </div>
+                  <p>广告恢复与 AI 资本开支并行，市场定价还没有完全反映修复速度。适合作为今天第一只转正对象。</p>
+                  <div class="report-meta">
+                    <span class="metric-chip">入池原因：盈利韧性</span>
+                    <span class="metric-chip">异动：财报预期上修</span>
+                  </div>
+                </article>
+                <article class="watch-card">
+                  <div class="item-title">
+                    <strong>AMZN</strong>
+                    <span class="ticker-code">优先级 B / 观察第 9 天</span>
+                    <span class="status-pill status-warning">继续观察</span>
+                  </div>
+                  <p>AWS 修复逻辑成立，但利润率证据不够扎实。页面上要明确“暂不转正”，而不是只给模糊中性结论。</p>
+                  <div class="report-meta">
+                    <span class="metric-chip">入池原因：云业务加速</span>
+                    <span class="metric-chip">异动：估值回撤</span>
+                  </div>
+                </article>
+                <article class="watch-card">
+                  <div class="item-title">
+                    <strong>CRM</strong>
+                    <span class="ticker-code">优先级 C / 观察第 21 天</span>
+                    <span class="status-pill status-danger">建议降级</span>
+                  </div>
+                  <p>过去一周没有新的触发条件，继续占位只会稀释关注度。应该给出明确降级动作。</p>
+                  <div class="report-meta">
+                    <span class="metric-chip">入池原因：成本优化</span>
+                    <span class="metric-chip">异动：事件消退</span>
+                  </div>
+                </article>
+              </div>
+            </article>
+
+            <aside class="rail-panel">
+              <span class="eyebrow">观察池规则</span>
+              <div class="rail-list" style="margin-top: 8px;">
+                <div class="rail-item">
+                  <strong>优先级 A</strong>
+                  <p>已具备足够触发条件，建议 24 小时内进入正式分析。</p>
+                </div>
+                <div class="rail-item">
+                  <strong>优先级 B</strong>
+                  <p>方向对，但证据不够，继续观察，不直接消耗分析资源。</p>
+                </div>
+                <div class="rail-item">
+                  <strong>优先级 C</strong>
+                  <p>触发条件变弱或消失，给出降级或移出动作，不长期堆积。</p>
+                </div>
+              </div>
+            </aside>
+          </section>
+
+          <section class="grid-two">
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">候选补位</span>
+                  <h2>保留后续可能推进的标的</h2>
+                </div>
+              </div>
+              <div class="focus-list" style="margin-top: 16px;">
+                <article class="focus-item">
+                  <div class="item-title">
+                    <strong>ASML</strong>
+                    <span class="ticker-code">优先级 B</span>
+                  </div>
+                  <p class="item-copy">受益于先进制程长期逻辑，但短期缺少催化，不必现在就消耗分析资源。</p>
+                </article>
+                <article class="focus-item">
+                  <div class="item-title">
+                    <strong>SHOP</strong>
+                    <span class="ticker-code">优先级 B</span>
+                  </div>
+                  <p class="item-copy">电商恢复有改善迹象，但估值与增长兑现节奏还需要更多信号。</p>
+                </article>
+              </div>
+            </article>
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">推荐动作</span>
+                  <h2>把观察池转换成清晰动作队列</h2>
+                </div>
+              </div>
+              <div class="queue-list" style="margin-top: 16px;">
+                <article class="queue-item">
+                  <div class="item-title">
+                    <strong>1. META 进入正式分析</strong>
+                    <span class="status-pill status-info">今天可执行</span>
+                  </div>
+                </article>
+                <article class="queue-item">
+                  <div class="item-title">
+                    <strong>2. AMZN 保持观察</strong>
+                    <span class="status-pill status-warning">等利润率证据</span>
+                  </div>
+                </article>
+                <article class="queue-item">
+                  <div class="item-title">
+                    <strong>3. CRM 降级移出</strong>
+                    <span class="status-pill status-danger">释放注意力</span>
+                  </div>
+                </article>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel" data-demo-group>
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow">状态与异常场景</span>
+                <h2>观察池也要区分空、加载和失败</h2>
+              </div>
+              <div class="segmented">
+                <button class="toggle-button is-active" type="button" data-demo-toggle="default">默认态</button>
+                <button class="toggle-button" type="button" data-demo-toggle="empty">空状态</button>
+                <button class="toggle-button" type="button" data-demo-toggle="error">失败态</button>
+              </div>
+            </div>
+            <div class="demo-panel" data-demo-panel="default" style="margin-top: 16px;">
+              <div class="state-card">
+                <h3>默认态</h3>
+                <p class="state-copy">观察池有内容时，先展示今日优先、候选补位和待降级，不让所有卡片混在一起。</p>
+              </div>
+            </div>
+            <div class="demo-panel" data-demo-panel="empty" hidden style="margin-top: 16px;">
+              <div class="state-card state-empty">
+                <h3>空状态：还没有建立观察池</h3>
+                <p class="state-copy">提示用户先添加首批股票，并说明观察池的用途是“候选研究队列”，不是收藏夹。</p>
+                <div class="state-actions">
+                  <button class="btn-primary" type="button">添加第一只观察标的</button>
+                </div>
+              </div>
+            </div>
+            <div class="demo-panel" data-demo-panel="error" hidden style="margin-top: 16px;">
+              <div class="state-card state-error">
+                <h3>失败态：异动快照拉取失败</h3>
+                <p class="state-copy">页面保留昨天的优先级结构，同时指出“今天的异动数据未更新”，避免用户误判为市场没有变化。</p>
+                <div class="state-actions">
+                  <button class="btn-primary" type="button">重新拉取快照</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+    <div class="mobile-backdrop" data-mobile-backdrop></div>
+    <script src="./demo.js"></script>
+  </body>
+</html>

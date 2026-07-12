@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI股票分析系统 - 首页 Demo</title>
+    <link rel="stylesheet" href="./demo.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a class="brand" href="./index.html">
+            <span class="brand-mark"></span>
+            <span class="brand-text">
+              <strong>gemshin_nb</strong>
+              <span>AI股票分析系统</span>
+            </span>
+          </a>
+          <nav class="topnav" aria-label="业务线导航">
+            <a class="is-active" href="./index.html">股票分析工作台</a>
+            <a href="../homepage-demo-a.html">平台首页参考</a>
+            <a href="../project-center-demo.html">项目工作区参考</a>
+          </nav>
+          <div class="topbar-meta">
+            <div class="meta-pill">数据快照 2026-07-12 15:30</div>
+            <div class="meta-pill"><span class="meta-avatar">ZW</span> 张炜</div>
+          </div>
+          <button class="menu-button" type="button" data-menu-toggle aria-label="展开导航">菜单</button>
+        </div>
+      </header>
+      <div class="workspace">
+        <aside class="sidebar">
+          <section class="sidebar-panel">
+            <span class="eyebrow">业务线定位</span>
+            <h2>以资产与持仓为中心的 AI 研究工作台</h2>
+            <p class="sidebar-note">首页先回答“现在仓位怎样”和“今天先处理什么”，再把用户引导到持仓、自选股、分析与报告。</p>
+          </section>
+          <section class="sidebar-panel">
+            <span class="eyebrow">一级导航</span>
+            <nav class="module-nav" aria-label="模块导航">
+              <a class="is-active" href="./index.html"><strong>首页</strong><span>资产总览、AI 重点提示与最近更新</span></a>
+              <a href="./holdings.html"><strong>持仓管理</strong><span>主账户仓位、重点持仓与待处理动作</span></a>
+              <a href="./watchlist.html"><strong>自选股</strong><span>观察池、优先级与进入分析入口</span></a>
+              <a href="./analysis.html"><strong>AI股票分析</strong><span>单标的结论、依据、风险与建议</span></a>
+              <a href="./reports.html"><strong>历史分析报告</strong><span>报告列表、复盘摘要与归档入口</span></a>
+            </nav>
+          </section>
+          <section class="sidebar-panel">
+            <span class="eyebrow">统一示例标的</span>
+            <div class="tag-list">
+              <span class="tag">NVDA</span>
+              <span class="tag">AAPL</span>
+              <span class="tag">MSFT</span>
+              <span class="tag">META</span>
+              <span class="tag">TSM</span>
+            </div>
+            <p class="sidebar-note">全站统一按单主账户、美元口径表达，总资产、仓位占比、风险标签和 AI 结论保持一致。</p>
+          </section>
+        </aside>
+        <main class="content">
+          <section class="hero panel">
+            <div class="hero-grid">
+              <div>
+                <span class="eyebrow">首页 / 第一视角</span>
+                <h1>先看组合，再决定今天由 AI 帮你处理什么。</h1>
+                <p>页面把资产快照、重点持仓、自选股异动和最新分析压进同一个工作台。首页不是展示 AI 能力的舞台，而是每天开盘前 3 分钟的判断入口。</p>
+                <div class="hero-actions">
+                  <a class="btn-primary" href="./holdings.html">查看持仓结构</a>
+                  <a class="btn-secondary" href="./analysis.html">进入 AI 分析</a>
+                  <a class="btn-secondary" href="./reports.html">查看最新报告</a>
+                </div>
+                <div class="summary-strip" style="margin-top: 18px;">
+                  <span class="status-pill status-positive">总资产 +2.8%</span>
+                  <span class="status-pill status-warning">高关注 2 只</span>
+                  <span class="status-pill status-info">待复核报告 3 份</span>
+                </div>
+              </div>
+              <div class="hero-brief">
+                <section class="panel">
+                  <div class="panel-header">
+                    <h3>今日 AI 重点提示</h3>
+                    <span class="status-pill status-warning">需优先处理</span>
+                  </div>
+                  <div class="queue-list" style="margin-top: 14px;">
+                    <article class="queue-item">
+                      <div class="ticker-row"><strong>NVDA</strong><span class="ticker-code">仓位 18.4%</span></div>
+                      <p class="item-copy">财报前两周波动放大，建议把“继续持有”结论复核成“减仓到 15% 上限”。</p>
+                    </article>
+                    <article class="queue-item">
+                      <div class="ticker-row"><strong>META</strong><span class="ticker-code">观察池优先级 A</span></div>
+                      <p class="item-copy">广告业务修复超预期，适合在回撤窗口补跑一轮事件驱动分析。</p>
+                    </article>
+                  </div>
+                </section>
+                <section class="panel">
+                  <div class="grid-two">
+                    <div class="metric-card">
+                      <strong>$1.42M</strong>
+                      <span>总资产，现金 12.6%，可再部署。</span>
+                    </div>
+                    <div class="metric-card">
+                      <strong>31%</strong>
+                      <span>AI 已覆盖仓位，今天建议优先补齐其余核心仓。</span>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </section>
+
+          <section class="grid-four">
+            <article class="stat-card">
+              <strong>$1.42M</strong>
+              <span>总资产，较昨日增加 $38.2K，仓位利用率 87.4%。</span>
+            </article>
+            <article class="stat-card">
+              <strong>5 只</strong>
+              <span>当前持仓，2 只高关注，1 只接近止盈阈值。</span>
+            </article>
+            <article class="stat-card">
+              <strong>8 只</strong>
+              <span>自选股中，3 只建议本周进入正式分析。</span>
+            </article>
+            <article class="stat-card">
+              <strong>12 份</strong>
+              <span>近 30 天分析报告，最近一次生成于今天 09:20。</span>
+            </article>
+          </section>
+
+          <section class="layout-split">
+            <article class="panel">
+              <div class="section-heading">
+                <div>
+                  <span class="eyebrow">资产总览</span>
+                  <h2>组合结构和当天节奏放在一起看</h2>
+                  <p class="panel-subtitle">第一块不做复杂收益归因，只保留对今天决策真正有用的快照、结构和入口。</p>
+                </div>
+                <div class="toolbar">
+                  <a class="btn-ghost" href="./holdings.html">更新持仓</a>
+                  <a class="btn-ghost" href="./reports.html">最近报告</a>
+                </div>
+              </div>
+              <div class="grid-three" style="margin-top: 18px;">
+                <div class="metric-card">
+                  <strong>成长仓 54%</strong>
+                  <span>NVDA、TSM、META 为主，AI 判断波动会继续放大。</span>
+                </div>
+                <div class="metric-card">
+                  <strong>稳健仓 33%</strong>
+                  <span>AAPL、MSFT 提供组合底盘，短期以内继续持有为主。</span>
+                </div>
+                <div class="metric-card">
+                  <strong>现金 12.6%</strong>
+                  <span>足够支撑 2 次补位，不建议在财报周前全部打满。</span>
+                </div>
+              </div>
+            </article>
+            <aside class="rail-panel">
+              <span class="eyebrow">快捷入口</span>
+              <div class="rail-list" style="margin-top: 6px;">
+                <div class="rail-item">
+                  <strong>批量跑分析</strong>
+                  <p>对高关注持仓和观察池优先级 A 的股票发起同口径分析。</p>
+                </div>
+                <div class="rail-item">
+                  <strong>复核风险标签</strong>
+                  <p>把“高波动”与“事件待确认”标记的标的拉出来复盘。</p>
+                </div>
+                <div class="rail-item">
+                  <strong>查看报告更新</strong>
+                  <p>直接跳转到今天新增或待复核的历史分析报告。</p>
+                </div>
+              </div>
+            </aside>
+          </section>
+
+          <section class="grid-two">
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">持仓重点关注</span>
+                  <h2>只展示最值得立即复核的 3 只</h2>
+                </div>
+                <a class="btn-ghost" href="./holdings.html">进入持仓管理</a>
+              </div>
+              <div class="focus-list" style="margin-top: 16px;">
+                <article class="focus-item">
+                  <div class="item-title">
+                    <strong>NVDA</strong>
+                    <span class="ticker-code">仓位 18.4% / 浮盈 +21.7%</span>
+                    <span class="status-pill status-warning">财报前波动抬升</span>
+                  </div>
+                  <p class="item-copy">AI 关注点从“继续持有”转向“先收缩集中度”，建议先在持仓页复核上限。</p>
+                </article>
+                <article class="focus-item">
+                  <div class="item-title">
+                    <strong>TSM</strong>
+                    <span class="ticker-code">仓位 11.8% / 浮盈 +8.4%</span>
+                    <span class="status-pill status-info">供给链改善</span>
+                  </div>
+                  <p class="item-copy">受益链条仍在，但价格已接近阶段目标位，建议补一份事件后跟踪。</p>
+                </article>
+                <article class="focus-item">
+                  <div class="item-title">
+                    <strong>AAPL</strong>
+                    <span class="ticker-code">仓位 13.2% / 浮盈 +5.1%</span>
+                    <span class="status-pill status-positive">稳定底盘</span>
+                  </div>
+                  <p class="item-copy">当前承担防守角色，AI 暂不建议动作，但要继续跟踪服务业务增速。</p>
+                </article>
+              </div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">自选股动态</span>
+                  <h2>从观察池里挑出下一轮研究对象</h2>
+                </div>
+                <a class="btn-ghost" href="./watchlist.html">进入自选股</a>
+              </div>
+              <div class="focus-list" style="margin-top: 16px;">
+                <article class="focus-item">
+                  <div class="item-title">
+                    <strong>META</strong>
+                    <span class="ticker-code">优先级 A / 观察第 14 天</span>
+                  </div>
+                  <p class="item-copy">广告恢复与 AI 资本开支并行，适合补跑“事件与估值错位”模板。</p>
+                </article>
+                <article class="focus-item">
+                  <div class="item-title">
+                    <strong>AMZN</strong>
+                    <span class="ticker-code">优先级 B / 待确认利润率</span>
+                  </div>
+                  <p class="item-copy">云业务修复路径清晰，但当前证据还不够，继续放在候选补位组。</p>
+                </article>
+                <article class="focus-item">
+                  <div class="item-title">
+                    <strong>CRM</strong>
+                    <span class="ticker-code">优先级 C / 待降级</span>
+                  </div>
+                  <p class="item-copy">过去 7 天没有新的触发条件，页面里要明确降级而不是悄悄消失。</p>
+                </article>
+              </div>
+            </article>
+          </section>
+
+          <section class="grid-two">
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">最近分析结果</span>
+                  <h2>分析队列与人工复核节奏</h2>
+                </div>
+                <a class="btn-ghost" href="./analysis.html">查看分析页结构</a>
+              </div>
+              <div class="queue-list" style="margin-top: 16px;">
+                <article class="queue-item">
+                  <div class="item-title">
+                    <strong>NVDA / 财报前仓位复核</strong>
+                    <span class="status-pill status-warning">待人工确认</span>
+                  </div>
+                  <p class="item-copy">AI 给出“减仓到 15%”建议，等待张炜确认是否接受风控阈值调整。</p>
+                </article>
+                <article class="queue-item">
+                  <div class="item-title">
+                    <strong>META / 观察池转正式分析</strong>
+                    <span class="status-pill status-info">已完成首轮</span>
+                  </div>
+                  <p class="item-copy">结论偏正面，但仍需要补齐广告恢复的持续性证据。</p>
+                </article>
+              </div>
+            </article>
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">报告更新</span>
+                  <h2>把历史报告做成复盘入口，不是文件柜</h2>
+                </div>
+                <a class="btn-ghost" href="./reports.html">进入历史报告</a>
+              </div>
+              <div class="report-list" style="margin-top: 16px;">
+                <article class="report-item">
+                  <div class="item-title">
+                    <strong>2026-07-12 / NVDA 季前风险复核</strong>
+                    <span class="status-pill status-warning">待复核</span>
+                  </div>
+                  <p>重点结论已经从“继续持有”改为“缩减集中度”，适合作为今天首个待办。</p>
+                </article>
+                <article class="report-item">
+                  <div class="item-title">
+                    <strong>2026-07-11 / META 候选转正分析</strong>
+                    <span class="status-pill status-positive">已归档</span>
+                  </div>
+                  <p>保留关键证据、风险和下一步动作，方便回看而不需要重走推理过程。</p>
+                </article>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel" data-demo-group>
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow">状态演示</span>
+                <h2>空状态、加载中和失败态必须拆开表达</h2>
+                <p class="panel-subtitle">同一套静态页面里用切换按钮模拟不同状态，方便张炜审核页面边界，不需要接入真实接口。</p>
+              </div>
+              <div class="segmented">
+                <button class="toggle-button is-active" type="button" data-demo-toggle="default">默认态</button>
+                <button class="toggle-button" type="button" data-demo-toggle="loading">加载中</button>
+                <button class="toggle-button" type="button" data-demo-toggle="empty">空状态</button>
+                <button class="toggle-button" type="button" data-demo-toggle="error">失败态</button>
+              </div>
+            </div>
+            <div class="demo-panel" data-demo-panel="default" style="margin-top: 16px;">
+              <div class="state-card">
+                <h3>默认态</h3>
+                <p class="state-copy">首页展示完整快照，局部区块各自更新。AI 提示与持仓重点关注先到位，历史信息后到位。</p>
+              </div>
+            </div>
+            <div class="demo-panel state-loading" data-demo-panel="loading" hidden style="margin-top: 16px;">
+              <div class="state-card">
+                <h3>加载中</h3>
+                <div class="skeleton-list" style="margin-top: 14px;">
+                  <div class="skeleton-line"></div>
+                  <div class="skeleton-line medium"></div>
+                  <div class="skeleton-line short"></div>
+                </div>
+              </div>
+            </div>
+            <div class="demo-panel" data-demo-panel="empty" hidden style="margin-top: 16px;">
+              <div class="state-card state-empty">
+                <h3>空状态</h3>
+                <p class="state-copy">如果用户还没导入持仓，这里明确说明“尚未导入持仓”，主动作是“先导入持仓”，而不是泛泛显示“暂无数据”。</p>
+                <div class="state-actions">
+                  <a class="btn-primary" href="./holdings.html">先导入持仓</a>
+                </div>
+              </div>
+            </div>
+            <div class="demo-panel" data-demo-panel="error" hidden style="margin-top: 16px;">
+              <div class="state-card state-error">
+                <h3>失败态</h3>
+                <p class="state-copy">如果行情同步失败，页面保留骨架和上一份快照，并明确给出“重试同步”和“查看失败说明”。</p>
+                <div class="state-actions">
+                  <button class="btn-primary" type="button">重试同步</button>
+                  <button class="btn-ghost" type="button">查看失败说明</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+    <div class="mobile-backdrop" data-mobile-backdrop></div>
+    <script src="./demo.js"></script>
+  </body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI股票分析系统 - AI股票分析 Demo</title>
+    <link rel="stylesheet" href="./demo.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a class="brand" href="./index.html">
+            <span class="brand-mark"></span>
+            <span class="brand-text"><strong>gemshin_nb</strong><span>AI股票分析系统</span></span>
+          </a>
+          <nav class="topnav" aria-label="页面导航">
+            <a href="./index.html">首页</a>
+            <a href="./holdings.html">持仓管理</a>
+            <a href="./watchlist.html">自选股</a>
+            <a class="is-active" href="./analysis.html">AI股票分析</a>
+            <a href="./reports.html">历史分析报告</a>
+          </nav>
+          <div class="topbar-meta">
+            <div class="meta-pill">分析模板：财报前复核</div>
+            <div class="meta-pill"><span class="meta-avatar">AI</span> 09:20 生成</div>
+          </div>
+          <button class="menu-button" type="button" data-menu-toggle aria-label="展开导航">菜单</button>
+        </div>
+      </header>
+      <div class="workspace">
+        <aside class="sidebar">
+          <section class="sidebar-panel">
+            <span class="eyebrow">页面边界</span>
+            <h2>只保留稳定的四层分析结构</h2>
+            <p class="sidebar-note">当前阶段不做对话式研究台，不展开 agent 推理过程，也不引入第二套复杂分析交互。</p>
+          </section>
+          <section class="sidebar-panel">
+            <span class="eyebrow">统一导航</span>
+            <nav class="module-nav">
+              <a href="./index.html"><strong>首页</strong><span>资产和重点提示</span></a>
+              <a href="./holdings.html"><strong>持仓管理</strong><span>仓位与动作</span></a>
+              <a href="./watchlist.html"><strong>自选股</strong><span>观察池优先级</span></a>
+              <a class="is-active" href="./analysis.html"><strong>AI股票分析</strong><span>结论、依据、风险、建议</span></a>
+              <a href="./reports.html"><strong>历史分析报告</strong><span>列表与复盘</span></a>
+            </nav>
+          </section>
+        </aside>
+        <main class="content">
+          <section class="panel">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">AI股票分析</span>
+                <h1 style="font-size: 32px; line-height: 1.1; letter-spacing: -0.03em;">分析页先给结论，再解释依据与风险</h1>
+                <p class="panel-subtitle">这一页保持中保真结构，不把页面做成复杂研究台。核心是让张炜确认信息组织方式，而不是被交互噪音干扰。</p>
+              </div>
+              <div class="toolbar">
+                <button class="btn-ghost" type="button">切换标的</button>
+                <button class="btn-ghost" type="button">重新生成</button>
+                <a class="btn-primary" href="./reports.html">查看历史报告</a>
+              </div>
+            </div>
+          </section>
+
+          <section class="report-grid">
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">核心依据</span>
+                  <h2>NVDA / 财报前仓位复核</h2>
+                  <p class="panel-subtitle">统一拆成市场面、基本面、新闻事件面和情绪面，方便对比不同分析模板。</p>
+                </div>
+                <span class="status-pill status-warning">当前建议：减仓到 15%</span>
+              </div>
+              <div class="basis-grid" style="margin-top: 18px;">
+                <article class="basis-card">
+                  <h3>市场面</h3>
+                  <p>短期资金继续偏好 AI 主线，但财报前单只波动与期权隐含波动率已明显抬升。</p>
+                </article>
+                <article class="basis-card">
+                  <h3>基本面</h3>
+                  <p>核心成长逻辑没有变化，但当前仓位过高，已经从“看对”变成“押得太重”。</p>
+                </article>
+                <article class="basis-card">
+                  <h3>新闻事件面</h3>
+                  <p>市场正在提前定价高预期，财报兑现稍弱就可能触发快速回撤。</p>
+                </article>
+                <article class="basis-card">
+                  <h3>情绪面</h3>
+                  <p>讨论热度和多头情绪都偏拥挤，适合把风险管理放在收益追逐之前。</p>
+                </article>
+              </div>
+            </article>
+
+            <aside class="rail-panel">
+              <span class="eyebrow">结论摘要</span>
+              <div class="rail-list" style="margin-top: 8px;">
+                <div class="rail-item">
+                  <strong>当前结论</strong>
+                  <p>继续看好长期逻辑，但不建议在财报前维持 18% 以上集中度。</p>
+                </div>
+                <div class="rail-item">
+                  <strong>下一步建议</strong>
+                  <p>把 NVDA 降到 15% 左右，同时保留对 TSM 的补位观察。</p>
+                </div>
+                <div class="rail-item">
+                  <strong>关联页面</strong>
+                  <p>可回到持仓管理执行复核，或进入历史报告查看上一版结论变化。</p>
+                </div>
+              </div>
+            </aside>
+          </section>
+
+          <section class="grid-two">
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">主要风险</span>
+                  <h2>让风险成为并列信息，不藏在文末</h2>
+                </div>
+              </div>
+              <div class="insight-grid" style="margin-top: 16px;">
+                <article class="risk-card">
+                  <h3>高预期落空风险</h3>
+                  <p>市场已经提前计入较强业绩，若兑现只算及格，可能出现明显回撤。</p>
+                </article>
+                <article class="risk-card">
+                  <h3>单只集中度风险</h3>
+                  <p>当前仓位已超出“高波动成长仓”的舒适区间，组合承压会被单一事件放大。</p>
+                </article>
+              </div>
+            </article>
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">待确认问题</span>
+                  <h2>只列阻碍决策的关键缺口</h2>
+                </div>
+              </div>
+              <div class="insight-grid" style="margin-top: 16px;">
+                <article class="detail-card">
+                  <h3>是否接受 15% 仓位上限</h3>
+                  <p>这是当前最关键的人工确认点，决定了建议是“减仓”还是“继续持有”。</p>
+                </article>
+                <article class="detail-card">
+                  <h3>是否联动调整 TSM 补位节奏</h3>
+                  <p>如果 NVDA 缩仓，是否需要同步提高 TSM 的观察优先级。</p>
+                </article>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel" data-demo-group>
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow">状态演示</span>
+                <h2>分析结果默认、生成中、失败和无结果要分开</h2>
+              </div>
+              <div class="segmented">
+                <button class="toggle-button is-active" type="button" data-demo-toggle="default">默认态</button>
+                <button class="toggle-button" type="button" data-demo-toggle="loading">生成中</button>
+                <button class="toggle-button" type="button" data-demo-toggle="error">失败态</button>
+                <button class="toggle-button" type="button" data-demo-toggle="empty">无结果</button>
+              </div>
+            </div>
+            <div class="demo-panel" data-demo-panel="default" style="margin-top: 16px;">
+              <div class="state-card">
+                <h3>默认态</h3>
+                <p class="state-copy">左侧结论摘要，中间四层依据，右侧风险与下一步。结构稳定，便于未来套用到不同标的。</p>
+              </div>
+            </div>
+            <div class="demo-panel state-loading" data-demo-panel="loading" hidden style="margin-top: 16px;">
+              <div class="state-card">
+                <h3>生成中</h3>
+                <div class="skeleton-list" style="margin-top: 14px;">
+                  <div class="skeleton-line"></div>
+                  <div class="skeleton-line"></div>
+                  <div class="skeleton-line medium"></div>
+                </div>
+              </div>
+            </div>
+            <div class="demo-panel" data-demo-panel="error" hidden style="margin-top: 16px;">
+              <div class="state-card state-error">
+                <h3>失败态：分析任务未完成</h3>
+                <p class="state-copy">需要区分“没有跑”与“跑失败了”。这里明确显示失败原因，并提供重新生成入口。</p>
+                <div class="state-actions">
+                  <button class="btn-primary" type="button">重新生成</button>
+                </div>
+              </div>
+            </div>
+            <div class="demo-panel" data-demo-panel="empty" hidden style="margin-top: 16px;">
+              <div class="state-card state-empty">
+                <h3>无结果：尚未为该标的生成分析</h3>
+                <p class="state-copy">页面仍保留四层结构说明，引导用户从持仓或自选股触发第一份分析，而不是让页面整块空掉。</p>
+                <div class="state-actions">
+                  <a class="btn-primary" href="./watchlist.html">从观察池发起分析</a>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+    <div class="mobile-backdrop" data-mobile-backdrop></div>
+    <script src="./demo.js"></script>
+  </body>
+</html>
