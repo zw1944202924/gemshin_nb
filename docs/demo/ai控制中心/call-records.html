@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI控制中心-调用记录 Demo</title>
+    <link rel="stylesheet" href="./ai-control-center.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>gemshin_nb</span>
+        </div>
+        <nav class="topnav">
+          <a href="../homepage-demo-a.html">平台首页</a>
+          <a href="../module-center-demo.html">模块中心</a>
+          <a href="../project-center-demo.html">项目中心</a>
+          <a class="active" href="./ai-control-center-home.html">AI控制中心</a>
+        </nav>
+        <div class="userbar">
+          <span>张炜 · 已登录</span>
+          <div class="avatar">ZW</div>
+        </div>
+      </header>
+
+      <div class="shell-layout">
+        <aside class="sidebar">
+          <div class="sidebar-section">
+            <div class="label">AI控制中心</div>
+            <div class="navlist">
+              <a class="navitem" href="./ai-control-center-home.html">首页</a>
+              <a class="navitem" href="./model-configuration.html">模型配置</a>
+              <a class="navitem" href="./prompt-configuration.html">Prompt配置</a>
+              <a class="navitem active" href="./call-records.html">调用记录</a>
+            </div>
+            <p class="sidebar-note">调用记录页承接失败、超时、重试与来源业务线定位，是首页异常入口后的落地点。</p>
+          </div>
+        </aside>
+
+        <main class="main">
+          <section class="headline">
+            <div class="headline-copy">
+              <div class="label">AI控制中心 / 调用记录</div>
+              <h1>把失败、超时与来源业务线定位到具体记录</h1>
+              <p>本页对接平台日志治理语义。即使没有真实后端，也要明确“异常筛选、来源业务线、模型、Prompt、耗时、处理动作”这些一眼能审核的字段。</p>
+            </div>
+            <div class="headline-actions">
+              <a class="button-primary" href="./ai-control-center-home.html">返回首页</a>
+              <a class="button-secondary" href="./model-configuration.html">查看相关模型</a>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-heading">
+              <div>
+                <div class="label">核心记录区</div>
+                <h2>默认态与仅异常态都要能成立</h2>
+              </div>
+              <p class="section-note">当前 demo 用同一张记录表呈现全部记录与异常记录，后续再决定是否接入现有服务或原生 API。</p>
+            </div>
+            <div class="action-row" style="margin-top: 16px;">
+              <a class="chip-link" href="./call-records.html">全部记录</a>
+              <a class="chip-link" href="./call-records.html#exception-only">仅异常</a>
+              <a class="chip-link" href="./ai-control-center-home.html">回首页总览</a>
+            </div>
+            <div class="record-table" id="exception-only" style="margin-top: 16px;">
+              <div class="record-header">
+                <span>来源业务线 / Prompt</span>
+                <span>模型</span>
+                <span>结果状态</span>
+                <span>耗时</span>
+                <span>后续操作</span>
+              </div>
+              <div class="record-row">
+                <div><strong>AI动画 / 镜头生成-室内情绪版</strong><span>10:35 · 视频生成链路</span></div>
+                <span>veo-video-2</span>
+                <span><i class="status danger">失败</i></span>
+                <span>88s</span>
+                <span><a class="chip-link" href="./model-configuration.html">查看模型状态</a></span>
+              </div>
+              <div class="record-row">
+                <div><strong>漫剧模块 / 剧情压缩V2</strong><span>10:22 · 长文本压缩</span></div>
+                <span>claude-sonnet</span>
+                <span><i class="status warning">重试中</i></span>
+                <span>41s</span>
+                <span><a class="chip-link" href="./prompt-configuration.html">查看模板状态</a></span>
+              </div>
+              <div class="record-row">
+                <div><strong>AI动画 / 角色立绘清稿</strong><span>10:16 · 图片生成</span></div>
+                <span>seedream-image-pro</span>
+                <span><i class="status success">成功</i></span>
+                <span>12s</span>
+                <span><a class="chip-link" href="./ai-control-center-home.html">回首页汇总</a></span>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="scenario-grid">
+              <article class="scenario-card">
+                <h3>空状态</h3>
+                <p>近 24 小时没有任何调用时，不隐藏页面，而是明确提示当前仍未接入业务线或未产生调用。</p>
+              </article>
+              <article class="scenario-card">
+                <h3>异常状态</h3>
+                <p>日志服务异常时，顶部导航和侧栏仍保留，允许退回首页或切去模型配置页，不做整页空白。</p>
+              </article>
+              <article class="scenario-card">
+                <h3>主要操作</h3>
+                <p>首版聚焦“筛异常、看来源、跳回相关配置页”。更复杂的日志钻取和导出能力暂不在静态 demo 里扩写。</p>
+              </article>
+            </div>
+          </section>
+
+          <p class="footer-note">本页用平台壳层下的表格结构承接调用明细，并明确保留“仅异常”作为真实可点击预览入口。</p>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

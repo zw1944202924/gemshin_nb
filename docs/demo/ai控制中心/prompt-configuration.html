@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI控制中心-Prompt配置 Demo</title>
+    <link rel="stylesheet" href="./ai-control-center.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>gemshin_nb</span>
+        </div>
+        <nav class="topnav">
+          <a href="../homepage-demo-a.html">平台首页</a>
+          <a href="../module-center-demo.html">模块中心</a>
+          <a href="../project-center-demo.html">项目中心</a>
+          <a class="active" href="./ai-control-center-home.html">AI控制中心</a>
+        </nav>
+        <div class="userbar">
+          <span>张炜 · 已登录</span>
+          <div class="avatar">ZW</div>
+        </div>
+      </header>
+
+      <div class="shell-layout">
+        <aside class="sidebar">
+          <div class="sidebar-section">
+            <div class="label">AI控制中心</div>
+            <div class="navlist">
+              <a class="navitem" href="./ai-control-center-home.html">首页</a>
+              <a class="navitem" href="./model-configuration.html">模型配置</a>
+              <a class="navitem active" href="./prompt-configuration.html">Prompt配置</a>
+              <a class="navitem" href="./call-records.html">调用记录</a>
+            </div>
+            <p class="sidebar-note">Prompt 配置页承接模板定义、版本切换、覆盖业务线与空白缺口判断。</p>
+          </div>
+        </aside>
+
+        <main class="main">
+          <section class="headline">
+            <div class="headline-copy">
+              <div class="label">AI控制中心 / Prompt配置</div>
+              <h1>控制模板版本、生效范围与业务线复用边界</h1>
+              <p>本页不是首页热度榜单的延伸，而是模板治理页本身。重点是哪些模板在用、谁在用、哪些业务线仍然缺少可复用模板。</p>
+            </div>
+            <div class="headline-actions">
+              <a class="button-primary" href="./ai-control-center-home.html">返回首页</a>
+              <a class="button-secondary" href="./model-configuration.html">切回模型配置</a>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="shell-grid">
+              <article class="shell-card">
+                <h3>高频模板组</h3>
+                <p>镜头生成、剧情压缩、角色配音映射是首版高频模板组，需要支持版本查看、生效切换与业务线范围说明。</p>
+                <div class="inline-list">
+                  <span>高频模板 3 组</span>
+                  <span>双业务线共用 2 组</span>
+                </div>
+              </article>
+              <article class="shell-card">
+                <h3>待补齐缺口</h3>
+                <p>漫剧模块的批量剧情校对仍没有复用模板，页面要明确空状态，而不是让使用方自己在日志里发现。</p>
+                <div class="inline-list">
+                  <span>空白能力 1 条</span>
+                  <span>需业务方补文案</span>
+                </div>
+              </article>
+              <article class="shell-card">
+                <h3>主要操作</h3>
+                <p>首版静态原型先表现模板查看、生效切换、覆盖业务线与空态补位，不主动扩到完整审计页。</p>
+                <div class="inline-list">
+                  <span>查看版本</span>
+                  <span>切换生效</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="record-table">
+              <div class="record-header">
+                <span>模板名称</span>
+                <span>当前版本</span>
+                <span>覆盖业务线</span>
+                <span>当前状态</span>
+                <span>主要操作</span>
+              </div>
+              <div class="record-row">
+                <div><strong>镜头生成-室内情绪版</strong><span>主要承接视频镜头生成</span></div>
+                <span>V3.2</span>
+                <span>AI动画、漫剧模块</span>
+                <span><i class="status success">生效中</i></span>
+                <span><a class="chip-link" href="./call-records.html">查看使用记录</a></span>
+              </div>
+              <div class="record-row">
+                <div><strong>剧情压缩V2</strong><span>承接长文本压缩与回顾</span></div>
+                <span>V2.4</span>
+                <span>漫剧模块</span>
+                <span><i class="status warning">待补说明</i></span>
+                <span><a class="chip-link" href="./ai-control-center-home.html">回首页查看热度</a></span>
+              </div>
+              <div class="record-row">
+                <div><strong>角色配音情绪映射</strong><span>情绪标签到配音风格映射</span></div>
+                <span>V1.8</span>
+                <span>AI动画</span>
+                <span><i class="status success">生效中</i></span>
+                <span><a class="chip-link" href="./model-configuration.html">核对模型依赖</a></span>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="scenario-grid">
+              <article class="scenario-card">
+                <h3>空状态</h3>
+                <p>当某条业务线尚无任何生效 Prompt 时，直接提示“待补模板”，并给出回到平台首页与业务线负责人对齐的入口。</p>
+                <div class="scenario-actions">
+                  <a class="ghost-link" href="./ai-control-center-home.html">回首页</a>
+                </div>
+              </article>
+              <article class="scenario-card">
+                <h3>异常状态</h3>
+                <p>模板引用的模型已停用时，应标记为“依赖失效”，并可直接跳到模型配置页排查，而不是只留在调用失败后才发现。</p>
+                <div class="scenario-actions">
+                  <a class="ghost-link" href="./model-configuration.html">去模型配置页</a>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <p class="footer-note">本页继续沿用平台 demo 的冷静产品型字体、浅色内容面与深色壳层，并把空态 / 异常态明确落成页面区块。</p>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
