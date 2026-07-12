@@ -61,45 +61,6 @@
         </aside>
 
         <div class="system-main">
-          <details class="mobile-system-nav">
-            <summary class="menu-trigger">
-              <strong>AI动画制作系统</strong>
-              <span>海港追光 / 镜头 27</span>
-            </summary>
-            <button class="drawer-backdrop" type="button" aria-label="关闭导航" data-close-drawer></button>
-            <div class="drawer-panel">
-              <div class="drawer-panel-header">
-                <div>
-                  <strong>AI动画制作系统</strong>
-                  <span>海港追光 / 镜头 27</span>
-                </div>
-                <button class="drawer-close" type="button" aria-label="关闭导航" data-close-drawer>关闭</button>
-              </div>
-              <nav class="drawer-nav" aria-label="AI动画制作系统抽屉导航">
-                <a class="sidebar-link" href="./system-home-demo.html">
-                  <span class="sidebar-icon" aria-hidden="true">⌂</span>
-                  <span>系统首页</span>
-                </a>
-                <a class="sidebar-link" href="./system-home-demo.html#global-assets">
-                  <span class="sidebar-icon" aria-hidden="true">▣</span>
-                  <span>全局素材</span>
-                </a>
-                <a class="sidebar-link" href="./system-home-demo.html#global-tasks">
-                  <span class="sidebar-icon" aria-hidden="true">☰</span>
-                  <span>全局任务</span>
-                </a>
-                <a class="sidebar-link" href="./system-home-demo.html#system-settings">
-                  <span class="sidebar-icon" aria-hidden="true">⚙</span>
-                  <span>系统设置</span>
-                </a>
-                <a class="sidebar-return" href="./module-center-entry-demo.html">
-                  <span class="sidebar-icon" aria-hidden="true">←</span>
-                  <span>返回模块中心</span>
-                </a>
-              </nav>
-            </div>
-          </details>
-
           <section class="page-header">
             <div>
               <div class="breadcrumbs">
@@ -242,19 +203,7 @@
       </footer>
     </div>
     <script>
-      document.querySelectorAll(".mobile-system-nav").forEach((drawer) => {
-        if (window.location.search.includes("nav=open")) {
-          drawer.setAttribute("open", "");
-        }
-        drawer.querySelectorAll("[data-close-drawer]").forEach((node) => {
-          node.addEventListener("click", () => drawer.removeAttribute("open"));
-        });
-        drawer.addEventListener("keydown", (event) => {
-          if (event.key === "Escape") {
-            drawer.removeAttribute("open");
-          }
-        });
-      });
+      /* Desktop-only: no mobile drawer handling needed */
     </script>
   </body>
 </html>
