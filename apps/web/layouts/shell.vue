@@ -42,8 +42,20 @@ const handleLogin = async () => {
   try {
     await login(loginForm)
     const target = redirectPath.value
-    closeLoginModal()
-    await router.push(target)
+    // 先关闭弹窗，再跳转
+    showLoginModal.value = false
+    loginForm.username = ""
+    loginForm.password = ""
+    loginError.value = ""
+    // 跳转到目标页面，清理 URL 上的 redirect 参数
+    if (target && target !== "/") {
+      await router.push(target)
+    } else {
+      // 如果没有目标或目标是首页，直接跳转到首页
+      await router.push("/")
+    }
+    // 重置 redirectPath
+    redirectPath.value = "/"
   } catch (error: any) {
     const detail =
       error?.data?.detail
