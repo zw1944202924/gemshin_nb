@@ -143,7 +143,7 @@ const moduleDirections = [
 .hero {
   position: relative;
   overflow: hidden;
-  padding: 22px 20px 48px;
+  padding: 22px 20px 32px;
 }
 
 .hero::before {
@@ -353,7 +353,7 @@ const moduleDirections = [
 .section-container {
   width: min(1320px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 100px 0 80px;
+  padding: 80px 0;
 }
 
 .section-header {
@@ -388,8 +388,8 @@ const moduleDirections = [
 
 /* ── 模块方向展示 ── */
 .modules-section {
-  background: rgba(247, 250, 255, 0.02);
-  border-top: 1px solid var(--border-light);
+  background: #f5f7fb;
+  border-top: none;
 }
 
 .modules-grid {
@@ -456,7 +456,8 @@ const moduleDirections = [
 
 /* ── 平台特点 ── */
 .features-section {
-  border-top: 1px solid var(--border-light);
+  background: #f5f7fb;
+  border-top: 1px solid rgba(22, 35, 56, 0.08);
 }
 
 .features-grid {
