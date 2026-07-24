@@ -67,6 +67,7 @@ const handleLogout = async () => {
           <template v-if="isAuthenticated">
             <span class="user-greeting">{{ user?.display_name || user?.username }}</span>
             <NuxtLink to="/modules" class="primary-link">模块中心</NuxtLink>
+            <button class="logout-btn" type="button" @click="handleLogout">退出</button>
           </template>
           <template v-else>
             <button class="login-btn" type="button" @click="openLoginModal">登录</button>
@@ -244,6 +245,25 @@ const handleLogout = async () => {
   transform: translateY(-1px);
 }
 
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink-copy);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .main-content {
   flex: 1;
 }
@@ -398,7 +418,7 @@ const handleLogout = async () => {
 }
 
 @media (max-width: 640px) {
-  .top-actions {
+  .topnav {
     display: none;
   }
 }
