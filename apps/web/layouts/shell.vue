@@ -1,18 +1,31 @@
 <script setup lang="ts">
 const { isAuthenticated, user, login, logout } = useAuth()
 const router = useRouter()
+const route = useRoute()
 
 // 登录弹窗状态
 const showLoginModal = ref(false)
 const loginForm = reactive({ username: "", password: "" })
 const loginError = ref("")
 const loginLoading = ref(false)
+const loginModalRef = ref<HTMLDivElement>()
+const usernameInputRef = ref<HTMLInputElement>()
 
-const openLoginModal = () => {
+// 登录成功后要跳转的目标
+const redirectPath = ref("/")
+
+const openLoginModal = (target?: string) => {
+  if (target) {
+    redirectPath.value = target
+  }
   showLoginModal.value = true
   loginError.value = ""
   loginForm.username = ""
   loginForm.password = ""
+  // 延迟聚焦到用户名输入框
+  nextTick(() => {
+    usernameInputRef.value?.focus()
+  })
 }
 
 const closeLoginModal = () => {
@@ -20,6 +33,7 @@ const closeLoginModal = () => {
   loginError.value = ""
   loginForm.username = ""
   loginForm.password = ""
+  redirectPath.value = "/"
 }
 
 const handleLogin = async () => {
@@ -27,8 +41,9 @@ const handleLogin = async () => {
   loginLoading.value = true
   try {
     await login(loginForm)
+    const target = redirectPath.value
     closeLoginModal()
-    await router.push("/")
+    await router.push(target)
   } catch (error: any) {
     const detail =
       error?.data?.detail
@@ -44,6 +59,34 @@ const handleLogout = async () => {
   await logout()
   await router.push("/")
 }
+
+// Esc 键关闭弹窗
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === "Escape" && showLoginModal.value) {
+    closeLoginModal()
+  }
+}
+
+// 暴露方法给子组件使用
+defineExpose({ openLoginModal })
+
+// 检查 URL 中的 redirect 参数，如果有则自动打开登录弹窗
+onMounted(() => {
+  const redirect = route.query.redirect
+  if (typeof redirect === "string" && redirect) {
+    openLoginModal(redirect)
+  }
+})
+
+// 监听路由变化，检查 redirect 参数
+watch(
+  () => route.query.redirect,
+  (newRedirect) => {
+    if (typeof newRedirect === "string" && newRedirect && !showLoginModal.value) {
+      openLoginModal(newRedirect)
+    }
+  }
+)
 </script>
 
 <template>
@@ -82,17 +125,27 @@ const handleLogout = async () => {
 
     <!-- 登录弹窗 -->
     <Teleport to="body">
-      <div v-if="showLoginModal" class="login-modal-overlay" @click.self="closeLoginModal">
-        <div class="login-modal">
+      <div
+        v-if="showLoginModal"
+        ref="loginModalRef"
+        class="login-modal-overlay"
+        @click.self="closeLoginModal"
+        @keydown="handleKeydown"
+      >
+        <div class="login-modal" role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
           <div class="login-modal-header">
-            <h3>登录</h3>
-            <button class="login-modal-close" type="button" @click="closeLoginModal">&times;</button>
+            <div>
+              <h3 id="login-modal-title">登录 gemshin_nb</h3>
+              <p class="login-modal-desc">登录后即可访问模块中心，进入各业务方向。</p>
+            </div>
+            <button class="login-modal-close" type="button" @click="closeLoginModal" aria-label="关闭登录弹窗">&times;</button>
           </div>
           <form class="login-modal-form" @submit.prevent="handleLogin">
             <div class="login-modal-fields">
               <label class="login-modal-field">
                 <span class="login-modal-label">用户名</span>
                 <input
+                  ref="usernameInputRef"
                   v-model="loginForm.username"
                   type="text"
                   autocomplete="username"
@@ -112,7 +165,7 @@ const handleLogout = async () => {
               </label>
             </div>
 
-            <p v-if="loginError" class="login-modal-error">{{ loginError }}</p>
+            <p v-if="loginError" class="login-modal-error" role="alert">{{ loginError }}</p>
 
             <button class="login-modal-submit" type="submit" :disabled="loginLoading">
               {{ loginLoading ? "登录中..." : "登录" }}
@@ -293,7 +346,7 @@ const handleLogout = async () => {
 
 .login-modal-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 20px 24px;
   border-bottom: 1px solid var(--border-light);
@@ -304,6 +357,13 @@ const handleLogout = async () => {
   font-size: 18px;
   font-weight: 700;
   color: var(--ink-primary);
+}
+
+.login-modal-desc {
+  margin: 6px 0 0;
+  color: var(--ink-muted);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .login-modal-close {

@@ -143,7 +143,7 @@ const moduleDirections = [
 .hero {
   position: relative;
   overflow: hidden;
-  padding: 22px 20px 84px;
+  padding: 22px 20px 48px;
 }
 
 .hero::before {
@@ -353,7 +353,7 @@ const moduleDirections = [
 .section-container {
   width: min(1320px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 80px 0;
+  padding: 100px 0 80px;
 }
 
 .section-header {
