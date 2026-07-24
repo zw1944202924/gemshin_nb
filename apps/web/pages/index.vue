@@ -498,7 +498,7 @@ const moduleDirections = [
 
 .section-label {
   margin: 0 0 14px;
-  color: var(--ink-accent);
+  color: #315f8f;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -510,14 +510,14 @@ const moduleDirections = [
   font-size: clamp(30px, 4vw, 48px);
   line-height: 1.08;
   letter-spacing: -0.03em;
-  color: var(--ink-primary);
+  color: var(--surface-ink);
   text-wrap: balance;
 }
 
 .section-desc {
   max-width: 60ch;
   margin-top: 14px;
-  color: var(--ink-copy);
+  color: var(--surface-copy);
   line-height: 1.8;
   font-size: 16px;
 }
@@ -555,12 +555,12 @@ const moduleDirections = [
 .module-name {
   font-size: 18px;
   font-weight: 700;
-  color: var(--ink-primary);
+  color: var(--surface-ink);
   margin-bottom: 12px;
 }
 
 .module-desc {
-  color: var(--ink-copy);
+  color: var(--surface-copy);
   line-height: 1.7;
   font-size: 14px;
 }
@@ -578,14 +578,14 @@ const moduleDirections = [
 
 .footer-note strong {
   display: block;
-  color: var(--ink-primary);
+  color: var(--surface-ink);
   font-size: 16px;
   font-weight: 700;
   margin-bottom: 8px;
 }
 
 .footer-note p {
-  color: var(--ink-copy);
+  color: var(--surface-copy);
   line-height: 1.7;
   font-size: 14px;
 }
@@ -610,14 +610,14 @@ const moduleDirections = [
 
 .feature-item strong {
   display: block;
-  color: var(--ink-primary);
+  color: var(--surface-ink);
   font-size: 16px;
   font-weight: 700;
   margin-bottom: 12px;
 }
 
 .feature-item p {
-  color: var(--ink-copy);
+  color: var(--surface-copy);
   line-height: 1.7;
   font-size: 14px;
 }
