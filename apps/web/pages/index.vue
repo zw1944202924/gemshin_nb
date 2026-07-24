@@ -3,38 +3,7 @@ definePageMeta({
   layout: "shell"
 })
 
-const { isAuthenticated, user, login, pending, logout } = useAuth()
-const router = useRouter()
-const route = useRoute()
-
-// 登录表单
-const loginForm = reactive({ username: "", password: "" })
-const loginError = ref("")
-const loginLoading = ref(false)
-
-const handleLogin = async () => {
-  loginError.value = ""
-  loginLoading.value = true
-  try {
-    await login(loginForm)
-    // 登录成功后跳转到 redirect 参数指定的目标，否则留在首页
-    const target = typeof route.query.redirect === "string" ? route.query.redirect : "/"
-    await router.push(target)
-  } catch (error: any) {
-    const detail =
-      error?.data?.detail
-        ? String(error.data.detail)
-        : ""
-    loginError.value = detail || "登录失败，请稍后重试"
-  } finally {
-    loginLoading.value = false
-  }
-}
-
-const handleLogout = async () => {
-  await logout()
-  await router.push("/")
-}
+const { isAuthenticated, user } = useAuth()
 
 // 三个固定模块方向
 const moduleDirections = [
@@ -79,45 +48,10 @@ const moduleDirections = [
               <NuxtLink to="/modules" class="btn-primary btn-large">进入模块中心</NuxtLink>
               <NuxtLink to="/assistant" class="btn-secondary btn-large">AI 助手</NuxtLink>
             </div>
-
-            <div class="quick-row">
-              <button class="logout-link" type="button" @click="handleLogout">退出登录</button>
-            </div>
           </template>
 
-          <!-- 未登录状态：内联登录表单 -->
+          <!-- 未登录状态 -->
           <template v-else>
-            <form class="login-form" @submit.prevent="handleLogin">
-              <div class="login-fields">
-                <label class="login-field">
-                  <span class="login-label">用户名</span>
-                  <input
-                    v-model="loginForm.username"
-                    type="text"
-                    autocomplete="username"
-                    placeholder="请输入用户名"
-                    :disabled="loginLoading"
-                  />
-                </label>
-                <label class="login-field">
-                  <span class="login-label">密码</span>
-                  <input
-                    v-model="loginForm.password"
-                    type="password"
-                    autocomplete="current-password"
-                    placeholder="请输入密码"
-                    :disabled="loginLoading"
-                  />
-                </label>
-              </div>
-
-              <p v-if="loginError" class="login-error">{{ loginError }}</p>
-
-              <button class="btn-primary btn-large login-submit" type="submit" :disabled="loginLoading">
-                {{ loginLoading ? "登录中..." : "登录并开始" }}
-              </button>
-            </form>
-
             <p class="hero-note">
               登录后可访问模块中心，选择进入任一业务方向。
             </p>
@@ -265,9 +199,9 @@ const moduleDirections = [
 }
 
 .hero-note {
-  margin-top: 16px;
+  margin-top: 24px;
   color: var(--ink-muted);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.6;
 }
 
@@ -291,23 +225,6 @@ const moduleDirections = [
   gap: 14px;
   flex-wrap: wrap;
   margin-top: 24px;
-}
-
-.quick-row {
-  margin-top: 12px;
-}
-
-.logout-link {
-  border: none;
-  background: none;
-  color: var(--ink-muted);
-  font-size: 13px;
-  cursor: pointer;
-  padding: 4px 0;
-}
-
-.logout-link:hover {
-  color: var(--ink-copy);
 }
 
 .btn-primary {
@@ -360,59 +277,6 @@ const moduleDirections = [
   padding: 0 28px;
   font-size: 16px;
   border-radius: 14px;
-}
-
-/* ── 登录表单（内联在 Hero 中） ── */
-.login-form {
-  margin-top: 24px;
-}
-
-.login-fields {
-  display: grid;
-  gap: 14px;
-}
-
-.login-field {
-  display: grid;
-  gap: 8px;
-}
-
-.login-label {
-  color: var(--ink-copy);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.login-field input {
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(194, 214, 255, 0.18);
-  background: rgba(9, 18, 31, 0.5);
-  color: rgba(247, 250, 255, 0.96);
-  font: inherit;
-  font-size: 15px;
-  transition: border-color 0.15s;
-}
-
-.login-field input::placeholder {
-  color: rgba(186, 202, 227, 0.4);
-}
-
-.login-field input:focus {
-  outline: none;
-  border-color: rgba(132, 182, 255, 0.6);
-  background: rgba(9, 18, 31, 0.7);
-}
-
-.login-error {
-  margin: 12px 0 0;
-  color: #f87171;
-  font-size: 13px;
-}
-
-.login-submit {
-  margin-top: 20px;
-  width: 100%;
 }
 
 /* ── 产品预览 ── */
@@ -649,10 +513,6 @@ const moduleDirections = [
 @media (max-width: 640px) {
   .hero-actions {
     flex-direction: column;
-  }
-
-  .login-fields {
-    grid-template-columns: 1fr;
   }
 
   .btn-primary,

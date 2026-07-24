@@ -1,6 +1,44 @@
 <script setup lang="ts">
-const { isAuthenticated, user, logout } = useAuth()
+const { isAuthenticated, user, login, logout } = useAuth()
 const router = useRouter()
+
+// 登录弹窗状态
+const showLoginModal = ref(false)
+const loginForm = reactive({ username: "", password: "" })
+const loginError = ref("")
+const loginLoading = ref(false)
+
+const openLoginModal = () => {
+  showLoginModal.value = true
+  loginError.value = ""
+  loginForm.username = ""
+  loginForm.password = ""
+}
+
+const closeLoginModal = () => {
+  showLoginModal.value = false
+  loginError.value = ""
+  loginForm.username = ""
+  loginForm.password = ""
+}
+
+const handleLogin = async () => {
+  loginError.value = ""
+  loginLoading.value = true
+  try {
+    await login(loginForm)
+    closeLoginModal()
+    await router.push("/")
+  } catch (error: any) {
+    const detail =
+      error?.data?.detail
+        ? String(error.data.detail)
+        : ""
+    loginError.value = detail || "登录失败，请稍后重试"
+  } finally {
+    loginLoading.value = false
+  }
+}
 
 const handleLogout = async () => {
   await logout()
@@ -31,7 +69,7 @@ const handleLogout = async () => {
             <NuxtLink to="/modules" class="primary-link">模块中心</NuxtLink>
           </template>
           <template v-else>
-            <span class="guest-hint">请登录</span>
+            <button class="login-btn" type="button" @click="openLoginModal">登录</button>
           </template>
         </div>
       </div>
@@ -40,6 +78,48 @@ const handleLogout = async () => {
     <main class="main-content">
       <slot />
     </main>
+
+    <!-- 登录弹窗 -->
+    <Teleport to="body">
+      <div v-if="showLoginModal" class="login-modal-overlay" @click.self="closeLoginModal">
+        <div class="login-modal">
+          <div class="login-modal-header">
+            <h3>登录</h3>
+            <button class="login-modal-close" type="button" @click="closeLoginModal">&times;</button>
+          </div>
+          <form class="login-modal-form" @submit.prevent="handleLogin">
+            <div class="login-modal-fields">
+              <label class="login-modal-field">
+                <span class="login-modal-label">用户名</span>
+                <input
+                  v-model="loginForm.username"
+                  type="text"
+                  autocomplete="username"
+                  placeholder="请输入用户名"
+                  :disabled="loginLoading"
+                />
+              </label>
+              <label class="login-modal-field">
+                <span class="login-modal-label">密码</span>
+                <input
+                  v-model="loginForm.password"
+                  type="password"
+                  autocomplete="current-password"
+                  placeholder="请输入密码"
+                  :disabled="loginLoading"
+                />
+              </label>
+            </div>
+
+            <p v-if="loginError" class="login-modal-error">{{ loginError }}</p>
+
+            <button class="login-modal-submit" type="submit" :disabled="loginLoading">
+              {{ loginLoading ? "登录中..." : "登录" }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -125,9 +205,24 @@ const handleLogout = async () => {
   white-space: nowrap;
 }
 
-.guest-hint {
-  font-size: 13px;
-  color: var(--ink-muted);
+.login-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 18px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-gradient);
+  color: #081120;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.login-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
 }
 
 .primary-link {
@@ -151,6 +246,134 @@ const handleLogout = async () => {
 
 .main-content {
   flex: 1;
+}
+
+/* ── 登录弹窗 ── */
+.login-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.login-modal {
+  width: 100%;
+  max-width: 400px;
+  margin: 20px;
+  background: #1a2332;
+  border-radius: 16px;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.login-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.login-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink-primary);
+}
+
+.login-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink-copy);
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.login-modal-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.login-modal-form {
+  padding: 24px;
+}
+
+.login-modal-fields {
+  display: grid;
+  gap: 16px;
+}
+
+.login-modal-field {
+  display: grid;
+  gap: 8px;
+}
+
+.login-modal-label {
+  color: var(--ink-copy);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.login-modal-field input {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(194, 214, 255, 0.18);
+  background: rgba(9, 18, 31, 0.5);
+  color: rgba(247, 250, 255, 0.96);
+  font: inherit;
+  font-size: 15px;
+  transition: border-color 0.15s;
+}
+
+.login-modal-field input::placeholder {
+  color: rgba(186, 202, 227, 0.4);
+}
+
+.login-modal-field input:focus {
+  outline: none;
+  border-color: rgba(132, 182, 255, 0.6);
+  background: rgba(9, 18, 31, 0.7);
+}
+
+.login-modal-error {
+  margin: 12px 0 0;
+  color: #f87171;
+  font-size: 13px;
+}
+
+.login-modal-submit {
+  margin-top: 20px;
+  width: 100%;
+  min-height: 48px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent-gradient);
+  color: #081120;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.login-modal-submit:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.login-modal-submit:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 @media (max-width: 920px) {
