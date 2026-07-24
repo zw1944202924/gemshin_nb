@@ -512,8 +512,32 @@ const moduleDirections = [
 }
 
 @media (max-width: 640px) {
+  .hero {
+    padding: 16px 16px 24px;
+  }
+
+  .hero-grid {
+    padding-top: 24px;
+    gap: 24px;
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(28px, 8vw, 40px);
+  }
+
+  .hero-intro {
+    font-size: 15px;
+    margin-top: 12px;
+  }
+
+  .hero-note {
+    font-size: 14px;
+    margin-top: 16px;
+  }
+
   .hero-actions {
     flex-direction: column;
+    margin-top: 16px;
   }
 
   .btn-primary,
@@ -521,8 +545,16 @@ const moduleDirections = [
     width: 100%;
   }
 
+  .preview-card {
+    display: none;
+  }
+
   .section-container {
-    padding: 60px 0;
+    padding: 48px 0;
+  }
+
+  .section-header {
+    margin-bottom: 32px;
   }
 }
 </style>

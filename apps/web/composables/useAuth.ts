@@ -20,7 +20,6 @@ type LoginResponse = {
 
 export const useAuth = () => {
   const config = useRuntimeConfig()
-  const route = useRoute()
   const token = useCookie<string | null>("gemshin_token", {
     default: () => null
   })
@@ -35,6 +34,7 @@ export const useAuth = () => {
   }
 
   const redirectToLogin = async () => {
+    const route = useRoute()
     if (route.path === "/") {
       return
     }
