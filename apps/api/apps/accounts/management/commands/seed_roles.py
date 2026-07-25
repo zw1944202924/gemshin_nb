@@ -118,8 +118,16 @@ class Command(BaseCommand):
         
         try:
             user = User.objects.get(username=admin_username)
+            self.stdout.write(f"用户 {admin_username} 已存在，将更新其管理员权限")
         except User.DoesNotExist:
-            raise CommandError(f"用户 {admin_username} 不存在，请先创建用户")
+            # 用户不存在时自动创建
+            self.stdout.write(f"用户 {admin_username} 不存在，将创建新用户")
+            user = User.objects.create_user(
+                username=admin_username,
+                password=admin_password,
+                is_active=True,
+            )
+            self.stdout.write(self.style.SUCCESS(f"用户 {admin_username} 创建成功"))
 
         user.is_staff = True
         user.set_password(admin_password)

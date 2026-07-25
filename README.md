@@ -51,7 +51,56 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py createsuperuser
+python manage.py seed_modules
+```
+
+### 账号与角色初始化（MYW-56）
+
+MYW-56 引入了基于角色的权限体系。初始化管理员账号必须使用安全的环境变量或交互式输入，**不要**把真实密码写入文档、命令行参数或 shell history。
+
+#### 方式一：环境变量（推荐用于 CI/CD）
+
+```bash
+# 设置环境变量（不要在命令行中直接写密码）
+export ADMIN_USERNAME=zhangwei
+export ADMIN_PASSWORD=your_secure_password_here
+
+# 执行初始化
+cd apps/api
+source .venv/bin/activate
+python manage.py seed_roles
+```
+
+#### 方式二：交互式输入（推荐用于本地开发）
+
+```bash
+cd apps/api
+source .venv/bin/activate
+python manage.py seed_roles --admin-username zhangwei --interactive-password
+```
+
+命令会：
+1. 创建五类预置角色（管理员、AI 漫剧制作者、AI 股票投资者、AI 内容创作者、游客）
+2. 如果用户不存在，自动创建该用户
+3. 设置用户为 `is_staff=True`（管理员）
+4. 设置密码（从环境变量或交互式输入）
+5. 分配管理员角色
+6. 设置 `must_change_password=False`（核验账号首次登录无需改密）
+
+#### 自定义密码环境变量名
+
+如果需要使用其他环境变量名存储密码：
+
+```bash
+export ADMIN_USERNAME=zhangwei
+export MY_CUSTOM_PASSWORD_VAR=your_secure_password_here
+
+python manage.py seed_roles --admin-password-env MY_CUSTOM_PASSWORD_VAR
+```
+
+### 启动 API 服务
+
+```bash
 python manage.py runserver 0.0.0.0:8000
 ```
 
@@ -95,12 +144,14 @@ pnpm dev
 
 本地联调建议：
 
-1. 在 `apps/api` 执行 `python manage.py createsuperuser`，创建一个可登录账号
+1. 按上述步骤完成数据库迁移和账号初始化
 2. 启动 Django API 与 Nuxt 前端
 3. 访问 `http://127.0.0.1:3000/login`
-4. 使用刚创建的账号登录，确认会跳转到 `/dashboard`
-5. 打开新标签直接访问 `/dashboard`，确认未退出前仍可访问
-6. 点击“退出登录”后再次访问 `/dashboard`，确认会被拦回 `/login`
+4. 使用初始化的管理员账号登录，确认会跳转到 `/dashboard`
+5. 访问 `/account` 页面，确认可以管理用户和角色
+6. 打开新标签直接访问 `/dashboard`，确认未退出前仍可访问
+7. 点击"退出登录"后再次访问 `/dashboard`，确认会被拦回 `/login`
+
 
 后端认证链路的最小自测命令：
 
