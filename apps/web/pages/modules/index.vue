@@ -298,7 +298,7 @@ const handleModuleClick = (code: string) => {
   margin-top: 18px;
   padding: 0 20px;
   border-radius: var(--radius-sm);
-  background: var(--ink-primary);
+  background: #17202c;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
