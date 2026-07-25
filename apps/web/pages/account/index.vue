@@ -14,7 +14,6 @@ const loading = ref(false)
 const saving = ref(false)
 const message = ref({ type: "", text: "" })
 const searchQuery = ref("")
-const activeTab = ref("users")
 
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
@@ -238,6 +237,15 @@ function formatDate(dateStr: string) {
   return date.toLocaleString("zh-CN")
 }
 
+function getUserInitials(userData: any) {
+  const name = userData.profile?.display_name || userData.username || ""
+  return name.slice(0, 2).toUpperCase()
+}
+
+function getRoleUserCount(roleId: number) {
+  return users.value.filter(u => u.roles?.some(r => r.id === roleId)).length
+}
+
 watch(searchQuery, () => {
   fetchUsers()
 })
@@ -263,41 +271,16 @@ watch(searchQuery, () => {
       <div class="alert-content">{{ message.text }}</div>
     </div>
 
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-label">总用户数</div>
-        <div class="stat-value">{{ users.length }}</div>
+    <!-- 用户管理 -->
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>用户管理</h2>
+          <p>管理所有平台账号的状态、角色和密码。操作会记录在审计日志中。</p>
+        </div>
+        <button class="btn btn-primary" @click="showCreateModal = true">创建账号</button>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">活跃用户</div>
-        <div class="stat-value">{{ users.filter(u => u.is_active).length }}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">管理员</div>
-        <div class="stat-value">{{ users.filter(u => u.is_admin).length }}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">角色数</div>
-        <div class="stat-value">{{ roles.length }}</div>
-      </div>
-    </div>
 
-    <div class="tabs">
-      <button
-        :class="['tab', { active: activeTab === 'users' }]"
-        @click="activeTab = 'users'"
-      >
-        用户管理
-      </button>
-      <button
-        :class="['tab', { active: activeTab === 'audit' }]"
-        @click="activeTab = 'audit'"
-      >
-        审计日志
-      </button>
-    </div>
-
-    <div v-if="activeTab === 'users'" class="tab-content">
       <div class="search-bar">
         <input
           v-model="searchQuery"
@@ -307,110 +290,125 @@ watch(searchQuery, () => {
         />
       </div>
 
-      <div class="user-list">
+      <div class="user-table">
+        <div class="user-table-header">
+          <div>用户</div>
+          <div>状态</div>
+          <div>角色</div>
+          <div>操作</div>
+        </div>
+
         <div v-if="loading" class="loading-state">加载中...</div>
         
         <div v-else-if="users.length === 0" class="empty-state">
           暂无用户数据
         </div>
         
-        <div v-else class="user-table">
-          <div class="table-header">
-            <div class="col col-user">用户</div>
-            <div class="col col-roles">角色</div>
-            <div class="col col-status">状态</div>
-            <div class="col col-actions">操作</div>
+        <div v-else v-for="userData in users" :key="userData.id" class="user-row">
+          <div class="user-name-cell">
+            <div class="user-avatar-sm">{{ getUserInitials(userData) }}</div>
+            <div>
+              <div class="user-name">{{ userData.profile?.display_name || userData.username }}</div>
+              <div class="user-email">{{ userData.profile?.email || userData.username }}</div>
+            </div>
           </div>
-          
-          <div v-for="userData in users" :key="userData.id" class="table-row">
-            <div class="col col-user">
-              <div class="user-info">
-                <span class="user-name">{{ userData.profile?.display_name || userData.username }}</span>
-                <span class="user-username">@{{ userData.username }}</span>
-              </div>
-            </div>
-            
-            <div class="col col-roles">
-              <div class="role-tags">
-                <span v-for="role in userData.roles" :key="role.id" class="role-tag">
-                  {{ role.name }}
-                </span>
-                <span v-if="!userData.roles?.length" class="text-muted">无角色</span>
-              </div>
-            </div>
-            
-            <div class="col col-status">
-              <span :class="['status-badge', userData.is_active ? 'status-active' : 'status-inactive']">
-                {{ userData.is_active ? "正常" : "已停用" }}
-              </span>
-            </div>
-            
-            <div class="col col-actions">
-              <button class="btn btn-sm btn-ghost" @click="openEditModal(userData)">
-                编辑
-              </button>
-              <button class="btn btn-sm btn-ghost" @click="openResetPasswordModal(userData)">
-                重置密码
-              </button>
-              <button
-                v-if="userData.is_active"
-                class="btn btn-sm btn-danger-ghost"
-                :disabled="userData.id === user?.id"
-                @click="disableUser(userData.id)"
-              >
-                停用
-              </button>
-              <button
-                v-else
-                class="btn btn-sm btn-success-ghost"
-                @click="enableUser(userData.id)"
-              >
-                启用
-              </button>
-            </div>
+          <div>
+            <span :class="['status-badge', userData.is_active ? 'active' : 'disabled']">
+              {{ userData.is_active ? "已启用" : "已停用" }}
+            </span>
+          </div>
+          <div class="role-tags">
+            <span v-for="role in userData.roles" :key="role.id" :class="['role-tag', { admin: role.code === 'admin' }]">
+              {{ role.name }}
+            </span>
+            <span v-if="!userData.roles?.length" class="text-muted">无角色</span>
+          </div>
+          <div class="user-actions">
+            <button class="btn btn-ghost btn-sm" @click="openEditModal(userData)">编辑</button>
+            <button class="btn btn-ghost btn-sm" @click="openResetPasswordModal(userData)">重置密码</button>
+            <button
+              v-if="userData.is_active"
+              class="btn btn-secondary btn-ghost btn-sm"
+              :disabled="userData.id === user?.id"
+              @click="disableUser(userData.id)"
+            >
+              停用
+            </button>
+            <button
+              v-else
+              class="btn btn-primary btn-ghost btn-sm"
+              @click="enableUser(userData.id)"
+            >
+              启用
+            </button>
           </div>
         </div>
       </div>
-    </div>
 
-    <div v-if="activeTab === 'audit'" class="tab-content">
-      <div class="audit-list">
+      <div class="security-notice">
+        <div class="security-notice-icon">!</div>
+        <div>
+          <strong>安全限制：</strong>你不能停用自己的账号，也不能停用最后一个管理员。系统会在操作前自动检查这些条件。
+        </div>
+      </div>
+    </section>
+
+    <!-- 角色管理 -->
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>角色管理</h2>
+          <p>角色是模块访问的唯一来源。用户可同时拥有多个角色，最终可见模块取并集。</p>
+        </div>
+      </div>
+
+      <div class="role-cards">
+        <div v-for="role in roles" :key="role.id" class="role-card">
+          <h3><span :class="['role-tag', { admin: role.code === 'admin' }]">{{ role.name }}</span></h3>
+          <p>{{ role.description }}</p>
+          <div class="role-card-meta">拥有此角色的用户：{{ getRoleUserCount(role.id) }} 人</div>
+        </div>
+      </div>
+
+      <div class="footer-notes">
+        <span>角色是唯一的模块访问来源。用户可同时拥有多个角色，最终可见模块取角色权限并集。</span>
+        <span>暂不设计模块内部按钮级权限，后续在模块内部页面单独处理。</span>
+      </div>
+    </section>
+
+    <!-- 操作审计 -->
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>操作审计</h2>
+          <p>记录管理员对用户账号的所有操作，包括创建、修改、重置和状态变更。</p>
+        </div>
+      </div>
+
+      <div class="audit-table">
+        <div class="audit-header">
+          <div>时间</div>
+          <div>操作</div>
+          <div>操作人</div>
+          <div>结果</div>
+        </div>
+
         <div v-if="loading" class="loading-state">加载中...</div>
         
         <div v-else-if="auditLogs.length === 0" class="empty-state">
           暂无审计记录
         </div>
         
-        <div v-else class="audit-table">
-          <div class="table-header">
-            <div class="col col-time">时间</div>
-            <div class="col col-action">操作</div>
-            <div class="col col-operator">操作人</div>
-            <div class="col col-target">目标用户</div>
-            <div class="col col-detail">详情</div>
-          </div>
-          
-          <div v-for="log in auditLogs" :key="log.id" class="table-row">
-            <div class="col col-time">
-              {{ formatDate(log.created_at) }}
-            </div>
-            <div class="col col-action">
-              <span class="action-badge">{{ getActionLabel(log.action) }}</span>
-            </div>
-            <div class="col col-operator">
-              {{ log.operator_name || "-" }}
-            </div>
-            <div class="col col-target">
-              {{ log.target_username || "-" }}
-            </div>
-            <div class="col col-detail">
-              <span class="detail-text">{{ JSON.stringify(log.detail) }}</span>
-            </div>
-          </div>
+        <div v-else v-for="log in auditLogs" :key="log.id" class="audit-row">
+          <div>{{ formatDate(log.created_at) }}</div>
+          <div>{{ getActionLabel(log.action) }}</div>
+          <div>{{ log.operator_name || "-" }}</div>
+          <div><span class="status-badge active">成功</span></div>
         </div>
       </div>
-    </div>
+    </section>
 
+    <!-- 创建账号弹窗 -->
     <div v-if="showCreateModal" class="modal-overlay">
       <div class="modal">
         <h2 class="modal-title">创建新账号</h2>
@@ -481,20 +479,15 @@ watch(searchQuery, () => {
         </div>
 
         <div class="modal-actions">
-          <button class="btn btn-ghost" @click="showCreateModal = false">
-            取消
-          </button>
-          <button
-            class="btn btn-primary"
-            :disabled="saving"
-            @click="createUser"
-          >
+          <button class="btn btn-secondary" @click="showCreateModal = false">取消</button>
+          <button class="btn btn-primary" :disabled="saving" @click="createUser">
             {{ saving ? "创建中..." : "创建账号" }}
           </button>
         </div>
       </div>
     </div>
 
+    <!-- 编辑用户弹窗 -->
     <div v-if="showEditModal && selectedUser" class="modal-overlay">
       <div class="modal">
         <h2 class="modal-title">编辑用户</h2>
@@ -533,20 +526,15 @@ watch(searchQuery, () => {
         </div>
 
         <div class="modal-actions">
-          <button class="btn btn-ghost" @click="showEditModal = false">
-            取消
-          </button>
-          <button
-            class="btn btn-primary"
-            :disabled="saving"
-            @click="updateUser"
-          >
+          <button class="btn btn-secondary" @click="showEditModal = false">取消</button>
+          <button class="btn btn-primary" :disabled="saving" @click="updateUser">
             {{ saving ? "保存中..." : "保存修改" }}
           </button>
         </div>
       </div>
     </div>
 
+    <!-- 重置密码弹窗 -->
     <div v-if="showResetPasswordModal && selectedUser" class="modal-overlay">
       <div class="modal">
         <h2 class="modal-title">重置密码</h2>
@@ -573,14 +561,8 @@ watch(searchQuery, () => {
         </div>
 
         <div class="modal-actions">
-          <button class="btn btn-ghost" @click="showResetPasswordModal = false">
-            取消
-          </button>
-          <button
-            class="btn btn-primary"
-            :disabled="saving"
-            @click="resetPassword"
-          >
+          <button class="btn btn-secondary" @click="showResetPasswordModal = false">取消</button>
+          <button class="btn btn-primary" :disabled="saving" @click="resetPassword">
             {{ saving ? "重置中..." : "确认重置" }}
           </button>
         </div>
@@ -619,6 +601,31 @@ watch(searchQuery, () => {
   line-height: 1.6;
 }
 
+/* Section styles */
+.section {
+  margin-bottom: 32px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.section-header p {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* Page header */
 .page-header {
   margin-bottom: 32px;
 }
@@ -651,6 +658,7 @@ watch(searchQuery, () => {
   line-height: 1.6;
 }
 
+/* Alert banner */
 .alert-banner {
   display: flex;
   align-items: flex-start;
@@ -693,68 +701,7 @@ watch(searchQuery, () => {
   background: rgba(181, 66, 66, 0.15);
 }
 
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-md);
-  padding: 20px;
-}
-
-.stat-label {
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
-
-.stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--ink);
-}
-
-.tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid var(--line-soft);
-  padding-bottom: 4px;
-}
-
-.tab {
-  padding: 10px 16px;
-  border: none;
-  background: none;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--muted);
-  cursor: pointer;
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  transition: color 0.2s, background 0.2s;
-}
-
-.tab:hover {
-  color: var(--ink);
-  background: var(--surface-soft);
-}
-
-.tab.active {
-  color: var(--accent);
-  background: rgba(49, 95, 143, 0.08);
-}
-
-.tab-content {
-  min-height: 400px;
-}
-
+/* Search bar */
 .search-bar {
   margin-bottom: 20px;
 }
@@ -775,22 +722,17 @@ watch(searchQuery, () => {
   border-color: var(--accent);
 }
 
-.loading-state, .empty-state {
-  padding: 40px;
-  text-align: center;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.user-table, .audit-table {
+/* User table */
+.user-table {
   background: var(--surface);
   border: 1px solid var(--line-soft);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
-.table-header {
+.user-table-header {
   display: grid;
+  grid-template-columns: 2fr 1fr 2fr 2fr;
   padding: 12px 16px;
   background: var(--surface-soft);
   border-bottom: 1px solid var(--line-soft);
@@ -801,38 +743,37 @@ watch(searchQuery, () => {
   letter-spacing: 0.05em;
 }
 
-.user-table .table-header {
-  grid-template-columns: 2fr 2fr 1fr 2fr;
-}
-
-.audit-table .table-header {
-  grid-template-columns: 1fr 1fr 1fr 1fr 2fr;
-}
-
-.table-row {
+.user-row {
   display: grid;
+  grid-template-columns: 2fr 1fr 2fr 2fr;
   padding: 16px;
   border-bottom: 1px solid var(--line-soft);
   font-size: 14px;
   align-items: center;
 }
 
-.table-row:last-child {
+.user-row:last-child {
   border-bottom: none;
 }
 
-.user-table .table-row {
-  grid-template-columns: 2fr 2fr 1fr 2fr;
-}
-
-.audit-table .table-row {
-  grid-template-columns: 1fr 1fr 1fr 1fr 2fr;
-}
-
-.user-info {
+.user-name-cell {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar-sm {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #4a7ab5);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .user-name {
@@ -840,11 +781,43 @@ watch(searchQuery, () => {
   color: var(--ink);
 }
 
-.user-username {
+.user-email {
   font-size: 12px;
   color: var(--muted);
 }
 
+.user-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.active {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.status-badge.warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.status-badge.disabled {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* Role tags */
 .role-tags {
   display: flex;
   flex-wrap: wrap;
@@ -861,35 +834,123 @@ watch(searchQuery, () => {
   font-size: 12px;
 }
 
-.text-muted {
+.role-tag.admin {
+  background: rgba(49, 95, 143, 0.2);
+  font-weight: 600;
+}
+
+/* Security notice */
+.security-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--warning-bg);
+  border: 1px solid rgba(140, 104, 65, 0.2);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: var(--warning);
+}
+
+.security-notice-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(140, 104, 65, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Role cards */
+.role-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.role-card {
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.role-card h3 {
+  margin-bottom: 8px;
+}
+
+.role-card p {
+  font-size: 13px;
+  color: var(--copy);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.role-card-meta {
+  font-size: 12px;
   color: var(--muted);
 }
 
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.status-active {
-  background: var(--success-bg);
-  color: var(--success);
-}
-
-.status-inactive {
-  background: var(--danger-bg);
-  color: var(--danger);
-}
-
-.col-actions {
+/* Footer notes */
+.footer-notes {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--surface-soft);
+  border-radius: var(--radius-md);
   display: flex;
+  flex-direction: column;
   gap: 8px;
-  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--muted);
 }
 
+/* Audit table */
+.audit-table {
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.audit-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 1fr;
+  padding: 12px 16px;
+  background: var(--surface-soft);
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.audit-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 1fr;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 14px;
+}
+
+.audit-row:last-child {
+  border-bottom: none;
+}
+
+/* Loading and empty states */
+.loading-state, .empty-state {
+  padding: 40px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -926,6 +987,12 @@ watch(searchQuery, () => {
   color: white;
 }
 
+.btn-secondary {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
 .btn-ghost {
   background: none;
   color: var(--accent);
@@ -936,42 +1003,15 @@ watch(searchQuery, () => {
   background: var(--surface-soft);
 }
 
-.btn-danger-ghost {
-  background: none;
-  color: var(--danger);
-  border: 1px solid rgba(181, 66, 66, 0.3);
+.btn-secondary.btn-ghost {
+  color: var(--ink);
 }
 
-.btn-danger-ghost:hover {
-  background: var(--danger-bg);
-}
-
-.btn-success-ghost {
-  background: none;
-  color: var(--success);
-  border: 1px solid rgba(15, 118, 110, 0.3);
-}
-
-.btn-success-ghost:hover {
-  background: var(--success-bg);
-}
-
-.action-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  background: var(--surface-soft);
-  color: var(--copy);
-  border-radius: 8px;
-  font-size: 12px;
-}
-
-.detail-text {
-  font-size: 12px;
+.text-muted {
   color: var(--muted);
-  word-break: break-all;
 }
 
+/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1069,20 +1109,24 @@ watch(searchQuery, () => {
     flex-direction: column;
   }
   
-  .user-table .table-header,
-  .user-table .table-row {
+  .user-table-header,
+  .user-row {
     grid-template-columns: 1fr;
     gap: 8px;
   }
   
-  .audit-table .table-header,
-  .audit-table .table-row {
+  .audit-header,
+  .audit-row {
     grid-template-columns: 1fr;
     gap: 8px;
   }
   
-  .col-actions {
+  .user-actions {
     flex-direction: column;
+  }
+  
+  .role-cards {
+    grid-template-columns: 1fr;
   }
 }
 </style>
