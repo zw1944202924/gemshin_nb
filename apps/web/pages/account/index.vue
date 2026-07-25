@@ -590,10 +590,33 @@ watch(searchQuery, () => {
 </template>
 
 <style scoped>
+/* 账号页共享设计令牌：浅色内容画布 */
 .account-page {
+  --canvas: #eef2f6;
+  --surface: #f7f9fb;
+  --surface-soft: #f1f4f7;
+  --line: #dbe2ea;
+  --line-soft: #e7edf2;
+  --ink: #17202c;
+  --copy: #556173;
+  --muted: #7a8594;
+  --accent: #315f8f;
+  --danger: #b54242;
+  --danger-bg: rgba(181, 66, 66, 0.08);
+  --warning: #8c6841;
+  --warning-bg: rgba(140, 104, 65, 0.08);
+  --success: #0f766e;
+  --success-bg: rgba(15, 118, 110, 0.08);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
   max-width: 1200px;
   margin: 0 auto;
   padding: 40px 20px;
+  background: var(--canvas);
+  color: var(--ink);
+  line-height: 1.6;
 }
 
 .page-header {

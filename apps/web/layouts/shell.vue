@@ -194,8 +194,10 @@ watch(
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f7fb;
-  color: var(--ui-text);
+  background:
+    radial-gradient(circle at top, rgba(106, 154, 255, 0.18), transparent 26%),
+    linear-gradient(180deg, #05070b 0%, #0b1321 38%, #edf2f8 38%, #f8fafc 100%);
+  color: var(--ink-primary);
 }
 
 .topbar {
@@ -203,9 +205,9 @@ watch(
   top: 0;
   z-index: 100;
   padding: 0 20px;
-  background: rgba(6, 8, 13, 0.95);
+  background: rgba(6, 8, 13, 0.85);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .topbar-inner {
@@ -226,7 +228,6 @@ watch(
   font-weight: 700;
   letter-spacing: 0.02em;
   flex-shrink: 0;
-  color: rgba(247, 250, 255, 0.96);
 }
 
 .brand-mark {
@@ -247,14 +248,14 @@ watch(
   padding: 8px 14px;
   border-radius: 8px;
   font-size: 14px;
-  color: rgba(214, 225, 242, 0.76);
+  color: var(--ink-copy);
   transition: background 0.15s, color 0.15s;
 }
 
 .topnav a:hover,
 .topnav a.router-link-active {
   background: rgba(247, 250, 255, 0.08);
-  color: rgba(247, 250, 255, 0.96);
+  color: var(--ink-primary);
 }
 
 .top-actions {
@@ -266,7 +267,7 @@ watch(
 
 .user-greeting {
   font-size: 13px;
-  color: rgba(214, 225, 242, 0.76);
+  color: var(--ink-copy);
   white-space: nowrap;
 }
 
@@ -277,7 +278,7 @@ watch(
   min-height: 40px;
   padding: 0 18px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, #dce9ff, #b3ceff);
+  background: var(--accent-gradient);
   color: #081120;
   font-size: 14px;
   font-weight: 700;
@@ -296,7 +297,7 @@ watch(
   min-height: 40px;
   padding: 0 18px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, #dce9ff, #b3ceff);
+  background: var(--accent-gradient);
   color: #081120;
   font-size: 14px;
   font-weight: 700;
@@ -317,7 +318,7 @@ watch(
   padding: 0 16px;
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.08);
-  color: rgba(214, 225, 242, 0.76);
+  color: var(--ink-copy);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -350,7 +351,7 @@ watch(
   margin: 20px;
   background: #1a2332;
   border-radius: 16px;
-  border: 1px solid rgba(187, 210, 249, 0.16);
+  border: 1px solid var(--border-light);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   overflow: hidden;
 }
@@ -360,19 +361,19 @@ watch(
   align-items: flex-start;
   justify-content: space-between;
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(187, 210, 249, 0.16);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .login-modal-header h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: rgba(247, 250, 255, 0.96);
+  color: var(--ink-primary);
 }
 
 .login-modal-desc {
   margin: 6px 0 0;
-  color: rgba(186, 202, 227, 0.62);
+  color: var(--ink-muted);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -386,7 +387,7 @@ watch(
   border: none;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.08);
-  color: rgba(214, 225, 242, 0.76);
+  color: var(--ink-copy);
   font-size: 20px;
   cursor: pointer;
   transition: background 0.15s;
@@ -411,7 +412,7 @@ watch(
 }
 
 .login-modal-label {
-  color: rgba(214, 225, 242, 0.76);
+  color: var(--ink-copy);
   font-size: 13px;
   font-weight: 600;
 }
@@ -449,7 +450,7 @@ watch(
   min-height: 48px;
   border: none;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, #dce9ff, #b3ceff);
+  background: var(--accent-gradient);
   color: #081120;
   font-size: 15px;
   font-weight: 700;

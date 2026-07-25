@@ -10,42 +10,24 @@
   --ui-container: 88rem;
   --ui-header-height: 4.5rem;
 
-  /* 浅色主题设计令牌 */
-  --bg-deep: #f5f7fb;
-  --bg-soft: #edf2f8;
-  --bg-panel: rgba(255, 255, 255, 0.92);
-  --bg-card: rgba(255, 255, 255, 0.8);
-  --bg-card-hover: rgba(255, 255, 255, 0.9);
+  /* 本期深色主题设计令牌 */
+  --bg-deep: #06080d;
+  --bg-soft: #0d1523;
+  --bg-panel: rgba(20, 31, 51, 0.92);
+  --bg-card: rgba(247, 250, 255, 0.06);
+  --bg-card-hover: rgba(247, 250, 255, 0.1);
 
-  --border-light: rgba(0, 0, 0, 0.08);
-  --border-card: rgba(0, 0, 0, 0.06);
-  --border-accent: rgba(0, 0, 0, 0.1);
+  --border-light: rgba(187, 210, 249, 0.16);
+  --border-card: rgba(194, 214, 255, 0.08);
+  --border-accent: rgba(194, 214, 255, 0.1);
 
-  --ink-primary: #101c29;
-  --ink-copy: #435163;
-  --ink-muted: #6b7a8d;
-  --ink-accent: #315d8f;
+  --ink-primary: rgba(247, 250, 255, 0.96);
+  --ink-copy: rgba(214, 225, 242, 0.76);
+  --ink-muted: rgba(186, 202, 227, 0.62);
+  --ink-accent: rgba(212, 226, 255, 0.76);
 
-  --accent: #315d8f;
-  --accent-gradient: linear-gradient(135deg, #315d8f, #4a7ab5);
-
-  /* 页面内容变量 */
-  --ink: #101c29;
-  --copy: #435163;
-  --muted: #6b7a8d;
-  --canvas: #f5f7fb;
-  --surface: #ffffff;
-  --surface-soft: #edf2f8;
-  --line: rgba(0, 0, 0, 0.1);
-  --line-soft: rgba(0, 0, 0, 0.06);
-
-  /* 功能色 */
-  --success: #0f766e;
-  --success-bg: rgba(15, 118, 110, 0.08);
-  --warning: #8c6841;
-  --warning-bg: linear-gradient(135deg, rgba(233, 186, 96, 0.12), rgba(255, 255, 255, 0.04));
-  --danger: #b54242;
-  --danger-bg: rgba(181, 66, 66, 0.08);
+  --accent: #9fc2ff;
+  --accent-gradient: linear-gradient(135deg, #dce9ff, #b3ceff);
 
   /* 亮色段变量 */
   --surface-bg: #edf2f8;
@@ -68,7 +50,7 @@
   --radius-full: 999px;
 
   /* 阴影 */
-  --shadow-float: 0 28px 80px rgba(0, 0, 0, 0.12);
+  --shadow-float: 0 28px 80px rgba(0, 0, 0, 0.32);
   --shadow-card: 0 12px 36px rgba(12, 18, 29, 0.08);
 
   /* 间距 */
@@ -127,8 +109,8 @@ img, svg {
   padding: 0 24px;
   border: none;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, #315d8f, #4a7ab5);
-  color: #ffffff;
+  background: var(--accent-gradient);
+  color: #081120;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
@@ -145,24 +127,24 @@ img, svg {
   justify-content: center;
   min-height: 48px;
   padding: 0 24px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.8);
-  color: #101c29;
+  background: rgba(9, 18, 31, 0.4);
+  color: rgba(244, 248, 255, 0.92);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
 }
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(247, 250, 255, 0.08);
 }
 
 /* 通用卡片 */
 .card {
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
   padding: 20px;
 }
 
