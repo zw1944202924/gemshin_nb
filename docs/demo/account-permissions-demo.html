@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>gemshin_nb 账户与权限页 Demo</title>
+    <title>gemshin_nb 账户与权限</title>
     <style>
       :root {
         color-scheme: light;
@@ -18,514 +18,1003 @@
         --copy: #556173;
         --muted: #7a8594;
         --accent: #315f8f;
+        --danger: #b54242;
+        --danger-bg: rgba(181, 66, 66, 0.08);
         --warning: #8c6841;
+        --warning-bg: rgba(140, 104, 65, 0.08);
+        --success: #0f766e;
+        --success-bg: rgba(15, 118, 110, 0.08);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
       }
 
-      * {
-        box-sizing: border-box;
-      }
-
+      * { box-sizing: border-box; }
       body {
         margin: 0;
         min-width: 320px;
         font-family: "SF Pro Display", "Inter", "Segoe UI", sans-serif;
         background: var(--canvas);
         color: var(--ink);
+        line-height: 1.6;
       }
+      h1, h2, h3, p { margin: 0; }
+      a { color: inherit; text-decoration: none; }
 
-      h1,
-      h2,
-      h3,
-      p {
-        margin: 0;
-      }
-
-      .page {
-        min-height: 100vh;
-        display: grid;
-        grid-template-rows: auto 1fr;
-      }
-
+      /* ── Topbar: 与 module-center / personal-center 一致 ── */
       .topbar {
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        gap: 20px;
-        align-items: center;
-        padding: 16px 22px;
-        background: var(--shell);
-        color: rgba(246, 248, 251, 0.9);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        padding: 0 20px;
+        background: rgba(6, 8, 13, 0.85);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       }
-
-      .brand,
-      .topnav,
-      .userbar,
-      .role-summary,
-      .permission-table-head,
-      .permission-row,
-      .notes,
-      .alerts,
-      .actions {
+      .topbar-inner {
         display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        width: min(1320px, calc(100% - 24px));
+        margin: 0 auto;
+        height: 64px;
       }
-
       .brand {
+        display: inline-flex;
         align-items: center;
         gap: 12px;
         font-size: 18px;
         font-weight: 700;
+        letter-spacing: 0.02em;
+        flex-shrink: 0;
+        color: rgba(246, 248, 251, 0.92);
       }
-
       .brand-mark {
-        width: 12px;
-        height: 12px;
-        background: #d9e4f0;
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(126, 177, 255, 0.72));
+        box-shadow: 0 0 24px rgba(132, 182, 255, 0.38);
       }
-
       .topnav {
-        justify-content: center;
-        gap: 16px;
-        flex-wrap: wrap;
-        color: rgba(233, 239, 246, 0.68);
-        font-size: 14px;
+        display: flex;
+        gap: 6px;
+        align-items: center;
       }
-
-      .userbar {
+      .topnav a {
+        padding: 8px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        color: rgba(233, 239, 246, 0.68);
+        transition: background 0.15s, color 0.15s;
+      }
+      .topnav a:hover,
+      .topnav a.active {
+        background: rgba(247, 250, 255, 0.08);
+        color: rgba(246, 248, 251, 0.92);
+      }
+      .top-actions {
+        display: flex;
         align-items: center;
         gap: 12px;
+        flex-shrink: 0;
+      }
+      .user-greeting {
+        font-size: 13px;
+        color: rgba(233, 239, 246, 0.68);
+        white-space: nowrap;
+      }
+      .primary-link {
+        display: inline-flex;
+        align-items: center;
+        min-height: 40px;
+        padding: 0 18px;
+        border-radius: var(--radius-sm);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(126, 177, 255, 0.72));
+        color: #081120;
         font-size: 14px;
+        font-weight: 700;
+        transition: opacity 0.15s, transform 0.15s;
+      }
+      .primary-link:hover {
+        opacity: 0.92;
+        transform: translateY(-1px);
       }
 
-      .avatar {
-        width: 32px;
-        height: 32px;
-        display: grid;
-        place-items: center;
-        background: rgba(255, 255, 255, 0.08);
+      /* ── Main Layout ── */
+      .main-content {
+        flex: 1;
+        width: min(1320px, calc(100% - 24px));
+        margin: 0 auto;
+        padding: 40px 0 60px;
       }
 
-      .body {
-        display: grid;
-        grid-template-columns: 240px minmax(0, 1fr);
+      /* ── Page Header ── */
+      .page-header {
+        margin-bottom: 36px;
       }
-
-      .sidebar {
-        padding: 22px 18px;
-        background: var(--shell-soft);
-        color: rgba(239, 243, 248, 0.84);
-        border-right: 1px solid rgba(255, 255, 255, 0.05);
-      }
-
-      .label {
+      .page-label {
         font-size: 12px;
         letter-spacing: 0.06em;
         text-transform: uppercase;
         color: var(--muted);
+        margin-bottom: 12px;
       }
-
-      .navlist,
-      .explain-list {
-        display: grid;
-        gap: 8px;
-      }
-
-      .navlist {
-        margin-top: 16px;
-      }
-
-      .navitem {
-        padding: 12px 0;
-        color: rgba(239, 243, 248, 0.68);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      }
-
-      .navitem.active {
-        color: #ffffff;
-      }
-
-      .sidebar-note {
-        margin-top: 18px;
-        line-height: 1.7;
-        font-size: 14px;
-        color: rgba(222, 229, 239, 0.68);
-      }
-
-      .explain-list {
-        margin-top: 24px;
-      }
-
-      .explain-item {
-        padding-bottom: 10px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        font-size: 13px;
-        line-height: 1.7;
-      }
-
-      .main {
-        padding: 28px 28px 34px;
-        background: var(--surface);
-      }
-
-      .breadcrumb {
-        font-size: 13px;
-        color: var(--muted);
-      }
-
-      .header {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 18px;
-        align-items: start;
-        margin-top: 10px;
-      }
-
-      h1 {
-        font-size: 34px;
-        line-height: 1.08;
+      .page-title {
+        font-size: clamp(28px, 4vw, 42px);
+        line-height: 1.1;
         letter-spacing: -0.03em;
+        color: var(--ink);
+        max-width: 20ch;
       }
-
-      .header p {
-        max-width: 65ch;
-        margin-top: 12px;
+      .page-desc {
+        max-width: 64ch;
+        margin-top: 16px;
         color: var(--copy);
         line-height: 1.72;
+        font-size: 15px;
       }
 
-      .small {
+      /* ── Admin Badge ── */
+      .admin-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 16px;
+        padding: 8px 14px;
+        background: rgba(49, 95, 143, 0.08);
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        color: var(--accent);
+      }
+      .admin-badge::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
+      /* ── Stats Row ── */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 16px;
+        margin-top: 24px;
+      }
+      .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--line-soft);
+        border-radius: var(--radius-md);
+        padding: 20px;
+      }
+      .stat-label {
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+      .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--ink);
+      }
+      .stat-note {
+        margin-top: 6px;
+        font-size: 13px;
+        color: var(--copy);
+      }
+
+      /* ── Section ── */
+      .section {
+        margin-top: 36px;
+      }
+      .section-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--line);
+        flex-wrap: wrap;
+      }
+      .section-header h2 {
+        font-size: 22px;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+      }
+      .section-header p {
+        margin-top: 8px;
+        color: var(--copy);
+        line-height: 1.7;
+        font-size: 14px;
+        max-width: 60ch;
+      }
+
+      /* ── Status Badge ── */
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .status-badge::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+      .status-badge.active {
+        background: var(--success-bg);
+        color: var(--success);
+      }
+      .status-badge.active::before {
+        background: var(--success);
+      }
+      .status-badge.disabled {
+        background: var(--danger-bg);
+        color: var(--danger);
+      }
+      .status-badge.disabled::before {
+        background: var(--danger);
+      }
+      .status-badge.warning {
+        background: var(--warning-bg);
+        color: var(--warning);
+      }
+      .status-badge.warning::before {
+        background: var(--warning);
+      }
+      .status-badge.neutral {
+        background: var(--surface-soft);
+        color: var(--muted);
+      }
+      .status-badge.neutral::before {
+        background: var(--muted);
+      }
+
+      /* ── Role Tag ── */
+      .role-tags {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .role-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 600;
+        background: var(--surface-soft);
+        color: var(--copy);
+      }
+      .role-tag.admin {
+        background: rgba(49, 95, 143, 0.1);
+        color: var(--accent);
+      }
+
+      /* ── User Table ── */
+      .user-table {
+        margin-top: 20px;
+        background: var(--surface);
+        border: 1px solid var(--line-soft);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+      }
+      .user-table-header {
+        display: grid;
+        grid-template-columns: 2fr 1.2fr 1.5fr 1fr 1.2fr;
+        gap: 16px;
+        padding: 14px 24px;
+        background: var(--surface-soft);
+        border-bottom: 1px solid var(--line-soft);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .user-row {
+        display: grid;
+        grid-template-columns: 2fr 1.2fr 1.5fr 1fr 1.2fr;
+        gap: 16px;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--line-soft);
+        align-items: center;
+        font-size: 14px;
+        transition: background 0.1s;
+      }
+      .user-row:last-child {
+        border-bottom: 0;
+      }
+      .user-row:hover {
+        background: rgba(49, 95, 143, 0.03);
+      }
+      .user-name-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+      .user-avatar-sm {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-sm);
+        background: linear-gradient(135deg, rgba(49, 95, 143, 0.12), rgba(49, 95, 143, 0.04));
+        display: grid;
+        place-items: center;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--accent);
+        flex-shrink: 0;
+      }
+      .user-name {
+        font-weight: 600;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .user-email {
+        font-size: 13px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .user-cell {
+        color: var(--copy);
+        font-size: 13px;
+      }
+      .user-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      /* ── Buttons ── */
+      .btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-height: 42px;
-        padding: 0 16px;
-        font-weight: 700;
-        color: #314154;
-        border: 1px solid var(--line);
+        min-height: 34px;
+        padding: 0 14px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 600;
+        transition: background 0.15s, transform 0.15s, opacity 0.15s;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .btn-primary {
+        background: var(--ink);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: #2a3a4e;
+        transform: translateY(-1px);
+      }
+      .btn-secondary {
         background: transparent;
+        color: var(--ink);
+        border: 1px solid var(--line);
       }
-
-      .section {
-        margin-top: 26px;
+      .btn-secondary:hover {
+        border-color: var(--accent);
+        color: var(--accent);
       }
-
-      .section-head {
-        padding-bottom: 14px;
-        border-bottom: 1px solid var(--line);
+      .btn-danger {
+        background: var(--danger-bg);
+        color: var(--danger);
+        border: 1px solid rgba(181, 66, 66, 0.2);
       }
-
-      .section-head h2 {
-        font-size: 24px;
-        line-height: 1.14;
-        letter-spacing: -0.03em;
+      .btn-danger:hover {
+        background: rgba(181, 66, 66, 0.14);
       }
-
-      .section-head p {
-        margin-top: 8px;
+      .btn-ghost {
+        background: transparent;
         color: var(--copy);
-        line-height: 1.7;
-        font-size: 14px;
+        padding: 0 8px;
+        min-height: 28px;
+        font-size: 12px;
+      }
+      .btn-ghost:hover {
+        color: var(--accent);
+      }
+      .btn-lg {
+        min-height: 44px;
+        padding: 0 22px;
+        font-size: 15px;
+      }
+      .btn[disabled] {
+        opacity: 0.4;
+        cursor: not-allowed;
+        pointer-events: none;
       }
 
-      .role-summary {
-        gap: 22px;
+      .actions-row {
+        display: flex;
+        gap: 10px;
         flex-wrap: wrap;
-        margin-top: 18px;
+        margin-top: 20px;
       }
 
-      .role-item {
-        flex: 1 1 240px;
-        min-width: 220px;
-        padding-bottom: 18px;
-        border-bottom: 1px solid var(--line-soft);
+      /* ── Card ── */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line-soft);
+        border-radius: var(--radius-lg);
+        padding: 24px;
       }
-
-      .role-item strong,
-      .alert-item strong,
-      .permission-row strong {
-        display: block;
+      .card-label {
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 10px;
+      }
+      .card h3 {
         font-size: 18px;
-        line-height: 1.2;
+        line-height: 1.3;
+        color: var(--ink);
       }
-
-      .role-item p,
-      .alert-item p,
-      .permission-row p {
+      .card p {
         margin-top: 8px;
         color: var(--copy);
-        line-height: 1.7;
+        line-height: 1.65;
         font-size: 14px;
       }
 
-      .role-meta {
+      /* ── Data Rows ── */
+      .data-rows {
+        margin-top: 16px;
+      }
+      .data-row {
+        display: grid;
+        grid-template-columns: 140px minmax(0, 1fr);
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: 14px;
+        line-height: 1.65;
+      }
+      .data-row:last-child {
+        border-bottom: 0;
+      }
+      .data-label {
+        color: var(--muted);
+        flex-shrink: 0;
+      }
+      .data-value {
+        color: var(--ink);
+      }
+
+      /* ── Role Cards ── */
+      .role-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+      }
+      .role-card {
+        background: var(--surface);
+        border: 1px solid var(--line-soft);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        transition: border-color 0.15s;
+      }
+      .role-card:hover {
+        border-color: var(--accent);
+      }
+      .role-card h3 {
+        font-size: 16px;
+        line-height: 1.3;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .role-card p {
+        margin-top: 8px;
+        color: var(--copy);
+        font-size: 13px;
+        line-height: 1.65;
+      }
+      .role-card-meta {
         margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--line-soft);
+        font-size: 12px;
         color: var(--muted);
-        font-size: 13px;
       }
 
-      .alerts {
-        gap: 18px;
-        flex-wrap: wrap;
-        margin-top: 18px;
+      /* ── Audit Table ── */
+      .audit-table {
+        margin-top: 20px;
+        background: var(--surface);
+        border: 1px solid var(--line-soft);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
       }
-
-      .alert-item {
-        flex: 1 1 280px;
-        min-width: 260px;
-        padding-bottom: 18px;
+      .audit-header {
+        display: grid;
+        grid-template-columns: 1.5fr 2fr 1.5fr 1fr;
+        gap: 16px;
+        padding: 14px 24px;
+        background: var(--surface-soft);
         border-bottom: 1px solid var(--line-soft);
-      }
-
-      .permission-table {
-        margin-top: 18px;
-      }
-
-      .permission-table-head,
-      .permission-row {
-        gap: 18px;
-        align-items: start;
-        padding: 14px 0;
-        border-bottom: 1px solid var(--line-soft);
-      }
-
-      .permission-table-head {
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
         color: var(--muted);
+        font-weight: 600;
+      }
+      .audit-row {
+        display: grid;
+        grid-template-columns: 1.5fr 2fr 1.5fr 1fr;
+        gap: 16px;
+        padding: 14px 24px;
+        border-bottom: 1px solid var(--line-soft);
         font-size: 13px;
-        line-height: 1.5;
+        color: var(--copy);
+        align-items: center;
       }
-
-      .permission-table-head div:nth-child(1),
-      .permission-row div:nth-child(1) {
-        flex: 1.1;
-      }
-
-      .permission-table-head div:nth-child(2),
-      .permission-row div:nth-child(2) {
-        flex: 0.8;
-      }
-
-      .permission-table-head div:nth-child(3),
-      .permission-row div:nth-child(3) {
-        flex: 1.1;
-      }
-
-      .permission-table-head div:nth-child(4),
-      .permission-row div:nth-child(4) {
-        flex: 1.4;
-      }
-
-      .permission-row:last-child {
+      .audit-row:last-child {
         border-bottom: 0;
       }
 
-      .permission-meta {
-        color: var(--muted);
+      /* ── Security Notice ── */
+      .security-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        margin-top: 20px;
+        padding: 16px 20px;
+        border-radius: var(--radius-md);
+        background: var(--surface-soft);
+        border: 1px solid var(--line-soft);
         font-size: 13px;
-        line-height: 1.7;
-      }
-
-      .notes {
-        gap: 18px;
-        flex-wrap: wrap;
-        margin-top: 18px;
+        line-height: 1.65;
         color: var(--copy);
-        font-size: 14px;
+      }
+      .security-notice-icon {
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: rgba(49, 95, 143, 0.12);
+        display: grid;
+        place-items: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent);
+        margin-top: 1px;
       }
 
-      .actions {
-        gap: 8px;
+      /* ── Footer Notes ── */
+      .footer-notes {
+        display: flex;
+        gap: 24px;
         flex-wrap: wrap;
-        margin-top: 18px;
+        margin-top: 36px;
+        padding-top: 24px;
+        border-top: 1px solid var(--line);
+        color: var(--copy);
+        font-size: 13px;
+        line-height: 1.65;
       }
 
-      @media (max-width: 980px) {
-        .body,
-        .header {
-          grid-template-columns: 1fr;
+      /* ── Responsive ── */
+      @media (max-width: 920px) {
+        .topbar-inner {
+          flex-wrap: wrap;
+          height: auto;
+          padding: 12px 0;
+          gap: 10px;
         }
-
-        .sidebar {
-          border-right: 0;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        .topnav {
+          order: 3;
+          width: 100%;
+          overflow-x: auto;
+          white-space: nowrap;
+          gap: 2px;
         }
-      }
-
-      @media (max-width: 760px) {
-        .permission-table-head {
+        .top-actions {
+          margin-left: auto;
+        }
+        .main-content {
+          padding: 28px 0 40px;
+        }
+        .user-table-header {
           display: none;
         }
-
-        .permission-row {
-          display: grid;
+        .user-row {
           grid-template-columns: 1fr;
-          gap: 10px;
+          gap: 8px;
+          padding: 16px 20px;
+        }
+        .audit-header {
+          display: none;
+        }
+        .audit-row {
+          grid-template-columns: 1fr;
+          gap: 4px;
+          padding: 14px 20px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .top-actions {
+          display: none;
+        }
+        .page-title {
+          font-size: 26px;
+        }
+        .stats-row {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .role-cards {
+          grid-template-columns: 1fr;
         }
       }
     </style>
   </head>
   <body>
-    <div class="page">
-      <header class="topbar">
-        <div class="brand">
-          <span class="brand-mark"></span>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a href="#" class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
           <span>gemshin_nb</span>
-        </div>
-        <nav class="topnav">
-          <span>模块中心</span>
-          <span>个人中心</span>
-          <span>账户与权限</span>
-          <span>帮助</span>
+        </a>
+        <nav class="topnav" aria-label="主导航">
+          <a href="#">首页</a>
+          <a href="#">模块中心</a>
+          <a href="#">AI 助手</a>
+          <a href="#">个人中心</a>
+          <a href="#" class="active">账户与权限</a>
         </nav>
-        <div class="userbar">
-          <span>张炜</span>
-          <div class="avatar">ZW</div>
+        <div class="top-actions">
+          <span class="user-greeting">张炜 · 管理员</span>
+          <a href="#" class="primary-link">模块中心</a>
         </div>
-      </header>
-
-      <div class="body">
-        <aside class="sidebar">
-          <div class="label">个人入口</div>
-          <div class="navlist">
-            <div class="navitem">个人中心</div>
-            <div class="navitem active">账户与权限</div>
-            <div class="navitem">登录与安全</div>
-            <div class="navitem">通知与偏好</div>
-          </div>
-          <p class="sidebar-note">这一页负责把“账号状态”和“权限表达方式”拆开说清楚。个人中心先给结论，这里再把角色、模块范围和能力边界展开。</p>
-
-          <div class="explain-list">
-            <div class="explain-item">
-              <div class="label">全局角色</div>
-              <div>主账号持有者</div>
-            </div>
-            <div class="explain-item">
-              <div class="label">模块数量</div>
-              <div>3 个固定方向</div>
-            </div>
-            <div class="explain-item">
-              <div class="label">表达原则</div>
-              <div>先讲可访问结果，再讲角色来源</div>
-            </div>
-          </div>
-        </aside>
-
-        <main class="main">
-          <div class="breadcrumb">模块中心 / 右上角个人入口 / 个人中心 / 账户与权限</div>
-
-          <div class="header">
-            <div>
-              <div class="label">账户与权限页</div>
-              <h1>权限不是抽象标签，而是“我在哪个模块里能做什么”。</h1>
-              <p>这一页把账号是否正常、你在 3 个固定模块中的可访问范围、以及能力边界如何表达拆成几个清晰段落。页面目标不是做后台管理，而是让当前用户迅速确认自己的使用边界。</p>
-            </div>
-            <div class="small">返回个人中心</div>
-          </div>
-
-          <section class="section">
-            <div class="section-head">
-              <div class="label">角色与状态</div>
-              <h2>先分清“账号状态”和“角色身份”，避免混成一句话。</h2>
-              <p>账号状态回答能不能正常使用；角色身份回答进入后能做哪些事。两个概念拆开写，用户更容易判断问题出在账号还是权限。</p>
-            </div>
-
-            <div class="role-summary">
-              <article class="role-item">
-                <strong>账号状态：正常</strong>
-                <p>当前账号可登录、会话有效、未被冻结，也没有等待补充验证的限制。</p>
-                <div class="role-meta">适合放即时状态和异常提醒，不在这里承载模块能力说明。</div>
-              </article>
-              <article class="role-item">
-                <strong>全局身份：主账号持有者</strong>
-                <p>这是全局层级的身份，用来说明你为什么默认能看到 3 个固定模块，但它不直接替代模块内权限。</p>
-                <div class="role-meta">角色是解释框架，不是最终展示结果。</div>
-              </article>
-              <article class="role-item">
-                <strong>默认使用方式：从模块中心进入</strong>
-                <p>个人入口不抢模块入口的位置，仍然通过模块中心进入具体业务，再回个人页查看账户和权限细节。</p>
-                <div class="role-meta">路径关系保持清晰：模块中心在前，个人入口在后。</div>
-              </article>
-            </div>
-          </section>
-
-          <section class="section">
-            <div class="section-head">
-              <div class="label">模块权限矩阵</div>
-              <h2>权限按模块逐项列出，避免只给一个含糊的“管理员”。</h2>
-              <p>每个模块都说明可否进入、模块内主要可执行范围，以及当前身份如何被解释。这样用户不用猜“管理员”到底意味着什么。</p>
-            </div>
-
-            <div class="permission-table">
-              <div class="permission-table-head">
-                <div>模块</div>
-                <div>访问结果</div>
-                <div>当前身份</div>
-                <div>可执行范围</div>
-              </div>
-
-              <div class="permission-row">
-                <div>
-                  <strong>AI 漫剧制作一站式系统</strong>
-                  <p>现有最完整的一条主链路，个人页里应明确它是当前权限说明的参照模块。</p>
-                </div>
-                <div class="permission-meta">可进入</div>
-                <div class="permission-meta">模块管理员</div>
-                <div class="permission-meta">可进入项目中心、漫剧工作台、结果校验与导出页；可管理项目、调整流程、执行导出。</div>
-              </div>
-
-              <div class="permission-row">
-                <div>
-                  <strong>AI 股票分析系统</strong>
-                  <p>作为第二个固定方向，页面里不做测试态表达，直接说明它当前也是正常可访问的业务模块。</p>
-                </div>
-                <div class="permission-meta">可进入</div>
-                <div class="permission-meta">模块使用者</div>
-                <div class="permission-meta">可查看模块首页、研究入口、记录结果；不在这里预设额外审批或团队配置能力。</div>
-              </div>
-
-              <div class="permission-row">
-                <div>
-                  <strong>个人博客 / 个人内容库</strong>
-                  <p>强调个人内容沉淀、整理与发布准备，权限语言更偏“内容维护”而不是“团队协作”。</p>
-                </div>
-                <div class="permission-meta">可进入</div>
-                <div class="permission-meta">内容维护者</div>
-                <div class="permission-meta">可整理内容、维护标签、准备发布；默认不把复杂审核流塞进这个通用权限页。</div>
-              </div>
-            </div>
-
-            <div class="notes">
-              <span>通用权限页只定义全局边界，不下沉到某个模块内部每一个按钮级别的权限点。</span>
-              <span>真正细粒度的模块内差异，后续应回到对应模块自己的页面里表达。</span>
-            </div>
-          </section>
-
-          <section class="section">
-            <div class="section-head">
-              <div class="label">异常与缺口反馈</div>
-              <h2>异常场景也要有位置，但不把整页做成告警中心。</h2>
-              <p>这里优先处理和账号、权限直接相关的问题，例如模块未开通、会话失效、权限与预期不符。页面只保留高信号反馈，不堆大量系统噪音。</p>
-            </div>
-
-            <div class="alerts">
-              <article class="alert-item">
-                <strong>模块未开通时</strong>
-                <p>不直接显示“空白访问失败”，而是在对应模块行里明确提示当前不可进入，并说明是账号范围问题还是模块尚未绑定。</p>
-              </article>
-              <article class="alert-item">
-                <strong>账号状态异常时</strong>
-                <p>把异常前置到第一段“角色与状态”里，例如登录失效、账号冻结、待补充验证，而不是散落在各模块描述中重复出现。</p>
-              </article>
-              <article class="alert-item">
-                <strong>权限理解有落差时</strong>
-                <p>给出“我以为能访问但实际不能”的反馈入口，建议挂在当前页底部，而不是强制跳客服流程。</p>
-              </article>
-            </div>
-
-            <div class="actions">
-              <div class="small">返回个人中心</div>
-              <div class="small">反馈权限问题</div>
-            </div>
-          </section>
-        </main>
       </div>
-    </div>
+    </header>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div class="page-label">账户与权限</div>
+        <h1 class="page-title">管理平台用户与权限</h1>
+        <p class="page-desc">
+          创建账号、分配角色、重置密码、启用或停用账号。仅管理员可访问此页面，普通用户在导航中不会看到此入口。
+        </p>
+        <div class="admin-badge">当前以管理员身份操作</div>
+      </div>
+
+      <!-- 统计概览 -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">总用户数</div>
+          <div class="stat-value">7</div>
+          <div class="stat-note">已注册账号</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">已启用</div>
+          <div class="stat-value">5</div>
+          <div class="stat-note">正常可用</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">已停用</div>
+          <div class="stat-value">2</div>
+          <div class="stat-note">无法登录</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">管理员</div>
+          <div class="stat-value">2</div>
+          <div class="stat-note">拥有管理权限</div>
+        </div>
+      </div>
+
+      <!-- 用户管理 -->
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>用户管理</h2>
+            <p>管理所有平台账号的状态、角色和密码。操作会记录在审计日志中。</p>
+          </div>
+          <a href="#" class="btn btn-primary">创建账号</a>
+        </div>
+
+        <div class="user-table">
+          <div class="user-table-header">
+            <div>用户</div>
+            <div>状态</div>
+            <div>角色</div>
+            <div>最近登录</div>
+            <div>操作</div>
+          </div>
+
+          <!-- 当前管理员（自己） -->
+          <div class="user-row">
+            <div class="user-name-cell">
+              <div class="user-avatar-sm">ZW</div>
+              <div>
+                <div class="user-name">张炜</div>
+                <div class="user-email">zhangwei@example.com</div>
+              </div>
+            </div>
+            <div><span class="status-badge active">已启用</span></div>
+            <div class="role-tags">
+              <span class="role-tag admin">管理员</span>
+              <span class="role-tag">AI 漫剧制作者</span>
+              <span class="role-tag">AI 股票投资者</span>
+              <span class="role-tag">AI 内容创作者</span>
+            </div>
+            <div class="user-cell">今天 11:42</div>
+            <div class="user-actions">
+              <a href="#" class="btn btn-ghost" disabled>不能停用自己</a>
+              <a href="#" class="btn btn-ghost">编辑</a>
+            </div>
+          </div>
+
+          <!-- 管理员 B -->
+          <div class="user-row">
+            <div class="user-name-cell">
+              <div class="user-avatar-sm">LC</div>
+              <div>
+                <div class="user-name">李晨</div>
+                <div class="user-email">lichen@example.com</div>
+              </div>
+            </div>
+            <div><span class="status-badge active">已启用</span></div>
+            <div class="role-tags">
+              <span class="role-tag admin">管理员</span>
+              <span class="role-tag">AI 漫剧制作者</span>
+            </div>
+            <div class="user-cell">今天 09:15</div>
+            <div class="user-actions">
+              <a href="#" class="btn btn-secondary btn-ghost">停用</a>
+              <a href="#" class="btn btn-ghost">编辑</a>
+            </div>
+          </div>
+
+          <!-- 普通用户 C -->
+          <div class="user-row">
+            <div class="user-name-cell">
+              <div class="user-avatar-sm">WJ</div>
+              <div>
+                <div class="user-name">王佳</div>
+                <div class="user-email">wangjia@example.com</div>
+              </div>
+            </div>
+            <div><span class="status-badge active">已启用</span></div>
+            <div class="role-tags">
+              <span class="role-tag">AI 漫剧制作者</span>
+              <span class="role-tag">AI 股票投资者</span>
+            </div>
+            <div class="user-cell">昨天 18:30</div>
+            <div class="user-actions">
+              <a href="#" class="btn btn-secondary btn-ghost">停用</a>
+              <a href="#" class="btn btn-ghost">编辑</a>
+            </div>
+          </div>
+
+          <!-- 普通用户 D -->
+          <div class="user-row">
+            <div class="user-name-cell">
+              <div class="user-avatar-sm">ZM</div>
+              <div>
+                <div class="user-name">赵敏</div>
+                <div class="user-email">zhaomin@example.com</div>
+              </div>
+            </div>
+            <div><span class="status-badge active">已启用</span></div>
+            <div class="role-tags">
+              <span class="role-tag">AI 内容创作者</span>
+            </div>
+            <div class="user-cell">3 天前</div>
+            <div class="user-actions">
+              <a href="#" class="btn btn-secondary btn-ghost">停用</a>
+              <a href="#" class="btn btn-ghost">编辑</a>
+            </div>
+          </div>
+
+          <!-- 游客 -->
+          <div class="user-row">
+            <div class="user-name-cell">
+              <div class="user-avatar-sm">HY</div>
+              <div>
+                <div class="user-name">黄洋</div>
+                <div class="user-email">huangyang@example.com</div>
+              </div>
+            </div>
+            <div><span class="status-badge active">已启用</span></div>
+            <div class="role-tags">
+              <span class="role-tag">游客</span>
+            </div>
+            <div class="user-cell">1 周前</div>
+            <div class="user-actions">
+              <a href="#" class="btn btn-secondary btn-ghost">停用</a>
+              <a href="#" class="btn btn-ghost">编辑</a>
+            </div>
+          </div>
+
+          <!-- 首次登录用户 -->
+          <div class="user-row">
+            <div class="user-name-cell">
+              <div class="user-avatar-sm">CX</div>
+              <div>
+                <div class="user-name">陈旭</div>
+                <div class="user-email">chenxu@example.com</div>
+              </div>
+            </div>
+            <div><span class="status-badge warning">待改密</span></div>
+            <div class="role-tags">
+              <span class="role-tag">AI 漫剧制作者</span>
+            </div>
+            <div class="user-cell">未登录</div>
+            <div class="user-actions">
+              <a href="#" class="btn btn-secondary btn-ghost">重置密码</a>
+              <a href="#" class="btn btn-secondary btn-ghost">停用</a>
+              <a href="#" class="btn btn-ghost">编辑</a>
+            </div>
+          </div>
+
+          <!-- 已停用用户 -->
+          <div class="user-row">
+            <div class="user-name-cell">
+              <div class="user-avatar-sm">LH</div>
+              <div>
+                <div class="user-name">刘浩</div>
+                <div class="user-email">liuhao@example.com</div>
+              </div>
+            </div>
+            <div><span class="status-badge disabled">已停用</span></div>
+            <div class="role-tags">
+              <span class="role-tag">AI 股票投资者</span>
+            </div>
+            <div class="user-cell">30 天前</div>
+            <div class="user-actions">
+              <a href="#" class="btn btn-primary btn-ghost">启用</a>
+              <a href="#" class="btn btn-ghost">编辑</a>
+            </div>
+          </div>
+
+          <!-- 已停用用户 2 -->
+          <div class="user-row">
+            <div class="user-name-cell">
+              <div class="user-avatar-sm">SQ</div>
+              <div>
+                <div class="user-name">孙强</div>
+                <div class="user-email">sunqiang@example.com</div>
+              </div>
+            </div>
+            <div><span class="status-badge disabled">已停用</span></div>
+            <div class="role-tags">
+              <span class="role-tag">AI 内容创作者</span>
+            </div>
+            <div class="user-cell">45 天前</div>
+            <div class="user-actions">
+              <a href="#" class="btn btn-primary btn-ghost">启用</a>
+              <a href="#" class="btn btn-ghost">编辑</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="security-notice">
+          <div class="security-notice-icon">!</div>
+          <div>
+            <strong>安全限制：</strong>你不能停用自己的账号，也不能停用最后一个管理员。系统会在操作前自动检查这些条件。
+          </div>
+        </div>
+      </section>
+
+      <!-- 角色管理 -->
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>角色管理</h2>
+            <p>角色是模块访问的唯一来源。用户可同时拥有多个角色，最终可见模块取并集。</p>
+          </div>
+        </div>
+
+        <div class="role-cards">
+          <div class="role-card">
+            <h3><span class="role-tag admin">管理员</span></h3>
+            <p>拥有账户与权限管理能力，并默认拥有全部 3 个模块的访问范围。可创建账号、分配角色、重置密码。</p>
+            <div class="role-card-meta">拥有此角色的用户：2 人</div>
+          </div>
+          <div class="role-card">
+            <h3><span class="role-tag">AI 漫剧制作者</span></h3>
+            <p>AI 漫剧制作一站式系统。可进入项目中心、漫剧工作台、结果校验与导出页，具备完整主流程使用权限。</p>
+            <div class="role-card-meta">拥有此角色的用户：4 人</div>
+          </div>
+          <div class="role-card">
+            <h3><span class="role-tag">AI 股票投资者</span></h3>
+            <p>AI 股票分析系统。可查看模块首页、策略分析入口与研究记录，支持数据跟踪与策略管理。</p>
+            <div class="role-card-meta">拥有此角色的用户：3 人</div>
+          </div>
+          <div class="role-card">
+            <h3><span class="role-tag">AI 内容创作者</span></h3>
+            <p>个人博客 / 个人内容库。可进入内容整理、标签管理和发布准备相关页面，强调个人内容沉淀。</p>
+            <div class="role-card-meta">拥有此角色的用户：3 人</div>
+          </div>
+          <div class="role-card">
+            <h3><span class="role-tag">游客</span></h3>
+            <p>可登录和使用个人中心，但没有业务模块访问权。适合只需要基础账号功能的用户。</p>
+            <div class="role-card-meta">拥有此角色的用户：1 人</div>
+          </div>
+        </div>
+
+        <div class="footer-notes">
+          <span>角色是唯一的模块访问来源。用户可同时拥有多个角色，最终可见模块取角色权限并集。</span>
+          <span>暂不设计模块内部按钮级权限，后续在模块内部页面单独处理。</span>
+        </div>
+      </section>
+
+      <!-- 操作审计 -->
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>操作审计</h2>
+            <p>记录管理员对用户账号的所有操作，包括创建、修改、重置和状态变更。</p>
+          </div>
+          <a href="#" class="btn btn-secondary">查看全部日志</a>
+        </div>
+
+        <div class="audit-table">
+          <div class="audit-header">
+            <div>时间</div>
+            <div>操作</div>
+            <div>操作人</div>
+            <div>结果</div>
+          </div>
+
+          <div class="audit-row">
+            <div>今天 10:30</div>
+            <div>为「陈旭」创建账号，初始密码已设置，分配角色「AI 漫剧制作者」</div>
+            <div>张炜</div>
+            <div><span class="status-badge active">成功</span></div>
+          </div>
+          <div class="audit-row">
+            <div>昨天 14:20</div>
+            <div>重置「黄洋」密码，已标记为下次登录必须修改</div>
+            <div>李晨</div>
+            <div><span class="status-badge active">成功</span></div>
+          </div>
+          <div class="audit-row">
+            <div>3 天前 09:15</div>
+            <div>停用「刘浩」账号，原因为离职交接完成</div>
+            <div>张炜</div>
+            <div><span class="status-badge active">成功</span></div>
+          </div>
+          <div class="audit-row">
+            <div>5 天前 16:42</div>
+            <div>为「赵敏」添加角色「AI 内容创作者」</div>
+            <div>张炜</div>
+            <div><span class="status-badge active">成功</span></div>
+          </div>
+          <div class="audit-row">
+            <div>1 周前 11:00</div>
+            <div>尝试停用「张炜」账号 — 被系统拒绝：不能停用自己</div>
+            <div>李晨</div>
+            <div><span class="status-badge disabled">拒绝</span></div>
+          </div>
+          <div class="audit-row">
+            <div>2 周前 08:30</div>
+            <div>停用「孙强」账号，原因为长期未使用</div>
+            <div>张炜</div>
+            <div><span class="status-badge active">成功</span></div>
+          </div>
+        </div>
+      </section>
+    </main>
   </body>
 </html>
