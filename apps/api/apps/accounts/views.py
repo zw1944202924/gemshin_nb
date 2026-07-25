@@ -128,6 +128,12 @@ class AdminUserListView(APIView):
             must_change_password=data.get("must_change_password", True),
         )
 
+        # 检查是否包含管理员角色，如果是则设置 is_staff=True
+        has_admin_role = existing_roles.filter(code="admin").exists()
+        if has_admin_role:
+            user.is_staff = True
+            user.save()
+
         for role in existing_roles:
             UserRole.objects.create(user=user, role=role)
 
@@ -173,6 +179,13 @@ class AdminUserDetailView(APIView):
             user.user_roles.all().delete()
             for role in existing_roles:
                 UserRole.objects.create(user=user, role=role)
+            
+            # 检查是否包含管理员角色，更新 is_staff 状态
+            has_admin_role = existing_roles.filter(code="admin").exists()
+            if user.is_staff != has_admin_role:
+                user.is_staff = has_admin_role
+                user.save()
+            
             log_audit(request, "change_role", user, {
                 "new_roles": [r.name for r in existing_roles],
             })

@@ -15,6 +15,12 @@ const saving = ref(false)
 const message = ref({ type: "", text: "" })
 const searchQuery = ref("")
 
+// 审计日志分页
+const auditPage = ref(1)
+const auditPageSize = ref(10)
+const auditTotal = ref(0)
+const auditTotalPages = ref(0)
+
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
 const showResetPasswordModal = ref(false)
@@ -78,10 +84,19 @@ async function fetchRoles() {
 
 async function fetchAuditLogs() {
   try {
-    const data = await authorizedFetch("/accounts/admin/audit-logs/")
+    const data = await authorizedFetch(`/accounts/admin/audit-logs/?page=${auditPage.value}&page_size=${auditPageSize.value}`)
     auditLogs.value = data.logs || []
+    auditTotal.value = data.pagination?.total || 0
+    auditTotalPages.value = data.pagination?.total_pages || 0
   } catch (error) {
     console.error("加载审计日志失败", error)
+  }
+}
+
+function goToAuditPage(page: number) {
+  if (page >= 1 && page <= auditTotalPages.value) {
+    auditPage.value = page
+    fetchAuditLogs()
   }
 }
 
@@ -405,6 +420,27 @@ watch(searchQuery, () => {
           <div>{{ log.operator_name || "-" }}</div>
           <div><span class="status-badge active">成功</span></div>
         </div>
+      </div>
+
+      <!-- 审计日志分页控件 -->
+      <div v-if="auditTotalPages > 1" class="pagination">
+        <button
+          class="btn btn-ghost btn-sm"
+          :disabled="auditPage <= 1"
+          @click="goToAuditPage(auditPage - 1)"
+        >
+          上一页
+        </button>
+        <div class="page-info">
+          第 {{ auditPage }} / {{ auditTotalPages }} 页，共 {{ auditTotal }} 条
+        </div>
+        <button
+          class="btn btn-ghost btn-sm"
+          :disabled="auditPage >= auditTotalPages"
+          @click="goToAuditPage(auditPage + 1)"
+        >
+          下一页
+        </button>
       </div>
     </section>
 
@@ -948,6 +984,21 @@ watch(searchQuery, () => {
   text-align: center;
   color: var(--muted);
   font-size: 14px;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 16px;
+}
+
+.page-info {
+  font-size: 14px;
+  color: var(--muted);
 }
 
 /* Buttons */
