@@ -321,7 +321,7 @@ const handleModuleClick = (code: string) => {
   margin-top: 36px;
   padding-top: 24px;
   border-top: 1px solid var(--border-light);
-  color: var(--ink-copy);
+  color: #435163;
   font-size: 13px;
   line-height: 1.65;
 }
