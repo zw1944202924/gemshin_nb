@@ -84,11 +84,21 @@ def migrate_user_module_authorizations_to_roles(apps, schema_editor):
         pass
     
     # 为所有用户创建 profile（如果不存在）
+    # 注意：迁移中的 historical model 不包含自定义方法，只能访问数据库字段
     for user in User.objects.all():
+        # 使用数据库字段拼接显示名，避免调用 get_full_name() 等实例方法
+        display_name = ""
+        if hasattr(user, "first_name") and user.first_name:
+            display_name = user.first_name
+        if hasattr(user, "last_name") and user.last_name:
+            display_name = f"{display_name} {user.last_name}".strip()
+        if not display_name:
+            display_name = user.username
+        
         UserProfile.objects.get_or_create(
             user=user,
             defaults={
-                "display_name": user.get_full_name() or user.get_username(),
+                "display_name": display_name,
                 "must_change_password": False,
             }
         )

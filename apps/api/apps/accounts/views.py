@@ -136,6 +136,8 @@ class AdminUserListView(APIView):
             "roles": [r.name for r in existing_roles],
         })
 
+        # 重新获取用户对象并预加载关联数据，确保 roles 字段正确返回
+        user = User.objects.select_related("profile").prefetch_related("user_roles__role").get(id=user.id)
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
@@ -183,6 +185,8 @@ class AdminUserDetailView(APIView):
                     setattr(profile, field, profile_data[field])
             profile.save()
 
+        # 重新获取用户对象并预加载关联数据，确保 roles 字段正确返回
+        user = User.objects.select_related("profile").prefetch_related("user_roles__role").get(id=user_id)
         return Response(UserSerializer(user).data)
 
 
