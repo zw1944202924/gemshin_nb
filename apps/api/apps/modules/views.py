@@ -8,20 +8,19 @@ from apps.modules.serializers import ModuleSerializer
 
 
 class ModuleListView(APIView):
-    """返回当前用户已授权的模块列表。"""
+    """返回当前用户通过角色授权的模块列表。"""
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        authorized_modules = Module.objects.filter(
-            user_authorizations__user=request.user
-        )
+        user_roles = request.user.user_roles.values_list("role_id", flat=True)
+        authorized_modules = Module.objects.filter(roles__id__in=user_roles).distinct()
         serializer = ModuleSerializer(authorized_modules, many=True)
         return Response({"modules": serializer.data})
 
 
 class ModuleDetailView(APIView):
-    """获取单个模块详情，必须满足用户授权约束。"""
+    """获取单个模块详情，必须满足角色授权约束。"""
 
     permission_classes = [IsAuthenticated]
 
@@ -34,8 +33,8 @@ class ModuleDetailView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # 检查用户是否已获授权
-        has_access = module.user_authorizations.filter(user=request.user).exists()
+        user_roles = request.user.user_roles.values_list("role_id", flat=True)
+        has_access = module.roles.filter(id__in=user_roles).exists()
         if not has_access:
             return Response(
                 {"detail": "无权访问该模块"},

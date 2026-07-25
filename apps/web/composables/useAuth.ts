@@ -5,6 +5,19 @@ type AuthUser = {
   id: number
   username: string
   display_name: string
+  email: string
+  is_admin: boolean
+  must_change_password: boolean
+  roles: Array<{
+    id: number
+    name: string
+    code: string
+    modules?: Array<{
+      id: number
+      code: string
+      name: string
+    }>
+  }>
 }
 
 type LoginPayload = {

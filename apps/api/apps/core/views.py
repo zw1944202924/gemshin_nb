@@ -5,14 +5,23 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.accounts.models import UserProfile, UserRole
 from apps.core.authentication import build_auth_token, revoke_auth_token
 
 
 def serialize_user(user):
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    roles = UserRole.objects.filter(user=user).select_related("role")
+    role_list = [{"id": ur.role.id, "name": ur.role.name, "code": ur.role.code} for ur in roles]
+    
     return {
         "id": user.pk,
         "username": user.get_username(),
-        "display_name": user.get_full_name() or user.get_username(),
+        "display_name": profile.display_name or user.get_full_name() or user.get_username(),
+        "email": profile.email,
+        "is_admin": user.is_staff,
+        "must_change_password": profile.must_change_password,
+        "roles": role_list,
     }
 
 

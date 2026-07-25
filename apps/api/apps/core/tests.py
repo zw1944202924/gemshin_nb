@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
+from apps.accounts.models import UserProfile
 from apps.core.authentication import build_auth_token
 
 
@@ -17,6 +18,11 @@ class AuthFlowTests(TestCase):
             first_name="Demo",
             last_name="User",
         )
+        UserProfile.objects.create(
+            user=self.user,
+            display_name="Demo User",
+            must_change_password=False,
+        )
 
     def test_login_returns_token_and_user(self):
         response = self.client.post(
@@ -28,6 +34,8 @@ class AuthFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("token", response.data)
         self.assertEqual(response.data["user"]["username"], "demo")
+        self.assertIn("roles", response.data["user"])
+        self.assertIn("must_change_password", response.data["user"])
 
     def test_invalid_credentials_return_400(self):
         response = self.client.post(

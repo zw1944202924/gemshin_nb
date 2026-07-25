@@ -23,4 +23,14 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (to.path === "/dashboard" && !token.value) {
     return navigateTo("/")
   }
+
+  // 强制改密：已登录且 must_change_password 时，只能访问个人中心
+  if (token.value && user.value?.must_change_password && to.path !== "/profile") {
+    return navigateTo("/profile")
+  }
+
+  // 管理员页面权限检查
+  if (to.path === "/account" && token.value && user.value && !user.value.is_admin) {
+    return navigateTo("/profile")
+  }
 })

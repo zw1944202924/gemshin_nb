@@ -2,8 +2,9 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
+from apps.accounts.models import Role, UserProfile, UserRole
 from apps.core.authentication import build_auth_token
-from apps.modules.models import Module, UserModuleAuthorization
+from apps.modules.models import Module
 
 
 @override_settings(
@@ -34,35 +35,59 @@ class ModuleModelTests(TestCase):
 @override_settings(
     CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}},
 )
-class AuthorizationModelTests(TestCase):
+class RoleModelTests(TestCase):
+    def setUp(self):
+        self.module_comic = Module.objects.create(
+            code="comic",
+            name="AI 漫剧制作一站式系统",
+            icon="🎬",
+        )
+        self.module_stock = Module.objects.create(
+            code="stock",
+            name="AI 股票分析系统",
+            icon="📊",
+        )
+        self.role = Role.objects.create(
+            name="测试角色",
+            code="test_role",
+            description="测试角色描述",
+        )
+        self.role.modules.add(self.module_comic, self.module_stock)
+
+    def test_role_creation(self):
+        self.assertEqual(str(self.role), "测试角色")
+        self.assertEqual(self.role.modules.count(), 2)
+
+    def test_role_unique_code(self):
+        with self.assertRaises(Exception):
+            Role.objects.create(
+                name="重复角色",
+                code="test_role",
+            )
+
+
+@override_settings(
+    CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}},
+)
+class UserRoleModelTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(
             username="testuser",
             password="testpass123",
         )
-        self.module = Module.objects.create(
-            code="comic",
-            name="AI 漫剧制作一站式系统",
-            icon="🎬",
+        self.role = Role.objects.create(
+            name="测试角色",
+            code="test_role",
         )
 
-    def test_authorization_creation(self):
-        auth = UserModuleAuthorization.objects.create(
-            user=self.user,
-            module=self.module,
-        )
-        self.assertEqual(str(auth), f"{self.user} → {self.module}")
+    def test_user_role_creation(self):
+        user_role = UserRole.objects.create(user=self.user, role=self.role)
+        self.assertEqual(str(user_role), f"{self.user} → {self.role}")
 
     def test_unique_constraint(self):
-        UserModuleAuthorization.objects.create(
-            user=self.user,
-            module=self.module,
-        )
+        UserRole.objects.create(user=self.user, role=self.role)
         with self.assertRaises(Exception):
-            UserModuleAuthorization.objects.create(
-                user=self.user,
-                module=self.module,
-            )
+            UserRole.objects.create(user=self.user, role=self.role)
 
 
 @override_settings(
@@ -96,25 +121,32 @@ class ModuleAPITests(TestCase):
             sort_order=3,
         )
 
+        # 创建角色
+        self.role_comic = Role.objects.create(
+            name="漫剧角色",
+            code="comic_role",
+        )
+        self.role_comic.modules.add(self.module_comic)
+
+        self.role_stock = Role.objects.create(
+            name="股票角色",
+            code="stock_role",
+        )
+        self.role_stock.modules.add(self.module_stock)
+
     def test_list_requires_authentication(self):
         response = self.client.get("/api/v1/modules/")
         self.assertEqual(response.status_code, 401)
 
-    def test_empty_list_when_no_authorization(self):
+    def test_empty_list_when_no_role(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
         response = self.client.get("/api/v1/modules/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["modules"], [])
 
     def test_list_returns_only_authorized_modules(self):
-        UserModuleAuthorization.objects.create(
-            user=self.user,
-            module=self.module_comic,
-        )
-        UserModuleAuthorization.objects.create(
-            user=self.user,
-            module=self.module_stock,
-        )
+        UserRole.objects.create(user=self.user, role=self.role_comic)
+        UserRole.objects.create(user=self.user, role=self.role_stock)
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
         response = self.client.get("/api/v1/modules/")
@@ -142,10 +174,7 @@ class ModuleAPITests(TestCase):
         self.assertEqual(response.data["detail"], "无权访问该模块")
 
     def test_detail_returns_module_when_authorized(self):
-        UserModuleAuthorization.objects.create(
-            user=self.user,
-            module=self.module_comic,
-        )
+        UserRole.objects.create(user=self.user, role=self.role_comic)
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
         response = self.client.get("/api/v1/modules/comic/")
