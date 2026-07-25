@@ -49,7 +49,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(required=False)
-    roles = RoleSerializer(many=True, read_only=True, source="user_roles.role")
+    roles = serializers.SerializerMethodField()
     role_ids = serializers.PrimaryKeyRelatedField(
         queryset=Role.objects.all(),
         many=True,
@@ -79,6 +79,11 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_is_admin(self, obj):
         return obj.is_staff
+
+    def get_roles(self, obj):
+        # 通过 user_roles 反向关联获取用户的所有角色
+        roles = Role.objects.filter(user_roles__user=obj)
+        return RoleSerializer(roles, many=True).data
 
     def create(self, validated_data):
         profile_data = validated_data.pop("profile", {})

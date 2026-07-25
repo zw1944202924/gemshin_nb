@@ -110,6 +110,29 @@ class AdminUserAPITests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data["users"]), 2)
 
+    def test_admin_list_users_returns_roles(self):
+        """验证管理员用户列表返回 roles 字段"""
+        UserRole.objects.create(user=self.admin, role=self.role)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
+        response = self.client.get("/api/v1/accounts/admin/users/")
+        self.assertEqual(response.status_code, 200)
+        
+        # 查找 admin 用户并验证 roles 字段
+        admin_data = next(u for u in response.data["users"] if u["username"] == "admin")
+        self.assertIsNotNone(admin_data.get("roles"))
+        self.assertEqual(len(admin_data["roles"]), 1)
+        self.assertEqual(admin_data["roles"][0]["code"], "test_role")
+
+    def test_admin_detail_user_returns_roles(self):
+        """验证管理员用户详情返回 roles 字段"""
+        UserRole.objects.create(user=self.normal_user, role=self.role)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
+        response = self.client.get(f"/api/v1/accounts/admin/users/{self.normal_user.id}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(response.data.get("roles"))
+        self.assertEqual(len(response.data["roles"]), 1)
+        self.assertEqual(response.data["roles"][0]["code"], "test_role")
+
     def test_non_admin_cannot_list_users(self):
         normal_token = build_auth_token(self.normal_user)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {normal_token}")
@@ -133,6 +156,44 @@ class AdminUserAPITests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["username"], "newuser")
         self.assertTrue(response.data["profile"]["must_change_password"])
+
+    def test_admin_create_user_returns_roles(self):
+        """验证创建用户后返回的响应包含 roles 字段"""
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
+        response = self.client.post(
+            "/api/v1/accounts/admin/users/",
+            {
+                "username": "newuser_with_roles",
+                "password": "newpass123",
+                "role_ids": [self.role.id],
+                "must_change_password": True,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertIsNotNone(response.data.get("roles"))
+        self.assertEqual(len(response.data["roles"]), 1)
+        self.assertEqual(response.data["roles"][0]["code"], "test_role")
+
+    def test_admin_update_user_roles(self):
+        """验证更新用户角色后返回的响应包含更新后的 roles"""
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
+        
+        # 先创建一个新角色
+        new_role = Role.objects.create(name="新角色", code="new_role")
+        
+        # 更新用户角色
+        response = self.client.patch(
+            f"/api/v1/accounts/admin/users/{self.normal_user.id}/",
+            {"role_ids": [self.role.id, new_role.id]},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(response.data.get("roles"))
+        self.assertEqual(len(response.data["roles"]), 2)
+        role_codes = [r["code"] for r in response.data["roles"]]
+        self.assertIn("test_role", role_codes)
+        self.assertIn("new_role", role_codes)
 
     def test_admin_disable_user(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
