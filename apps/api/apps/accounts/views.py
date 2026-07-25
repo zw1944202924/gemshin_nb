@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -103,6 +104,17 @@ class AdminUserListView(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
+        # 批量校验角色是否存在，避免 500 错误
+        role_ids = data["role_ids"]
+        existing_roles = Role.objects.filter(id__in=role_ids)
+        if existing_roles.count() != len(role_ids):
+            existing_ids = set(existing_roles.values_list("id", flat=True))
+            missing_ids = [rid for rid in role_ids if rid not in existing_ids]
+            return Response(
+                {"detail": f"以下角色不存在: {missing_ids}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         user = User.objects.create_user(
             username=data["username"],
             password=data["password"],
@@ -116,13 +128,12 @@ class AdminUserListView(APIView):
             must_change_password=data.get("must_change_password", True),
         )
 
-        for role_id in data["role_ids"]:
-            role = Role.objects.get(id=role_id)
+        for role in existing_roles:
             UserRole.objects.create(user=user, role=role)
 
         log_audit(request, "create_account", user, {
             "username": data["username"],
-            "roles": [r.name for r in Role.objects.filter(id__in=data["role_ids"])],
+            "roles": [r.name for r in existing_roles],
         })
 
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
@@ -147,12 +158,21 @@ class AdminUserDetailView(APIView):
 
         role_ids = request.data.get("role_ids")
         if role_ids is not None:
+            # 批量校验角色是否存在，避免 500 错误
+            existing_roles = Role.objects.filter(id__in=role_ids)
+            if existing_roles.count() != len(role_ids):
+                existing_ids = set(existing_roles.values_list("id", flat=True))
+                missing_ids = [rid for rid in role_ids if rid not in existing_ids]
+                return Response(
+                    {"detail": f"以下角色不存在: {missing_ids}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            
             user.user_roles.all().delete()
-            for role_id in role_ids:
-                role = Role.objects.get(id=role_id)
+            for role in existing_roles:
                 UserRole.objects.create(user=user, role=role)
             log_audit(request, "change_role", user, {
-                "new_roles": [r.name for r in Role.objects.filter(id__in=role_ids)],
+                "new_roles": [r.name for r in existing_roles],
             })
 
         profile_data = request.data.get("profile", {})
@@ -169,17 +189,23 @@ class AdminUserDetailView(APIView):
 class AdminUserDisableView(APIView):
     permission_classes = [IsAdminUser]
 
+    @transaction.atomic
     def post(self, request, user_id):
         try:
-            user = User.objects.get(id=user_id)
+            user = User.objects.select_for_update().get(id=user_id)
         except User.DoesNotExist:
             return Response({"detail": "用户不存在"}, status=status.HTTP_404_NOT_FOUND)
 
         if user == request.user:
             return Response({"detail": "不能停用自己"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if user.is_staff and User.objects.filter(is_staff=True, is_active=True).count() <= 1:
-            return Response({"detail": "不能停用最后一个管理员"}, status=status.HTTP_400_BAD_REQUEST)
+        # 使用 select_for_update 锁定查询，防止并发停用最后一个管理员
+        if user.is_staff:
+            active_admin_count = User.objects.select_for_update().filter(
+                is_staff=True, is_active=True
+            ).count()
+            if active_admin_count <= 1:
+                return Response({"detail": "不能停用最后一个管理员"}, status=status.HTTP_400_BAD_REQUEST)
 
         user.is_active = False
         user.save()
@@ -243,6 +269,23 @@ class AuditLogListView(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        logs = AuditLog.objects.select_related("operator", "target_user").all()[:100]
+        page = int(request.query_params.get("page", 1))
+        page_size = int(request.query_params.get("page_size", 20))
+        
+        # 限制每页最大数量
+        page_size = min(page_size, 100)
+        
+        offset = (page - 1) * page_size
+        total = AuditLog.objects.count()
+        logs = AuditLog.objects.select_related("operator", "target_user").all()[offset:offset + page_size]
+        
         serializer = AuditLogSerializer(logs, many=True)
-        return Response({"logs": serializer.data})
+        return Response({
+            "logs": serializer.data,
+            "pagination": {
+                "page": page,
+                "page_size": page_size,
+                "total": total,
+                "total_pages": (total + page_size - 1) // page_size,
+            }
+        })

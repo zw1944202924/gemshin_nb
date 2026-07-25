@@ -1,4 +1,7 @@
-from django.core.management.base import BaseCommand
+import getpass
+import os
+
+from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth import get_user_model
 
 from apps.accounts.models import Role, UserRole, UserProfile
@@ -57,14 +60,20 @@ class Command(BaseCommand):
         parser.add_argument(
             "--admin-username",
             type=str,
-            default="zhangwei",
-            help="管理员用户名",
+            default=None,
+            help="管理员用户名（默认从环境变量 ADMIN_USERNAME 读取）",
         )
         parser.add_argument(
-            "--admin-password",
+            "--admin-password-env",
             type=str,
-            default=None,
-            help="管理员密码（如不提供则不修改密码）",
+            default="ADMIN_PASSWORD",
+            help="存储管理员密码的环境变量名（默认: ADMIN_PASSWORD）",
+        )
+        parser.add_argument(
+            "--interactive-password",
+            action="store_true",
+            default=False,
+            help="交互式输入密码（优先级高于环境变量）",
         )
 
     def handle(self, *args, **options):
@@ -89,22 +98,36 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f"{status}角色: {role.name}"))
 
         # 设置管理员账号
-        admin_username = options["admin_username"]
-        admin_password = options["admin_password"]
+        admin_username = options["admin_username"] or os.environ.get("ADMIN_USERNAME")
+        if not admin_username:
+            raise CommandError("请通过 --admin-username 或环境变量 ADMIN_USERNAME 指定管理员用户名")
+        
+        # 获取密码：优先交互式输入，其次环境变量
+        admin_password = None
+        if options["interactive_password"]:
+            admin_password = getpass.getpass(f"请输入管理员 {admin_username} 的密码: ")
+            if not admin_password:
+                raise CommandError("密码不能为空")
+        else:
+            password_env = options["admin_password_env"]
+            admin_password = os.environ.get(password_env)
+            if not admin_password:
+                raise CommandError(
+                    f"请通过环境变量 {password_env} 设置密码，或使用 --interactive-password 交互式输入"
+                )
         
         try:
             user = User.objects.get(username=admin_username)
         except User.DoesNotExist:
-            self.stdout.write(self.style.ERROR(f"用户 {admin_username} 不存在"))
-            return
+            raise CommandError(f"用户 {admin_username} 不存在，请先创建用户")
 
         user.is_staff = True
-        if admin_password:
-            user.set_password(admin_password)
+        user.set_password(admin_password)
         user.save()
 
         # 确保有 profile
         profile, _ = UserProfile.objects.get_or_create(user=user)
+        # 核验账号设置为不需要强制改密，因为这是初始化部署操作
         profile.must_change_password = False
         profile.save()
 

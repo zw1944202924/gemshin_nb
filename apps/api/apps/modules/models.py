@@ -24,7 +24,14 @@ class Module(models.Model):
 
 
 class UserModuleAuthorization(models.Model):
-    """用户-模块授权关系，控制用户可见哪些模块。"""
+    """
+    用户-模块授权关系，控制用户可见哪些模块。
+    
+    .. deprecated:: MYW-56
+        此模型已废弃，模块权限现在通过 Role 模型控制。
+        请使用 accounts.Role 和 accounts.UserRole 替代。
+        此模型保留仅用于数据迁移兼容，新代码不应使用。
+    """
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -43,8 +50,8 @@ class UserModuleAuthorization(models.Model):
     class Meta:
         unique_together = [("user", "module")]
         ordering = ["-granted_at"]
-        verbose_name = "用户模块授权"
-        verbose_name_plural = verbose_name
+        verbose_name = "用户模块授权（已废弃）"
+        verbose_name_plural = "用户模块授权（已废弃）"
 
     def __str__(self):
-        return f"{self.user} → {self.module}"
+        return f"{self.user} → {self.module}（已废弃）"
