@@ -80,19 +80,14 @@ const handleModuleClick = (code: string) => {
 <style scoped>
 .module-center {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .page-header {
-  padding: 40px 24px 0;
+  padding: 40px 24px 32px;
   position: relative;
-}
-
-.page-header::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(114, 162, 255, 0.08), transparent 40%);
-  pointer-events: none;
+  background: linear-gradient(180deg, #05070b 0%, #0b1321 100%);
 }
 
 .page-header-inner {
@@ -127,7 +122,9 @@ const handleModuleClick = (code: string) => {
 }
 
 .module-section {
-  padding: 24px 24px 60px;
+  padding: 32px 24px 60px;
+  background: #edf2f8;
+  flex: 1;
 }
 
 .module-section-inner {
@@ -139,7 +136,7 @@ const handleModuleClick = (code: string) => {
 .loading-state {
   text-align: center;
   padding: 80px 24px;
-  color: var(--ink-muted);
+  color: #556173;
   font-size: 15px;
 }
 
@@ -154,8 +151,8 @@ const handleModuleClick = (code: string) => {
   margin-top: 16px;
   padding: 10px 24px;
   border-radius: var(--radius-sm);
-  background: var(--accent-gradient);
-  color: #081120;
+  background: #17202c;
+  color: #ffffff;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -182,14 +179,14 @@ const handleModuleClick = (code: string) => {
 .empty-title {
   font-size: 24px;
   font-weight: 700;
-  color: var(--ink-primary);
+  color: #17202c;
   margin-bottom: 12px;
 }
 
 .empty-desc {
   max-width: 48ch;
   margin: 0 auto;
-  color: var(--ink-copy);
+  color: #435163;
   line-height: 1.7;
   font-size: 15px;
 }
@@ -224,8 +221,8 @@ const handleModuleClick = (code: string) => {
 }
 
 .module-card {
-  background: var(--surface);
-  border: 1px solid var(--border-light);
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
   border-radius: var(--radius-lg);
   padding: 28px 24px;
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
@@ -235,7 +232,7 @@ const handleModuleClick = (code: string) => {
 }
 
 .module-card:hover {
-  border-color: var(--ink-accent);
+  border-color: #315f8f;
   box-shadow: 0 8px 32px rgba(49, 95, 143, 0.12);
   transform: translateY(-2px);
 }
@@ -249,17 +246,18 @@ const handleModuleClick = (code: string) => {
   place-items: center;
   margin-bottom: 18px;
   font-size: 22px;
+  border: 1px solid #e7edf2;
 }
 
 .module-card h3 {
   font-size: 18px;
   line-height: 1.3;
-  color: var(--ink-primary);
+  color: #17202c;
   margin-bottom: 10px;
 }
 
 .module-card p {
-  color: var(--ink-copy);
+  color: #435163;
   line-height: 1.65;
   font-size: 14px;
   flex: 1;
@@ -279,9 +277,9 @@ const handleModuleClick = (code: string) => {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: var(--ink-muted);
+  color: #556173;
   padding: 4px 10px;
-  background: var(--surface-soft);
+  background: #f1f4f7;
   border-radius: 100px;
 }
 
@@ -320,7 +318,7 @@ const handleModuleClick = (code: string) => {
   flex-wrap: wrap;
   margin-top: 36px;
   padding-top: 24px;
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid #dbe2ea;
   color: #435163;
   font-size: 13px;
   line-height: 1.65;
