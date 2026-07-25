@@ -46,4 +46,5 @@ urlpatterns = [
     path("api/v1/protected/", ProtectedView.as_view(), name="protected"),
     path("api/v1/chat/", include("apps.chat.urls")),
     path("api/v1/story/", include("apps.story.urls")),
+    path("api/v1/modules/", include("apps.modules.urls")),
 ]

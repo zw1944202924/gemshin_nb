@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.chat",
     "apps.story",
+    "apps.modules",
 ]
 
 MIDDLEWARE = [
