@@ -42,6 +42,12 @@ const resetPasswordForm = ref({
 
 const isAdmin = computed(() => user.value?.is_admin ?? false)
 
+// 统计数据
+const totalUsers = computed(() => users.value.length)
+const activeUsers = computed(() => users.value.filter(u => u.is_active).length)
+const disabledUsers = computed(() => users.value.filter(u => !u.is_active).length)
+const adminUsers = computed(() => users.value.filter(u => u.is_admin).length)
+
 onMounted(async () => {
   if (!isAdmin.value) {
     await navigateTo("/profile")
@@ -284,6 +290,30 @@ watch(searchQuery, () => {
     <div v-if="message.text" :class="['alert-banner', `alert-${message.type}`]">
       <div class="alert-icon">{{ message.type === "success" ? "✓" : "!" }}</div>
       <div class="alert-content">{{ message.text }}</div>
+    </div>
+
+    <!-- 统计概览 -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">总用户数</div>
+        <div class="stat-value">{{ totalUsers }}</div>
+        <div class="stat-note">已注册账号</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">已启用</div>
+        <div class="stat-value">{{ activeUsers }}</div>
+        <div class="stat-note">正常可用</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">已停用</div>
+        <div class="stat-value">{{ disabledUsers }}</div>
+        <div class="stat-note">无法登录</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">管理员</div>
+        <div class="stat-value">{{ adminUsers }}</div>
+        <div class="stat-note">拥有管理权限</div>
+      </div>
     </div>
 
     <!-- 用户管理 -->
@@ -735,6 +765,42 @@ watch(searchQuery, () => {
 
 .alert-error .alert-icon {
   background: rgba(181, 66, 66, 0.15);
+}
+
+/* Stats Row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  padding: 20px;
+}
+
+.stat-label {
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.stat-note {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
 }
 
 /* Search bar */

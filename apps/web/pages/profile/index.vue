@@ -117,6 +117,13 @@ async function handleLogout() {
 
 <template>
   <div class="profile-page">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <p class="page-label">个人中心</p>
+      <h1 class="page-title">管理你的账户</h1>
+      <p class="page-desc">查看和编辑个人资料、修改密码、管理通知偏好。</p>
+    </div>
+
     <!-- 首次改密提示 -->
     <div v-if="mustChangePassword" class="alert-banner alert-warning">
       <div class="alert-icon">!</div>
@@ -482,6 +489,35 @@ async function handleLogout() {
   background: var(--canvas);
   color: var(--ink);
   line-height: 1.6;
+}
+
+/* Page Header */
+.page-header {
+  margin-bottom: 36px;
+}
+
+.page-label {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.page-title {
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  max-width: 20ch;
+}
+
+.page-desc {
+  max-width: 64ch;
+  margin-top: 16px;
+  color: var(--copy);
+  line-height: 1.72;
+  font-size: 15px;
 }
 
 /* Section styles */
