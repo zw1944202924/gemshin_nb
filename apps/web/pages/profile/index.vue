@@ -12,7 +12,8 @@ const profile = ref({
   email: "",
   notify_account_security: true,
   notify_permission_change: true,
-  notify_module_activity: true
+  notify_module_activity: true,
+  last_password_change: ""
 })
 
 const passwordForm = ref({
@@ -36,6 +37,30 @@ const userInitials = computed(() => {
   return name.slice(0, 2).toUpperCase()
 })
 
+function formatDate(dateStr: string | undefined) {
+  if (!dateStr) return ""
+  const date = new Date(dateStr)
+  return date.toLocaleString("zh-CN")
+}
+
+function getModuleIcon(code: string) {
+  const icons: Record<string, string> = {
+    comic: "🎬",
+    stock: "📊",
+    blog: "📝"
+  }
+  return icons[code] || "📦"
+}
+
+function getModuleDesc(code: string) {
+  const descs: Record<string, string> = {
+    comic: "完整访问 · 项目中心、工作台、结果校验与导出",
+    stock: "完整访问 · 策略分析、研究记录、数据跟踪",
+    blog: "完整访问 · 内容整理、标签管理、发布准备"
+  }
+  return descs[code] || "完整访问"
+}
+
 onMounted(async () => {
   await fetchProfile()
   if (mustChangePassword.value) {
@@ -52,7 +77,8 @@ async function fetchProfile() {
       email: data.profile?.email || "",
       notify_account_security: data.profile?.notify_account_security ?? true,
       notify_permission_change: data.profile?.notify_permission_change ?? true,
-      notify_module_activity: data.profile?.notify_module_activity ?? true
+      notify_module_activity: data.profile?.notify_module_activity ?? true,
+      last_password_change: data.profile?.last_password_change || ""
     }
   } catch (error) {
     message.value = { type: "error", text: "加载资料失败" }
@@ -120,8 +146,8 @@ async function handleLogout() {
     <!-- 页面标题 -->
     <div class="page-header">
       <p class="page-label">个人中心</p>
-      <h1 class="page-title">管理你的账户</h1>
-      <p class="page-desc">查看和编辑个人资料、修改密码、管理通知偏好。</p>
+      <h1 class="page-title">管理你的个人资料与账号</h1>
+      <p class="page-desc">查看和编辑个人资料、修改密码、管理通知偏好、确认角色与模块访问范围。所有已登录用户均可访问此页面。</p>
     </div>
 
     <!-- 首次改密提示 -->
@@ -163,12 +189,16 @@ async function handleLogout() {
               </div>
               <div class="data-rows">
                 <div class="data-row">
-                  <div class="data-label">用户名</div>
-                  <div class="data-value">{{ user?.username }}</div>
-                </div>
-                <div class="data-row">
                   <div class="data-label">登录邮箱</div>
                   <div class="data-value">{{ profile.email || "未设置" }}</div>
+                </div>
+                <div class="data-row">
+                  <div class="data-label">所属工作区</div>
+                  <div class="data-value">gemshin_nb 主工作区</div>
+                </div>
+                <div class="data-row">
+                  <div class="data-label">注册时间</div>
+                  <div class="data-value">{{ formatDate(user?.date_joined) }}</div>
                 </div>
               </div>
             </div>
@@ -186,6 +216,10 @@ async function handleLogout() {
             <div class="data-row">
               <div class="data-label">安全状态</div>
               <div class="data-value"><span class="status-badge active">正常</span></div>
+            </div>
+            <div class="data-row">
+              <div class="data-label">最近登录</div>
+              <div class="data-value">{{ formatDate(user?.last_login) || '首次登录' }}</div>
             </div>
           </div>
         </div>
@@ -207,11 +241,12 @@ async function handleLogout() {
           <p>建议定期更换密码，使用包含大小写字母、数字和特殊字符的强密码。</p>
           <div class="data-rows">
             <div class="data-row">
-              <div class="data-label">密码状态</div>
-              <div class="data-value">
-                <span v-if="mustChangePassword" class="status-badge warning">需要修改</span>
-                <span v-else class="status-badge active">正常</span>
-              </div>
+              <div class="data-label">上次修改</div>
+              <div class="data-value">{{ formatDate(profile.last_password_change) || '从未修改' }}</div>
+            </div>
+            <div class="data-row">
+              <div class="data-label">密码强度</div>
+              <div class="data-value"><span class="status-badge active">强</span></div>
             </div>
           </div>
           <div class="actions-row">
@@ -226,6 +261,10 @@ async function handleLogout() {
             <div class="data-row">
               <div class="data-label">二次验证</div>
               <div class="data-value"><span class="status-badge warning">未开启</span></div>
+            </div>
+            <div class="data-row">
+              <div class="data-label">信任设备</div>
+              <div class="data-value">1 台设备</div>
             </div>
           </div>
         </div>
@@ -329,10 +368,10 @@ async function handleLogout() {
         <div v-if="user?.roles?.length" v-for="role in user.roles" :key="role.id">
           <div v-for="mod in role.modules" :key="mod.code" class="module-access-item">
             <div class="module-access-left">
-              <div class="module-access-icon">{{ mod.icon || "📦" }}</div>
+              <div class="module-access-icon">{{ mod.icon || getModuleIcon(mod.code) }}</div>
               <div>
                 <div class="module-access-name">{{ mod.name }}</div>
-                <div class="module-access-desc">完整访问</div>
+                <div class="module-access-desc">{{ getModuleDesc(mod.code) }}</div>
               </div>
             </div>
             <div class="module-access-right">

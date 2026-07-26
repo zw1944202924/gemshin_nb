@@ -340,6 +340,7 @@ watch(searchQuery, () => {
           <div>用户</div>
           <div>状态</div>
           <div>角色</div>
+          <div>最近登录</div>
           <div>操作</div>
         </div>
 
@@ -367,6 +368,9 @@ watch(searchQuery, () => {
               {{ role.name }}
             </span>
             <span v-if="!userData.roles?.length" class="text-muted">无角色</span>
+          </div>
+          <div class="user-last-login">
+            {{ formatDate(userData.last_login) || '未登录' }}
           </div>
           <div class="user-actions">
             <button class="btn btn-ghost btn-sm" @click="openEditModal(userData)">编辑</button>
@@ -834,7 +838,7 @@ watch(searchQuery, () => {
 
 .user-table-header {
   display: grid;
-  grid-template-columns: 2fr 1fr 2fr 2fr;
+  grid-template-columns: 2fr 1fr 2fr 1fr 2fr;
   padding: 12px 16px;
   background: var(--surface-soft);
   border-bottom: 1px solid var(--line-soft);
@@ -847,7 +851,7 @@ watch(searchQuery, () => {
 
 .user-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 2fr 2fr;
+  grid-template-columns: 2fr 1fr 2fr 1fr 2fr;
   padding: 16px;
   border-bottom: 1px solid var(--line-soft);
   font-size: 14px;
@@ -886,6 +890,12 @@ watch(searchQuery, () => {
 .user-email {
   font-size: 12px;
   color: var(--muted);
+}
+
+.user-last-login {
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
 }
 
 .user-actions {
@@ -1226,20 +1236,39 @@ watch(searchQuery, () => {
     flex-direction: column;
   }
   
-  .user-table-header,
+  .user-table-header {
+    display: none;
+  }
+  
   .user-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-md);
+    margin-bottom: 12px;
+  }
+  
+  .user-name-cell {
+    width: 100%;
+  }
+  
+  .user-last-login {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  
+  .user-actions {
+    width: 100%;
+    flex-wrap: wrap;
   }
   
   .audit-header,
   .audit-row {
     grid-template-columns: 1fr;
     gap: 8px;
-  }
-  
-  .user-actions {
-    flex-direction: column;
   }
   
   .role-cards {
