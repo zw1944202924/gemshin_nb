@@ -16,6 +16,33 @@ const profile = ref({
   last_password_change: ""
 })
 
+// 从 API 获取的完整用户数据（包含 roles.modules）
+const profileUser = ref<any>(null)
+
+// 计算属性：优先使用 profileUser，回退到 useAuth 的 user
+const currentUser = computed(() => profileUser.value || user.value)
+
+// 计算属性：收集所有角色的模块（去重）
+const accessibleModules = computed(() => {
+  const modules: any[] = []
+  const seen = new Set<string>()
+  
+  if (currentUser.value?.roles?.length) {
+    for (const role of currentUser.value.roles) {
+      if (role.modules?.length) {
+        for (const mod of role.modules) {
+          if (!seen.has(mod.code)) {
+            seen.add(mod.code)
+            modules.push(mod)
+          }
+        }
+      }
+    }
+  }
+  
+  return modules
+})
+
 const passwordForm = ref({
   old_password: "",
   new_password: "",
@@ -80,6 +107,8 @@ async function fetchProfile() {
       notify_module_activity: data.profile?.notify_module_activity ?? true,
       last_password_change: data.profile?.last_password_change || ""
     }
+    // 保存完整的用户数据（包含 roles.modules）
+    profileUser.value = data
   } catch (error) {
     message.value = { type: "error", text: "加载资料失败" }
   } finally {
@@ -180,8 +209,8 @@ async function handleLogout() {
             <div class="profile-info">
               <h3>{{ profile.display_name || user?.username }}</h3>
               <div class="profile-role">
-                <span v-if="user?.roles?.length" class="role-tags">
-                  <span v-for="role in user.roles" :key="role.id" class="role-tag">
+                <span v-if="currentUser?.roles?.length" class="role-tags">
+                  <span v-for="role in currentUser.roles" :key="role.id" class="role-tag">
                     {{ role.name }}
                   </span>
                 </span>
@@ -344,8 +373,8 @@ async function handleLogout() {
           <div class="data-row">
             <div class="data-label">角色</div>
             <div class="data-value">
-              <span v-if="user?.roles?.length" class="role-tags">
-                <span v-for="role in user.roles" :key="role.id" class="role-tag">
+              <span v-if="currentUser?.roles?.length" class="role-tags">
+                <span v-for="role in currentUser.roles" :key="role.id" class="role-tag">
                   {{ role.name }}
                 </span>
               </span>
@@ -355,8 +384,8 @@ async function handleLogout() {
           <div class="data-row">
             <div class="data-label">角色说明</div>
             <div class="data-value">
-              <span v-if="user?.roles?.length">
-                {{ user.roles.map(r => r.name).join('、') }}，可访问对应业务模块。
+              <span v-if="currentUser?.roles?.length">
+                {{ currentUser.roles.map(r => r.name).join('、') }}，可访问对应业务模块。
               </span>
               <span v-else class="text-muted">无角色时无法访问任何业务模块。</span>
             </div>
@@ -365,18 +394,16 @@ async function handleLogout() {
       </div>
 
       <div class="module-access-list">
-        <div v-if="user?.roles?.length" v-for="role in user.roles" :key="role.id">
-          <div v-for="mod in role.modules" :key="mod.code" class="module-access-item">
-            <div class="module-access-left">
-              <div class="module-access-icon">{{ mod.icon || getModuleIcon(mod.code) }}</div>
-              <div>
-                <div class="module-access-name">{{ mod.name }}</div>
-                <div class="module-access-desc">{{ getModuleDesc(mod.code) }}</div>
-              </div>
+        <div v-if="accessibleModules.length" v-for="mod in accessibleModules" :key="mod.code" class="module-access-item">
+          <div class="module-access-left">
+            <div class="module-access-icon">{{ getModuleIcon(mod.code) }}</div>
+            <div>
+              <div class="module-access-name">{{ mod.name }}</div>
+              <div class="module-access-desc">{{ getModuleDesc(mod.code) }}</div>
             </div>
-            <div class="module-access-right">
-              <span class="status-badge active">可访问</span>
-            </div>
+          </div>
+          <div class="module-access-right">
+            <span class="status-badge active">可访问</span>
           </div>
         </div>
         <div v-else class="empty-state">
