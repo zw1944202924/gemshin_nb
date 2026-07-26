@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import authenticate
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -45,6 +46,10 @@ class LoginView(APIView):
                 {"detail": "用户名或密码错误"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        # 更新最后登录时间
+        user.last_login = timezone.now()
+        user.save(update_fields=["last_login"])
 
         return Response(
             {

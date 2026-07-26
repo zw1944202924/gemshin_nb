@@ -81,8 +81,8 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.is_staff
 
     def get_roles(self, obj):
-        # 通过 user_roles 反向关联获取用户的所有角色
-        roles = Role.objects.filter(user_roles__user=obj)
+        # 通过 user_roles 反向关联获取用户的所有角色，预加载模块
+        roles = Role.objects.filter(user_roles__user=obj).prefetch_related("modules")
         return RoleSerializer(roles, many=True).data
 
     def create(self, validated_data):

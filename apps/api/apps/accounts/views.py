@@ -48,7 +48,9 @@ class ProfileView(APIView):
 
     def get(self, request):
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
-        serializer = UserSerializer(request.user)
+        # 预加载用户的模块信息
+        user = User.objects.select_related("profile").prefetch_related("user_roles__role__modules").get(id=request.user.id)
+        serializer = UserSerializer(user)
         return Response(serializer.data)
 
     def patch(self, request):
@@ -62,7 +64,9 @@ class ProfileView(APIView):
 
         log_audit(request, "update_profile", request.user, {"fields": list(profile_data.keys())})
 
-        serializer = UserSerializer(request.user)
+        # 预加载用户的模块信息
+        user = User.objects.select_related("profile").prefetch_related("user_roles__role__modules").get(id=request.user.id)
+        serializer = UserSerializer(user)
         return Response(serializer.data)
 
 
@@ -91,7 +95,7 @@ class AdminUserListView(APIView):
 
     def get(self, request):
         search = request.query_params.get("search", "")
-        users = User.objects.select_related("profile").prefetch_related("user_roles__role")
+        users = User.objects.select_related("profile").prefetch_related("user_roles__role__modules")
 
         if search:
             users = users.filter(username__icontains=search) | users.filter(profile__display_name__icontains=search)
@@ -143,7 +147,7 @@ class AdminUserListView(APIView):
         })
 
         # 重新获取用户对象并预加载关联数据，确保 roles 字段正确返回
-        user = User.objects.select_related("profile").prefetch_related("user_roles__role").get(id=user.id)
+        user = User.objects.select_related("profile").prefetch_related("user_roles__role__modules").get(id=user.id)
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
@@ -152,7 +156,7 @@ class AdminUserDetailView(APIView):
 
     def get(self, request, user_id):
         try:
-            user = User.objects.select_related("profile").prefetch_related("user_roles__role").get(id=user_id)
+            user = User.objects.select_related("profile").prefetch_related("user_roles__role__modules").get(id=user_id)
         except User.DoesNotExist:
             return Response({"detail": "用户不存在"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -214,7 +218,7 @@ class AdminUserDetailView(APIView):
             profile.save()
 
         # 重新获取用户对象并预加载关联数据，确保 roles 字段正确返回
-        user = User.objects.select_related("profile").prefetch_related("user_roles__role").get(id=user_id)
+        user = User.objects.select_related("profile").prefetch_related("user_roles__role__modules").get(id=user_id)
         return Response(UserSerializer(user).data)
 
 
