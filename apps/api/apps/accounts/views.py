@@ -171,6 +171,7 @@ class AdminUserDetailView(APIView):
 
         role_ids = request.data.get("role_ids")
         if role_ids is not None:
+            old_roles = list(user.user_roles.select_related("role").values_list("role__name", flat=True))
             # 批量校验角色是否存在，避免 500 错误
             existing_roles = Role.objects.filter(id__in=role_ids)
             if existing_roles.count() != len(role_ids):
@@ -207,16 +208,21 @@ class AdminUserDetailView(APIView):
                 user.save()
 
             log_audit(request, "change_role", user, {
+                "old_roles": old_roles,
                 "new_roles": [r.name for r in existing_roles],
             })
 
         profile_data = request.data.get("profile", {})
         if profile_data:
             profile, _ = UserProfile.objects.get_or_create(user=user)
+            updated_fields = []
             for field in ["display_name", "email"]:
                 if field in profile_data:
                     setattr(profile, field, profile_data[field])
+                    updated_fields.append(field)
             profile.save()
+            if updated_fields:
+                log_audit(request, "update_profile", user, {"fields": updated_fields})
 
         # 重新获取用户对象并预加载关联数据，确保 roles 字段正确返回
         user = User.objects.select_related("profile").prefetch_related("user_roles__role__modules").get(id=user_id)

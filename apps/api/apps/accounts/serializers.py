@@ -7,6 +7,35 @@ from apps.modules.serializers import ModuleSerializer
 
 User = get_user_model()
 
+SENSITIVE_DETAIL_MARKERS = ("password", "hash", "secret", "token", "credential")
+PROFILE_FIELD_LABELS = {
+    "display_name": "显示名称",
+    "email": "邮箱",
+}
+
+
+def sanitize_audit_detail(value):
+    if isinstance(value, dict):
+        sanitized = {}
+        for key, item in value.items():
+            lower_key = key.lower()
+            if lower_key != "must_change_password" and any(marker in lower_key for marker in SENSITIVE_DETAIL_MARKERS):
+                sanitized[key] = "[REDACTED]"
+            else:
+                sanitized[key] = sanitize_audit_detail(item)
+        return sanitized
+
+    if isinstance(value, list):
+        return [sanitize_audit_detail(item) for item in value]
+
+    return value
+
+
+def format_role_list(role_names):
+    if not role_names:
+        return "无角色"
+    return "、".join(role_names)
+
 
 class RoleSerializer(serializers.ModelSerializer):
     modules = ModuleSerializer(many=True, read_only=True)
@@ -174,6 +203,42 @@ class AuditLogSerializer(serializers.ModelSerializer):
     operator_name = serializers.CharField(source="operator.get_username", read_only=True)
     target_username = serializers.CharField(source="target_user.get_username", read_only=True)
     action_display = serializers.CharField(source="get_action_display", read_only=True)
+    detail = serializers.SerializerMethodField()
+    summary = serializers.SerializerMethodField()
+
+    def get_detail(self, obj):
+        return sanitize_audit_detail(obj.detail or {})
+
+    def get_summary(self, obj):
+        detail = sanitize_audit_detail(obj.detail or {})
+        operator = obj.operator.get_username() if obj.operator else "系统"
+        target = obj.target_user.get_username() if obj.target_user else detail.get("username") or "目标账号"
+
+        if obj.action == "create_account":
+            return f"管理员 {operator} 创建了账号 {target}"
+        if obj.action == "enable_account":
+            return f"管理员 {operator} 启用了 {target}"
+        if obj.action == "disable_account":
+            return f"管理员 {operator} 停用了 {target}"
+        if obj.action == "change_role":
+            old_roles = format_role_list(detail.get("old_roles") or [])
+            new_roles = format_role_list(detail.get("new_roles") or [])
+            if detail.get("old_roles") is not None and detail.get("new_roles") is not None:
+                return f"管理员 {operator} 将 {target} 的角色从「{old_roles}」调整为「{new_roles}」"
+            return f"管理员 {operator} 调整了 {target} 的角色为「{new_roles}」"
+        if obj.action == "reset_password":
+            return f"管理员 {operator} 重置了 {target} 的密码"
+        if obj.action == "update_profile":
+            field_labels = [
+                PROFILE_FIELD_LABELS.get(field, field)
+                for field in detail.get("fields", [])
+            ]
+            if field_labels:
+                return f"管理员 {operator} 修改了 {target} 的资料（{'、'.join(field_labels)}）"
+            return f"管理员 {operator} 修改了 {target} 的资料"
+        if obj.action == "force_change_password":
+            return f"用户 {operator} 修改了自己的密码"
+        return f"{operator} 执行了{obj.get_action_display()}操作"
 
     class Meta:
         model = AuditLog
@@ -181,6 +246,7 @@ class AuditLogSerializer(serializers.ModelSerializer):
             "id",
             "action",
             "action_display",
+            "summary",
             "operator",
             "operator_name",
             "target_user",

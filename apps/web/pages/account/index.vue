@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getAuditDetailRows, getAuditResultLabel, getAuditSummary } from "~/utils/auditLog"
+
 definePageMeta({
   layout: "shell",
   requiresAuth: true
@@ -239,19 +241,6 @@ function toggleRole(roleId: number) {
   }
 }
 
-function getActionLabel(action: string) {
-  const labels: Record<string, string> = {
-    create_account: "创建账号",
-    enable_account: "启用账号",
-    disable_account: "停用账号",
-    change_role: "变更角色",
-    reset_password: "重置密码",
-    force_change_password: "强制改密",
-    update_profile: "更新资料"
-  }
-  return labels[action] || action
-}
-
 function formatDate(dateStr: string) {
   if (!dateStr) return ""
   const date = new Date(dateStr)
@@ -437,8 +426,8 @@ watch(searchQuery, () => {
       <div class="audit-table">
         <div class="audit-header">
           <div>时间</div>
-          <div>操作</div>
-          <div>操作人</div>
+          <div>审计内容</div>
+          <div>追溯详情</div>
           <div>结果</div>
         </div>
 
@@ -449,10 +438,29 @@ watch(searchQuery, () => {
         </div>
         
         <div v-else v-for="log in auditLogs" :key="log.id" class="audit-row">
-          <div>{{ formatDate(log.created_at) }}</div>
-          <div>{{ getActionLabel(log.action) }}</div>
-          <div>{{ log.operator_name || "-" }}</div>
-          <div><span class="status-badge active">成功</span></div>
+          <div class="audit-time">
+            <span class="audit-cell-label">时间</span>
+            <span>{{ formatDate(log.created_at) }}</span>
+          </div>
+          <div class="audit-content">
+            <span class="audit-cell-label">审计内容</span>
+            <div class="audit-summary">{{ getAuditSummary(log) }}</div>
+          </div>
+          <div class="audit-trace">
+            <span class="audit-cell-label">追溯详情</span>
+            <div v-if="getAuditDetailRows(log).length" class="audit-detail-list">
+              <span v-for="item in getAuditDetailRows(log)" :key="item" class="audit-detail-chip">
+                {{ item }}
+              </span>
+            </div>
+            <span v-else class="text-muted">无补充详情</span>
+          </div>
+          <div class="audit-result">
+            <span class="audit-cell-label">结果</span>
+            <span :class="['status-badge', log.result === 'success' || !log.result ? 'active' : 'disabled']">
+              {{ getAuditResultLabel(log.result) }}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -1048,10 +1056,42 @@ watch(searchQuery, () => {
   padding: 12px 16px;
   border-bottom: 1px solid var(--line-soft);
   font-size: 14px;
+  align-items: start;
 }
 
 .audit-row:last-child {
   border-bottom: none;
+}
+
+.audit-summary {
+  color: var(--ink);
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.audit-detail-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.audit-detail-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--copy);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.audit-cell-label {
+  display: none;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 /* Loading and empty states */
@@ -1269,6 +1309,23 @@ watch(searchQuery, () => {
   .audit-row {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+
+  .audit-header {
+    display: none;
+  }
+
+  .audit-row {
+    padding: 16px;
+  }
+
+  .audit-cell-label {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .audit-detail-list {
+    gap: 6px;
   }
   
   .role-cards {

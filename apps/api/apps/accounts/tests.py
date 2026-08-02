@@ -5,6 +5,7 @@ from rest_framework.test import APIClient
 import os
 
 from apps.accounts.models import AuditLog, Role, UserProfile, UserRole
+from apps.accounts.serializers import AuditLogSerializer
 from apps.core.authentication import build_auth_token
 from apps.modules.models import Module
 
@@ -290,11 +291,13 @@ class AuditLogAPITests(TestCase):
             is_staff=True,
         )
         self.admin_token = build_auth_token(self.admin)
+        self.target_user = User.objects.create_user(username="ordinary_user", password="ordinarypass123")
         
         AuditLog.objects.create(
             action="create_account",
             operator=self.admin,
-            detail={"username": "testuser"},
+            target_user=self.target_user,
+            detail={"username": "ordinary_user", "roles": ["游客"]},
         )
 
     def test_admin_list_audit_logs(self):
@@ -302,6 +305,69 @@ class AuditLogAPITests(TestCase):
         response = self.client.get("/api/v1/accounts/admin/audit-logs/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data["logs"]), 1)
+
+    def test_audit_log_serializer_builds_human_readable_summary(self):
+        log = AuditLog.objects.create(
+            action="change_role",
+            operator=self.admin,
+            target_user=self.target_user,
+            detail={
+                "old_roles": ["游客"],
+                "new_roles": ["AI 股票投资者"],
+            },
+        )
+
+        data = AuditLogSerializer(log).data
+
+        self.assertEqual(
+            data["summary"],
+            "管理员 admin 将 ordinary_user 的角色从「游客」调整为「AI 股票投资者」",
+        )
+
+    def test_audit_log_serializer_hides_sensitive_reset_password_detail(self):
+        log = AuditLog.objects.create(
+            action="reset_password",
+            operator=self.admin,
+            target_user=self.target_user,
+            detail={
+                "must_change_password": True,
+                "new_password": "plaintext",
+                "password_hash": "hashvalue",
+                "credential_token": "tokenvalue",
+            },
+        )
+
+        data = AuditLogSerializer(log).data
+
+        self.assertEqual(data["summary"], "管理员 admin 重置了 ordinary_user 的密码")
+        self.assertEqual(data["detail"]["must_change_password"], True)
+        self.assertEqual(data["detail"]["new_password"], "[REDACTED]")
+        self.assertEqual(data["detail"]["password_hash"], "[REDACTED]")
+        self.assertEqual(data["detail"]["credential_token"], "[REDACTED]")
+
+    def test_admin_update_user_profile_writes_readable_audit_log(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
+
+        response = self.client.patch(
+            f"/api/v1/accounts/admin/users/{self.target_user.id}/",
+            {
+                "profile": {
+                    "display_name": "新名称",
+                    "email": "new@example.com",
+                }
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        log = AuditLog.objects.filter(action="update_profile", target_user=self.target_user).latest("created_at")
+        data = AuditLogSerializer(log).data
+
+        self.assertEqual(
+            data["summary"],
+            "管理员 admin 修改了 ordinary_user 的资料（显示名称、邮箱）",
+        )
+        self.assertEqual(data["detail"]["fields"], ["display_name", "email"])
 
 
 class SeedRolesCommandTests(TestCase):
