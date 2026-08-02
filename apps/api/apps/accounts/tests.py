@@ -87,6 +87,8 @@ class ChangePasswordAPITests(TestCase):
 class AdminUserAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
+        self.admin_role = Role.objects.get(code="admin")
+        self.guest_role = Role.objects.get(code="guest")
         self.admin = User.objects.create_user(
             username="admin",
             password="adminpass123",
@@ -94,6 +96,15 @@ class AdminUserAPITests(TestCase):
         )
         self.admin_token = build_auth_token(self.admin)
         UserProfile.objects.create(user=self.admin, must_change_password=False)
+        UserRole.objects.get_or_create(user=self.admin, role=self.admin_role)
+
+        self.second_admin = User.objects.create_user(
+            username="secondadmin",
+            password="secondpass123",
+            is_staff=True,
+        )
+        UserProfile.objects.create(user=self.second_admin, must_change_password=False)
+        UserRole.objects.get_or_create(user=self.second_admin, role=self.admin_role)
         
         self.normal_user = User.objects.create_user(
             username="normaluser",
@@ -110,7 +121,7 @@ class AdminUserAPITests(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
         response = self.client.get("/api/v1/accounts/admin/users/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data["users"]), 2)
+        self.assertEqual(len(response.data["users"]), 3)
 
     def test_admin_list_users_returns_roles(self):
         """验证管理员用户列表返回 roles 字段"""
@@ -122,8 +133,8 @@ class AdminUserAPITests(TestCase):
         # 查找 admin 用户并验证 roles 字段
         admin_data = next(u for u in response.data["users"] if u["username"] == "admin")
         self.assertIsNotNone(admin_data.get("roles"))
-        self.assertEqual(len(admin_data["roles"]), 1)
-        self.assertEqual(admin_data["roles"][0]["code"], "test_role")
+        role_codes = {role["code"] for role in admin_data["roles"]}
+        self.assertEqual(role_codes, {"admin", "test_role"})
 
     def test_admin_detail_user_returns_roles(self):
         """验证管理员用户详情返回 roles 字段"""
@@ -222,6 +233,24 @@ class AdminUserAPITests(TestCase):
         self.normal_user.refresh_from_db()
         self.assertTrue(self.normal_user.check_password("resetpass123"))
 
+    def test_admin_cannot_remove_own_last_active_admin_role(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
+        self.client.post(f"/api/v1/accounts/admin/users/{self.second_admin.id}/disable/")
+
+        response = self.client.patch(
+            f"/api/v1/accounts/admin/users/{self.admin.id}/",
+            {"role_ids": [self.guest_role.id]},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.admin.refresh_from_db()
+        self.assertTrue(self.admin.is_staff)
+        self.assertEqual(
+            list(self.admin.user_roles.values_list("role__code", flat=True)),
+            ["admin"],
+        )
+
 
 @override_settings(
     CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}},
@@ -281,6 +310,8 @@ class SeedRolesCommandTests(TestCase):
         self.comic = Module.objects.create(code="comic", name="漫剧", sort_order=1)
         self.stock = Module.objects.create(code="stock", name="股票", sort_order=2)
         self.blog = Module.objects.create(code="blog", name="内容库", sort_order=3)
+        self.admin_role = Role.objects.get(code="admin")
+        self.guest_role = Role.objects.get(code="guest")
         self.original_admin_password = os.environ.get("ADMIN_PASSWORD")
         os.environ["ADMIN_PASSWORD"] = "newpass123"
         self.addCleanup(self.restore_admin_password)
@@ -292,19 +323,18 @@ class SeedRolesCommandTests(TestCase):
             os.environ["ADMIN_PASSWORD"] = self.original_admin_password
 
     def test_seed_roles_repairs_existing_admin_modules(self):
-        admin_role = Role.objects.get(code="admin")
-        admin_role.name = "管理员旧数据"
-        admin_role.description = "旧管理员角色"
-        admin_role.sort_order = 99
-        admin_role.save()
-        admin_role.modules.set([self.comic])
+        self.admin_role.name = "管理员旧数据"
+        self.admin_role.description = "旧管理员角色"
+        self.admin_role.sort_order = 99
+        self.admin_role.save()
+        self.admin_role.modules.set([self.comic])
 
         call_command("seed_roles", admin_username="zhangwei")
 
-        admin_role.refresh_from_db()
-        self.assertTrue(self.admin.user_roles.filter(role=admin_role).exists())
+        self.admin_role.refresh_from_db()
+        self.assertTrue(self.admin.user_roles.filter(role=self.admin_role).exists())
         self.assertEqual(
-            list(admin_role.modules.order_by("sort_order").values_list("code", flat=True)),
+            list(self.admin_role.modules.order_by("sort_order").values_list("code", flat=True)),
             ["comic", "stock", "blog"],
         )
 
@@ -314,14 +344,35 @@ class SeedRolesCommandTests(TestCase):
 
         call_command("seed_roles", admin_username="zhangwei")
 
-        admin_role = Role.objects.get(code="admin")
         content_role = Role.objects.get(code="content_creator")
 
         self.assertEqual(
-            list(admin_role.modules.order_by("sort_order").values_list("code", flat=True)),
+            list(self.admin_role.modules.order_by("sort_order").values_list("code", flat=True)),
             ["comic", "stock", "content"],
         )
         self.assertEqual(
             list(content_role.modules.values_list("code", flat=True)),
             [content.code],
+        )
+
+    def test_seed_roles_restores_configured_admin_account_state(self):
+        self.admin.is_active = False
+        self.admin.is_staff = False
+        self.admin.save()
+        UserRole.objects.filter(user=self.admin).delete()
+        UserRole.objects.create(user=self.admin, role=self.guest_role)
+
+        call_command("seed_roles", admin_username="zhangwei")
+
+        self.admin.refresh_from_db()
+        self.assertTrue(self.admin.is_active)
+        self.assertTrue(self.admin.is_staff)
+        self.assertTrue(self.admin.check_password("newpass123"))
+        self.assertEqual(
+            list(self.admin.user_roles.values_list("role__code", flat=True)),
+            ["admin"],
+        )
+        self.assertEqual(
+            list(self.admin_role.modules.order_by("sort_order").values_list("code", flat=True)),
+            ["comic", "stock", "blog"],
         )

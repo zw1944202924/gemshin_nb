@@ -66,6 +66,11 @@ class Command(BaseCommand):
 
         return modules
 
+    def sync_admin_roles(self, user, admin_role):
+        # 核验管理员账号以 admin 角色为准，移除被污染残留的非管理员角色。
+        UserRole.objects.filter(user=user).exclude(role=admin_role).delete()
+        UserRole.objects.get_or_create(user=user, role=admin_role)
+
     def add_arguments(self, parser):
         parser.add_argument(
             "--admin-username",
@@ -137,6 +142,7 @@ class Command(BaseCommand):
             )
             self.stdout.write(self.style.SUCCESS(f"用户 {admin_username} 创建成功"))
 
+        user.is_active = True
         user.is_staff = True
         user.set_password(admin_password)
         user.save()
@@ -149,6 +155,6 @@ class Command(BaseCommand):
 
         # 分配管理员角色
         admin_role = Role.objects.get(code="admin")
-        UserRole.objects.get_or_create(user=user, role=admin_role)
+        self.sync_admin_roles(user, admin_role)
 
         self.stdout.write(self.style.SUCCESS(f"管理员 {admin_username} 设置完成"))

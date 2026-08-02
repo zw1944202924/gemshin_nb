@@ -162,9 +162,10 @@ class AdminUserDetailView(APIView):
 
         return Response(UserSerializer(user).data)
 
+    @transaction.atomic
     def patch(self, request, user_id):
         try:
-            user = User.objects.get(id=user_id)
+            user = User.objects.select_for_update().get(id=user_id)
         except User.DoesNotExist:
             return Response({"detail": "用户不存在"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -180,31 +181,31 @@ class AdminUserDetailView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             
-            # 检查是否包含管理员角色
+            # 检查更新后的角色集合是否包含管理员角色
             has_admin_role = existing_roles.filter(code="admin").exists()
-            
-            # 如果用户当前是管理员，但新角色不包含 admin，需要检查是否会导致 0 个管理员
-            if user.is_staff and not has_admin_role:
-                # 计算其他活跃管理员数量（排除当前用户）
-                other_active_admin_count = User.objects.filter(
-                    is_staff=True, is_active=True
+
+            # 锁定当前活跃管理员集合，避免角色变更把系统打成 0 管理员。
+            if user.is_active and user.is_staff and not has_admin_role:
+                other_active_admin_count = User.objects.select_for_update().filter(
+                    is_staff=True,
+                    is_active=True,
                 ).exclude(id=user.id).count()
-                
+
                 if other_active_admin_count < 1:
                     return Response(
                         {"detail": "不能移除最后一个管理员的角色，否则系统将没有管理员"},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
-            
+
             user.user_roles.all().delete()
             for role in existing_roles:
                 UserRole.objects.create(user=user, role=role)
-            
+
             # 更新 is_staff 状态
             if user.is_staff != has_admin_role:
                 user.is_staff = has_admin_role
                 user.save()
-            
+
             log_audit(request, "change_role", user, {
                 "new_roles": [r.name for r in existing_roles],
             })
