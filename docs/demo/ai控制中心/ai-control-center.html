@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gemshin_nb AI控制中心</title>
+    <link rel="stylesheet" href="./ai-control-center.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand">
+            <span class="brand-mark"></span>
+            <span>gemshin_nb</span>
+          </div>
+          <nav class="topnav">
+            <a href="../homepage-demo-a.html">首页</a>
+            <a href="../module-center-demo.html">模块中心</a>
+            <a href="../personal-center-demo.html">个人中心</a>
+            <a class="active" href="./ai-control-center.html">AI控制中心</a>
+          </nav>
+          <div class="top-actions">
+            <span class="user-greeting">张炜，欢迎回来</span>
+            <a class="primary-link" href="#tasks">查看进行中任务</a>
+          </div>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <aside class="sidebar">
+          <div class="sidebar-group">
+            <div class="label">平台级入口</div>
+            <div class="navlist">
+              <a class="navitem" href="../homepage-demo-a.html">返回平台首页</a>
+              <a class="navitem" href="../module-center-demo.html">切到模块中心</a>
+              <a class="navitem" href="../personal-center-demo.html">查看个人中心</a>
+            </div>
+          </div>
+
+          <div class="sidebar-group">
+            <div class="label">页面目录</div>
+            <div class="navlist">
+              <a class="navitem active" href="#overview">AI 总览</a>
+              <a class="navitem" href="#configuration">统一 AI 配置</a>
+              <a class="navitem" href="#qa">账户问答</a>
+              <a class="navitem" href="#usage">模块 AI 使用汇总</a>
+              <a class="navitem" href="#tasks">进行中任务</a>
+              <a class="navitem" href="#states">关键状态</a>
+            </div>
+            <p class="sidebar-note">本轮收口为单一平台一级页面。模型、Prompt、调用记录等旧内容只以内部分区和能力卡片存在，不再拆成四个并列平台页面。</p>
+          </div>
+        </aside>
+
+        <main class="main">
+          <section class="hero" id="overview">
+            <div class="page-label">平台一级页面 / AI控制中心</div>
+            <div class="hero-grid">
+              <div class="hero-copy">
+                <h1>统一 AI 配置、账户问答、模块使用汇总与任务状态</h1>
+                <p>AI控制中心是 gemshin_nb 的单一平台入口。它不代替模块工作台，而是提供一处统一的 AI 能力控制面，用来管理跨模块配置、查询账户信息、观察模块 AI 使用情况，并在任务波动时给出清晰反馈。</p>
+                <div class="hero-actions">
+                  <a class="button-primary" href="#configuration">查看统一配置</a>
+                  <a class="button-secondary" href="#qa">打开账户问答</a>
+                </div>
+                <div class="hero-badges">
+                  <span class="hero-badge">统一应用到有权限的所有模块</span>
+                  <span class="hero-badge">审核前仅交付静态设计</span>
+                </div>
+              </div>
+
+              <div class="hero-panel">
+                <h2>首屏必须回答的三件事</h2>
+                <p>这页当前是否可用、我能控制什么、哪些任务正占用 AI 资源。通过平台壳层下的概览和可点击分区，用户不必先进入某个业务模块再理解平台 AI 的整体状态。</p>
+                <div class="summary-row">
+                  <div class="summary-card">
+                    <strong>3</strong>
+                    <span>已接入模块</span>
+                    <div class="subtle">AI动画、AI股票分析、个人内容库</div>
+                  </div>
+                  <div class="summary-card">
+                    <strong>7</strong>
+                    <span>进行中任务</span>
+                    <div class="subtle">2 条需要人工干预</div>
+                  </div>
+                  <div class="summary-card">
+                    <strong>2</strong>
+                    <span>待补配置</span>
+                    <div class="subtle">1 条无权限、1 条未启用</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="configuration">
+            <div class="section-header">
+              <div>
+                <div class="label">统一 AI 配置</div>
+                <h2>配置一次，按权限作用到可用模块</h2>
+                <p>这里不展开成单独的模型配置或 Prompt 配置页面，而是收成统一配置面。首版静态 Demo 重点表达跨模块共用配置、权限范围、默认策略和缺口提醒。</p>
+              </div>
+              <p class="section-note">对照旧方案：模型 / Prompt / 成本 / 调用日志都退回为页面内部卡片，而非平台一级页面。</p>
+            </div>
+
+            <div class="cards">
+              <article class="card">
+                <h3>默认模型与调用策略</h3>
+                <p>用户可为文本、图像、视频、分析四类能力设置默认模型与降级顺序。设置生效后，拥有权限的模块直接继承，无需各模块重复维护。</p>
+                <div class="meta-list">
+                  <span>文本：gpt-4.1</span>
+                  <span>图像：seedream-image-pro</span>
+                  <span>视频：待二次确认</span>
+                </div>
+              </article>
+              <article class="card">
+                <h3>Prompt 模版与共享规则</h3>
+                <p>高频提示词按“平台通用 / 模块专用 / 用户私有”三层归类。平台通用模板默认开放给有权限模块，模块专用模板避免误用到无关场景。</p>
+                <div class="meta-list">
+                  <span>通用模板 6 条</span>
+                  <span>模块专用 4 条</span>
+                  <span>私有草稿 2 条</span>
+                </div>
+              </article>
+              <article class="card">
+                <h3>额度、成本与提醒</h3>
+                <p>额度规则与预警阈值在这里统一设置。用户不需要分别进入各模块核对余额，只需看当前剩余额度、今日成本和自动暂停条件。</p>
+                <div class="meta-list">
+                  <span>本日成本 186 元</span>
+                  <span>预算提醒 80%</span>
+                  <span>视频额度偏紧</span>
+                </div>
+              </article>
+              <article class="card">
+                <h3>权限范围与启用模块</h3>
+                <p>同一套 AI 配置并不自动作用到所有模块。这里明确展示模块是否已授权、是否已启用，以及缺少权限时用户会在对应模块看到什么。</p>
+                <div class="meta-list">
+                  <span>AI动画：已启用</span>
+                  <span>股票分析：已授权未配置</span>
+                  <span>个人内容库：无权限</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="section" id="qa">
+            <div class="section-header">
+              <div>
+                <div class="label">账户问答</div>
+                <h2>用对话查询当前账户与 AI 资源情况</h2>
+                <p>账户问答是平台级补充入口。它不替代正式配置面，但能让用户快速问“我今天还剩多少额度”“哪个模块正在跑任务”“为什么某模块没法用视频模型”。</p>
+              </div>
+              <p class="section-note">只交付静态问答体验，不接真实 AI 服务，也不引入 iframe 或外部页面。</p>
+            </div>
+
+            <div class="qa-layout">
+              <div class="qa-panel">
+                <div class="qa-dialog">
+                  <div class="bubble user">
+                    <strong>你</strong>
+                    <p>我今天还能在 AI动画里继续跑几个视频任务？</p>
+                  </div>
+                  <div class="bubble assistant">
+                    <strong>AI 控制中心</strong>
+                    <p>当前视频额度还剩 32%，按最近平均单任务消耗估算，仍可继续约 5 个标准视频任务。若继续使用高分辨率模式，建议先提高预算上限。</p>
+                  </div>
+                  <div class="bubble user">
+                    <strong>你</strong>
+                    <p>为什么个人内容库没有 AI 生成入口？</p>
+                  </div>
+                  <div class="bubble assistant">
+                    <strong>AI 控制中心</strong>
+                    <p>你的账户目前未被授予个人内容库的 AI 生成权限，因此该模块仅展示查看功能。可在统一配置中申请模块启用，或联系管理员授权。</p>
+                  </div>
+                </div>
+                <div class="qa-actions">
+                  <a class="chip-link" href="#states">查看无权限状态</a>
+                  <a class="chip-link" href="#tasks">查看进行中任务</a>
+                </div>
+              </div>
+
+              <div class="qa-side">
+                <h3>推荐问题</h3>
+                <p>首版静态设计里，用可审核的推荐问题替代真实输入框行为，明确问答价值而不伪装已接好服务。</p>
+                <div class="meta-list">
+                  <span>我有哪些模块可用？</span>
+                  <span>哪个任务失败了？</span>
+                  <span>本周成本最高的是谁？</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="usage">
+            <div class="section-header">
+              <div>
+                <div class="label">模块 AI 使用汇总</div>
+                <h2>按模块看权限、配置继承和最近调用情况</h2>
+                <p>模块汇总让用户知道统一配置被哪些模块实际复用，以及哪里还存在权限缺口或空白配置，不必回到各模块独立页面逐个确认。</p>
+              </div>
+              <p class="section-note">这里是平台汇总视图，不展开模块内部工作流。</p>
+            </div>
+
+            <div class="module-grid">
+              <article class="module-card">
+                <span class="status success">已启用</span>
+                <h3>AI动画制作系统</h3>
+                <p>已继承文本、图像和视频三类默认策略，最近 24 小时调用量最高。当前主要消耗来自镜头生成与视频扩写。</p>
+                <div class="meta-list">
+                  <span>调用量 18,420</span>
+                  <span>进行中任务 4 条</span>
+                  <span>异常 2 条</span>
+                </div>
+              </article>
+
+              <article class="module-card">
+                <span class="status warning">待补配置</span>
+                <h3>AI股票分析系统</h3>
+                <p>已获得模块权限，但尚未完成分析模版和输出频率配置。系统当前只开放基础问答，不开放自动研究报告生成。</p>
+                <div class="meta-list">
+                  <span>权限已开通</span>
+                  <span>模板未完成</span>
+                  <span>最近调用 128</span>
+                </div>
+              </article>
+
+              <article class="module-card">
+                <span class="status danger">无权限</span>
+                <h3>个人博客 / 内容库</h3>
+                <p>当前账户无权在个人内容库中使用 AI 生成能力，因此只展示内容阅读与搜索，不显示生成入口。</p>
+                <div class="meta-list">
+                  <span>权限未开通</span>
+                  <span>调用记录 0</span>
+                  <span>需管理员授权</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="section" id="tasks">
+            <div class="section-header">
+              <div>
+                <div class="label">进行中任务</div>
+                <h2>正在执行、已成功和失败待处理的任务都要看得见</h2>
+                <p>任务区不是完整日志页，而是平台级队列概览：让用户快速知道哪些任务还在跑、哪些已经完成、哪些失败需要处理。</p>
+              </div>
+              <p class="section-note">与模块汇总联动，但不把任务视图拆成独立平台页面。</p>
+            </div>
+
+            <div class="task-grid">
+              <article class="task-card">
+                <h3>当前队列概览</h3>
+                <p>任务队列按优先级和模块来源混排。成功、失败和执行中状态都在此处统一透出。</p>
+                <div class="task-list">
+                  <div class="task-item">
+                    <div>
+                      <strong>AI动画 · 视频镜头生成</strong>
+                      <p>片段 12 / 18，预计剩余 9 分钟</p>
+                    </div>
+                    <span class="status warning">执行中</span>
+                  </div>
+                  <div class="task-item">
+                    <div>
+                      <strong>股票分析 · 午盘摘要</strong>
+                      <p>已生成完成，可回模块查看结果</p>
+                    </div>
+                    <span class="status success">已成功</span>
+                  </div>
+                  <div class="task-item">
+                    <div>
+                      <strong>AI动画 · 批量配音导出</strong>
+                      <p>外部语音服务超时，需要用户重试</p>
+                    </div>
+                    <span class="status danger">失败</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <h3>用户能做的处理动作</h3>
+                <p>不进入技术实施，但静态页面要明确用户可执行的后续动作：查看详情、重试失败任务、回到对应模块继续处理。</p>
+                <div class="meta-list">
+                  <span>查看详情</span>
+                  <span>重试失败</span>
+                  <span>回模块处理</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="section" id="states">
+            <div class="section-header">
+              <div>
+                <div class="label">关键状态覆盖</div>
+                <h2>未配置、无权限、无记录、任务成功与失败都要可审</h2>
+                <p>这轮验收重点之一不是页面多漂亮，而是状态是否完整。所有关键状态都在单页内部直接可见，避免审核时只能看一套默认态。</p>
+              </div>
+            </div>
+
+            <div class="state-grid">
+              <article class="state-card">
+                <span class="status warning">未配置</span>
+                <h3>统一配置未完成</h3>
+                <div class="empty-zone">
+                  <h4>先完成默认模型与预算规则</h4>
+                  <p>在至少一类能力未设置默认策略前，模块不会自动开放相应 AI 入口，页面会保留清晰引导而不是空白。</p>
+                </div>
+              </article>
+
+              <article class="state-card">
+                <span class="status danger">无权限</span>
+                <h3>账户无法访问某模块 AI</h3>
+                <div class="error-zone">
+                  <h4>你尚未获得个人内容库 AI 权限</h4>
+                  <p>页面直接说明原因，并给出“联系管理员开通”或“返回有权限模块”的建议，不伪装为接口异常。</p>
+                </div>
+              </article>
+
+              <article class="state-card">
+                <span class="status neutral">无记录</span>
+                <h3>当前没有任何调用记录</h3>
+                <div class="empty-zone">
+                  <h4>还没有模块实际开始使用 AI</h4>
+                  <p>当账户刚接入平台时，模块汇总和任务区应该说明“尚无记录”，而不是显示空表格。</p>
+                </div>
+              </article>
+
+              <article class="state-card">
+                <span class="status success">任务成功</span>
+                <h3>已成功的任务可回到模块继续</h3>
+                <p>成功态保留模块来源和下一步建议，避免用户只看到“已完成”但不知道结果落在何处。</p>
+              </article>
+
+              <article class="state-card">
+                <span class="status danger">任务失败</span>
+                <h3>失败任务明确错误来源和重试建议</h3>
+                <p>失败态说明是额度不足、外部服务超时还是无权限，不把所有失败都压成同一种红色提示。</p>
+              </article>
+
+              <article class="state-card">
+                <span class="status warning">窄屏收缩</span>
+                <h3>移动端先保留壳层、总览和任务</h3>
+                <p>窄屏下侧栏改为顺序导航，摘要卡片与状态卡改为单列，避免横向溢出或两栏卡片重叠。</p>
+              </article>
+            </div>
+          </section>
+
+          <p class="footer-note">视觉与结构对照：顶栏和品牌区延续 `homepage-demo-a.html`；模块化区块和侧栏层级参考 `module-center-demo.html`；账户问答和状态语义借用 `personal-center-demo.html` 与 `account-permissions-demo.html` 的表达方式，但全部收束为 AI控制中心这一个平台一级页面。</p>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
