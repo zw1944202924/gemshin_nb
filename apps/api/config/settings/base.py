@@ -4,7 +4,7 @@ import os
 import pymysql
 from dotenv import load_dotenv
 
-from apps.oidc.keys import get_oidc_private_key, is_test_settings_module
+from apps.oidc.keys import get_oidc_private_key, is_local_debug_environment, is_test_settings_module
 
 pymysql.install_as_MySQLdb()
 
@@ -132,7 +132,10 @@ OAUTH2_PROVIDER = {
     "OIDC_ENABLED": True,
     "OIDC_RP_INITIATED_LOGOUT_ENABLED": True,
     "OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT": False,
-    "OIDC_RSA_PRIVATE_KEY": get_oidc_private_key(allow_ephemeral=is_test_settings_module()),
+    "OIDC_RSA_PRIVATE_KEY": get_oidc_private_key(
+        allow_ephemeral=is_test_settings_module()
+        or is_local_debug_environment(debug=DEBUG, allowed_hosts=ALLOWED_HOSTS)
+    ),
     "OAUTH2_VALIDATOR_CLASS": "apps.oidc.oauth_validators.GemshinOAuth2Validator",
     "SCOPES": {
         "openid": "OpenID Connect 登录标识",

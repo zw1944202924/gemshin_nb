@@ -24,13 +24,19 @@ def is_test_settings_module():
     return os.getenv("DJANGO_SETTINGS_MODULE", "").endswith(".test")
 
 
+def is_local_debug_environment(*, debug, allowed_hosts):
+    local_hosts = {"127.0.0.1", "localhost"}
+    normalized_hosts = {host.strip() for host in allowed_hosts if host.strip()}
+    return debug and bool(normalized_hosts) and normalized_hosts.issubset(local_hosts)
+
+
 def get_oidc_private_key(*, allow_ephemeral=False):
     env_key = os.getenv("OIDC_RSA_PRIVATE_KEY", "").strip()
     if env_key:
         return _normalize_pem(env_key)
     if allow_ephemeral:
         return _generate_ephemeral_private_key()
-    raise ImproperlyConfigured("OIDC_RSA_PRIVATE_KEY is required outside test settings.")
+    raise ImproperlyConfigured("OIDC_RSA_PRIVATE_KEY is required outside local DEBUG or test settings.")
 
 
 def get_test_oidc_private_key():

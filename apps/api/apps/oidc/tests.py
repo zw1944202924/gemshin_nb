@@ -12,7 +12,12 @@ from oauth2_provider.models import get_application_model
 
 from apps.accounts.models import Role, UserProfile, UserRole
 from apps.core.authentication import build_auth_token
-from apps.oidc.keys import get_oidc_private_key, get_test_oidc_private_key, is_test_settings_module
+from apps.oidc.keys import (
+    get_oidc_private_key,
+    get_test_oidc_private_key,
+    is_local_debug_environment,
+    is_test_settings_module,
+)
 from apps.oidc.session import invalidate_user_sessions
 
 
@@ -26,6 +31,14 @@ class OidcKeyConfigTests(TestCase):
             self.assertFalse(is_test_settings_module())
             with self.assertRaisesMessage(ImproperlyConfigured, "OIDC_RSA_PRIVATE_KEY"):
                 get_oidc_private_key()
+
+    def test_local_debug_environment_allows_ephemeral_private_key(self):
+        self.assertTrue(is_local_debug_environment(debug=True, allowed_hosts=["127.0.0.1", "localhost"]))
+        with patch.dict("os.environ", {"OIDC_RSA_PRIVATE_KEY": ""}):
+            self.assertTrue(get_oidc_private_key(allow_ephemeral=True).startswith("-----BEGIN PRIVATE KEY-----"))
+
+    def test_non_local_debug_environment_does_not_allow_ephemeral_private_key(self):
+        self.assertFalse(is_local_debug_environment(debug=True, allowed_hosts=["example.com"]))
 
 
 @override_settings(CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}})
