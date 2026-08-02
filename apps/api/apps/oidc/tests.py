@@ -1,8 +1,10 @@
 import json
 from hashlib import sha256
 from urllib.parse import parse_qs, urlparse
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase, override_settings
 from jwcrypto import jwk, jwt
 from jwcrypto.common import base64url_encode
@@ -10,12 +12,20 @@ from oauth2_provider.models import get_application_model
 
 from apps.accounts.models import Role, UserProfile, UserRole
 from apps.core.authentication import build_auth_token
-from apps.oidc.keys import get_test_oidc_private_key
+from apps.oidc.keys import get_oidc_private_key, get_test_oidc_private_key, is_test_settings_module
 from apps.oidc.session import invalidate_user_sessions
 
 
 Application = get_application_model()
 User = get_user_model()
+
+
+class OidcKeyConfigTests(TestCase):
+    def test_missing_private_key_raises_outside_test_settings(self):
+        with patch.dict("os.environ", {"OIDC_RSA_PRIVATE_KEY": "", "DJANGO_SETTINGS_MODULE": "config.settings.base"}):
+            self.assertFalse(is_test_settings_module())
+            with self.assertRaisesMessage(ImproperlyConfigured, "OIDC_RSA_PRIVATE_KEY"):
+                get_oidc_private_key()
 
 
 @override_settings(CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}})

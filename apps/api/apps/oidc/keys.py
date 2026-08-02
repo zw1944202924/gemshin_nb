@@ -1,6 +1,7 @@
 from functools import lru_cache
 import os
 
+from django.core.exceptions import ImproperlyConfigured
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
@@ -19,13 +20,17 @@ def _generate_ephemeral_private_key():
     ).decode("utf-8")
 
 
-def get_oidc_private_key(*, debug=False):
+def is_test_settings_module():
+    return os.getenv("DJANGO_SETTINGS_MODULE", "").endswith(".test")
+
+
+def get_oidc_private_key(*, allow_ephemeral=False):
     env_key = os.getenv("OIDC_RSA_PRIVATE_KEY", "").strip()
     if env_key:
         return _normalize_pem(env_key)
-    if debug:
+    if allow_ephemeral:
         return _generate_ephemeral_private_key()
-    return ""
+    raise ImproperlyConfigured("OIDC_RSA_PRIVATE_KEY is required outside test settings.")
 
 
 def get_test_oidc_private_key():
