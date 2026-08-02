@@ -14,7 +14,7 @@ ROLES = [
         "name": "管理员",
         "code": "admin",
         "description": "账户管理 + 所有业务模块",
-        "modules": ["comic", "stock", "blog"],
+        "module_groups": [["comic"], ["stock"], ["blog", "content"]],
         "is_system": True,
         "sort_order": 1,
     },
@@ -22,7 +22,7 @@ ROLES = [
         "name": "AI 漫剧制作者",
         "code": "comic_creator",
         "description": "AI 漫剧制作模块",
-        "modules": ["comic"],
+        "module_groups": [["comic"]],
         "is_system": True,
         "sort_order": 2,
     },
@@ -30,7 +30,7 @@ ROLES = [
         "name": "AI 股票投资者",
         "code": "stock_investor",
         "description": "AI 股票分析模块",
-        "modules": ["stock"],
+        "module_groups": [["stock"]],
         "is_system": True,
         "sort_order": 3,
     },
@@ -38,7 +38,7 @@ ROLES = [
         "name": "AI 内容创作者",
         "code": "content_creator",
         "description": "个人博客 / 个人内容库",
-        "modules": ["blog"],
+        "module_groups": [["blog", "content"]],
         "is_system": True,
         "sort_order": 4,
     },
@@ -46,7 +46,7 @@ ROLES = [
         "name": "游客",
         "code": "guest",
         "description": "无业务模块",
-        "modules": [],
+        "module_groups": [],
         "is_system": True,
         "sort_order": 5,
     },
@@ -55,6 +55,16 @@ ROLES = [
 
 class Command(BaseCommand):
     help = "初始化角色数据并设置管理员账号"
+
+    def resolve_modules(self, module_groups):
+        modules = []
+
+        for aliases in module_groups:
+            module = Module.objects.filter(code__in=aliases).order_by("sort_order", "id").first()
+            if module:
+                modules.append(module)
+
+        return modules
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -88,12 +98,10 @@ class Command(BaseCommand):
                     "sort_order": role_data["sort_order"],
                 },
             )
-            
-            # 关联模块
-            if role_data["modules"]:
-                modules = Module.objects.filter(code__in=role_data["modules"])
-                role.modules.set(modules)
-            
+
+            # 每次重跑都按当前模块真实 code 重建角色模块集合，修正旧环境的脏数据。
+            role.modules.set(self.resolve_modules(role_data["module_groups"]))
+
             status = "创建" if created else "更新"
             self.stdout.write(self.style.SUCCESS(f"{status}角色: {role.name}"))
 

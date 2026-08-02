@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
+import os
 
 from apps.accounts.models import AuditLog, Role, UserProfile, UserRole
 from apps.core.authentication import build_auth_token
@@ -271,3 +273,55 @@ class AuditLogAPITests(TestCase):
         response = self.client.get("/api/v1/accounts/admin/audit-logs/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data["logs"]), 1)
+
+
+class SeedRolesCommandTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user(username="zhangwei", password="oldpass123")
+        self.comic = Module.objects.create(code="comic", name="漫剧", sort_order=1)
+        self.stock = Module.objects.create(code="stock", name="股票", sort_order=2)
+        self.blog = Module.objects.create(code="blog", name="内容库", sort_order=3)
+        self.original_admin_password = os.environ.get("ADMIN_PASSWORD")
+        os.environ["ADMIN_PASSWORD"] = "newpass123"
+        self.addCleanup(self.restore_admin_password)
+
+    def restore_admin_password(self):
+        if self.original_admin_password is None:
+            os.environ.pop("ADMIN_PASSWORD", None)
+        else:
+            os.environ["ADMIN_PASSWORD"] = self.original_admin_password
+
+    def test_seed_roles_repairs_existing_admin_modules(self):
+        admin_role = Role.objects.get(code="admin")
+        admin_role.name = "管理员旧数据"
+        admin_role.description = "旧管理员角色"
+        admin_role.sort_order = 99
+        admin_role.save()
+        admin_role.modules.set([self.comic])
+
+        call_command("seed_roles", admin_username="zhangwei")
+
+        admin_role.refresh_from_db()
+        self.assertTrue(self.admin.user_roles.filter(role=admin_role).exists())
+        self.assertEqual(
+            list(admin_role.modules.order_by("sort_order").values_list("code", flat=True)),
+            ["comic", "stock", "blog"],
+        )
+
+    def test_seed_roles_supports_content_module_alias(self):
+        self.blog.delete()
+        content = Module.objects.create(code="content", name="内容库", sort_order=3)
+
+        call_command("seed_roles", admin_username="zhangwei")
+
+        admin_role = Role.objects.get(code="admin")
+        content_role = Role.objects.get(code="content_creator")
+
+        self.assertEqual(
+            list(admin_role.modules.order_by("sort_order").values_list("code", flat=True)),
+            ["comic", "stock", "content"],
+        )
+        self.assertEqual(
+            list(content_role.modules.values_list("code", flat=True)),
+            [content.code],
+        )
