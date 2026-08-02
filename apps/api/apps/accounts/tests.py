@@ -209,6 +209,43 @@ class AdminUserAPITests(TestCase):
         self.assertIn("test_role", role_codes)
         self.assertIn("new_role", role_codes)
 
+    def test_admin_update_profile_with_unchanged_role_ids_does_not_write_change_role_audit(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
+        UserRole.objects.create(user=self.normal_user, role=self.role)
+
+        response = self.client.patch(
+            f"/api/v1/accounts/admin/users/{self.normal_user.id}/",
+            {
+                "role_ids": [self.role.id],
+                "profile": {"display_name": "仅修改资料"},
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            AuditLog.objects.filter(action="change_role", target_user=self.normal_user).count(),
+            0,
+        )
+        profile_log = AuditLog.objects.get(action="update_profile", target_user=self.normal_user)
+        self.assertEqual(profile_log.detail["fields"], ["display_name"])
+
+    def test_admin_update_user_roles_still_writes_change_role_audit_when_role_set_changes(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
+        UserRole.objects.create(user=self.normal_user, role=self.role)
+        new_role = Role.objects.create(name="新角色", code="new_role")
+
+        response = self.client.patch(
+            f"/api/v1/accounts/admin/users/{self.normal_user.id}/",
+            {"role_ids": [self.role.id, new_role.id]},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        log = AuditLog.objects.get(action="change_role", target_user=self.normal_user)
+        self.assertEqual(log.detail["old_roles"], ["测试角色"])
+        self.assertEqual(log.detail["new_roles"], ["测试角色", "新角色"])
+
     def test_admin_disable_user(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
         response = self.client.post(f"/api/v1/accounts/admin/users/{self.normal_user.id}/disable/")

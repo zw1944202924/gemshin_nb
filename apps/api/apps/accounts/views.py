@@ -171,7 +171,9 @@ class AdminUserDetailView(APIView):
 
         role_ids = request.data.get("role_ids")
         if role_ids is not None:
-            old_roles = list(user.user_roles.select_related("role").values_list("role__name", flat=True))
+            current_user_roles = list(user.user_roles.select_related("role").all())
+            old_roles = [user_role.role.name for user_role in current_user_roles]
+            current_role_ids = {user_role.role_id for user_role in current_user_roles}
             # 批量校验角色是否存在，避免 500 错误
             existing_roles = Role.objects.filter(id__in=role_ids)
             if existing_roles.count() != len(role_ids):
@@ -181,36 +183,42 @@ class AdminUserDetailView(APIView):
                     {"detail": f"以下角色不存在: {missing_ids}"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            
+
+            ordered_roles = {role.id: role for role in existing_roles}
+            ordered_existing_roles = [ordered_roles[role_id] for role_id in role_ids]
+            new_role_ids = set(ordered_roles.keys())
+            roles_changed = current_role_ids != new_role_ids
+
             # 检查更新后的角色集合是否包含管理员角色
-            has_admin_role = existing_roles.filter(code="admin").exists()
+            has_admin_role = any(role.code == "admin" for role in ordered_existing_roles)
 
-            # 锁定当前活跃管理员集合，避免角色变更把系统打成 0 管理员。
-            if user.is_active and user.is_staff and not has_admin_role:
-                other_active_admin_count = User.objects.select_for_update().filter(
-                    is_staff=True,
-                    is_active=True,
-                ).exclude(id=user.id).count()
+            if roles_changed:
+                # 锁定当前活跃管理员集合，避免角色变更把系统打成 0 管理员。
+                if user.is_active and user.is_staff and not has_admin_role:
+                    other_active_admin_count = User.objects.select_for_update().filter(
+                        is_staff=True,
+                        is_active=True,
+                    ).exclude(id=user.id).count()
 
-                if other_active_admin_count < 1:
-                    return Response(
-                        {"detail": "不能移除最后一个管理员的角色，否则系统将没有管理员"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+                    if other_active_admin_count < 1:
+                        return Response(
+                            {"detail": "不能移除最后一个管理员的角色，否则系统将没有管理员"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
 
-            user.user_roles.all().delete()
-            for role in existing_roles:
-                UserRole.objects.create(user=user, role=role)
+                user.user_roles.all().delete()
+                for role in ordered_existing_roles:
+                    UserRole.objects.create(user=user, role=role)
 
-            # 更新 is_staff 状态
-            if user.is_staff != has_admin_role:
-                user.is_staff = has_admin_role
-                user.save()
+                # 更新 is_staff 状态
+                if user.is_staff != has_admin_role:
+                    user.is_staff = has_admin_role
+                    user.save()
 
-            log_audit(request, "change_role", user, {
-                "old_roles": old_roles,
-                "new_roles": [r.name for r in existing_roles],
-            })
+                log_audit(request, "change_role", user, {
+                    "old_roles": old_roles,
+                    "new_roles": [role.name for role in ordered_existing_roles],
+                })
 
         profile_data = request.data.get("profile", {})
         if profile_data:
