@@ -4,8 +4,11 @@ import secrets
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
+from django.utils import timezone
 from rest_framework import exceptions
 from rest_framework.authentication import BaseAuthentication, get_authorization_header
+
+from apps.accounts.models import UserProfile
 
 
 TOKEN_CACHE_PREFIX = "core.auth.token"
@@ -21,7 +24,7 @@ def build_auth_token(user):
     token = secrets.token_urlsafe(32)
     cache.set(
         _cache_key(token),
-        {"user_id": user.pk},
+        {"user_id": user.pk, "issued_at": int(timezone.now().timestamp())},
         timeout=settings.AUTH_TOKEN_MAX_AGE_SECONDS,
     )
     return token
@@ -44,6 +47,11 @@ def resolve_user_from_token(token):
         user = User.objects.get(pk=user_id, is_active=True)
     except User.DoesNotExist as exc:
         raise exceptions.AuthenticationFailed("登录态无效或已过期") from exc
+
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    issued_at = payload.get("issued_at")
+    if profile.auth_revoked_at and (issued_at is None or issued_at <= int(profile.auth_revoked_at.timestamp())):
+        raise exceptions.AuthenticationFailed("登录态无效或已过期")
 
     return user
 

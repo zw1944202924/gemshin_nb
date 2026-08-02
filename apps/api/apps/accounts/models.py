@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+import uuid
 
 from apps.core.models import TimestampedModel
 
@@ -65,8 +66,10 @@ class UserProfile(TimestampedModel):
     )
     display_name = models.CharField("显示名称", max_length=100, blank=True)
     email = models.EmailField("邮箱", blank=True)
+    oidc_subject = models.UUIDField("OIDC Subject", default=uuid.uuid4, unique=True, editable=False)
     must_change_password = models.BooleanField("首次登录强制改密", default=False)
     last_password_change = models.DateTimeField("上次改密时间", null=True, blank=True)
+    auth_revoked_at = models.DateTimeField("登录态统一失效时间", null=True, blank=True)
 
     # 通知偏好
     notify_account_security = models.BooleanField("账号与安全通知", default=True)

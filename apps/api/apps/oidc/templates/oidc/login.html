@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>统一身份登录</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f1ea;
+      --panel: #fffdfa;
+      --text: #1e1c1a;
+      --muted: #6e655d;
+      --border: #d8cfc3;
+      --accent: #0d6b5f;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at top, #fff8e8, var(--bg) 55%);
+      color: var(--text);
+      font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", sans-serif;
+    }
+    main {
+      width: min(420px, calc(100vw - 32px));
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--panel);
+      box-shadow: 0 18px 48px rgba(30, 28, 26, 0.08);
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+    p {
+      margin: 0 0 24px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 15px;
+    }
+    button {
+      width: 100%;
+      padding: 12px 14px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--accent);
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    ul {
+      margin: 0 0 16px;
+      padding-left: 20px;
+      color: #b42318;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>统一身份登录</h1>
+    <p>用于 OIDC 授权确认。请使用现有平台账号登录，登录后会回到原始授权请求。</p>
+    {% if form.errors %}
+    <ul>
+      {% for field in form %}
+        {% for error in field.errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+      <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <label for="id_username">用户名</label>
+      <input id="id_username" name="username" type="text" autocomplete="username" required>
+      <label for="id_password">密码</label>
+      <input id="id_password" name="password" type="password" autocomplete="current-password" required>
+      <button type="submit">登录并继续授权</button>
+    </form>
+  </main>
+</body>
+</html>

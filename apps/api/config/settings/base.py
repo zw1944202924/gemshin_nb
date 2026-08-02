@@ -4,6 +4,8 @@ import os
 import pymysql
 from dotenv import load_dotenv
 
+from apps.oidc.keys import get_oidc_private_key
+
 pymysql.install_as_MySQLdb()
 
 BASE_DIR = Path(__file__).resolve().parents[2]
@@ -23,11 +25,13 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
+    "oauth2_provider",
     "apps.core",
     "apps.accounts",
     "apps.chat",
     "apps.story",
     "apps.modules",
+    "apps.oidc",
 ]
 
 MIDDLEWARE = [
@@ -101,6 +105,10 @@ REST_FRAMEWORK = {
     ],
 }
 
+LOGIN_URL = "oidc-login"
+LOGIN_REDIRECT_URL = "/api/v1/oidc/authorize/"
+LOGOUT_REDIRECT_URL = "/api/v1/oidc/login/"
+
 AUTH_TOKEN_MAX_AGE_SECONDS = int(os.getenv("AUTH_TOKEN_MAX_AGE_SECONDS", "28800"))
 CHAT_MODEL_CODE = os.getenv("CHAT_MODEL_CODE", "deepseek-chat")
 CHAT_AUTO_TITLE_LENGTH = int(os.getenv("CHAT_AUTO_TITLE_LENGTH", "24"))
@@ -119,3 +127,24 @@ CORS_ALLOWED_ORIGINS = [
     ).split(",")
     if origin.strip()
 ]
+
+OAUTH2_PROVIDER = {
+    "OIDC_ENABLED": True,
+    "OIDC_RP_INITIATED_LOGOUT_ENABLED": True,
+    "OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT": False,
+    "OIDC_RSA_PRIVATE_KEY": get_oidc_private_key(debug=DEBUG),
+    "OAUTH2_VALIDATOR_CLASS": "apps.oidc.oauth_validators.GemshinOAuth2Validator",
+    "SCOPES": {
+        "openid": "OpenID Connect 登录标识",
+        "profile": "基础档案信息",
+        "email": "邮箱信息",
+    },
+    "DEFAULT_SCOPES": ["openid", "profile"],
+    "OIDC_RESPONSE_TYPES_SUPPORTED": ["code"],
+    "OAUTH2_RESPONSE_TYPES_SUPPORTED": ["code"],
+    "OAUTH2_GRANT_TYPES_SUPPORTED": ["authorization_code", "refresh_token"],
+    "PKCE_REQUIRED": True,
+    "COMPLIANT_BCP_RFC9700_PKCE_METHOD": True,
+    "REFRESH_TOKEN_REUSE_PROTECTION": True,
+    "ROTATE_REFRESH_TOKEN": True,
+}
