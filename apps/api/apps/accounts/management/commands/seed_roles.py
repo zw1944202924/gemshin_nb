@@ -92,6 +92,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        admin_must_change_password = os.environ.get("ADMIN_MUST_CHANGE_PASSWORD", "0") == "1"
+
         # 创建角色
         for role_data in ROLES:
             role, created = Role.objects.update_or_create(
@@ -149,8 +151,7 @@ class Command(BaseCommand):
 
         # 确保有 profile
         profile, _ = UserProfile.objects.get_or_create(user=user)
-        # 核验账号设置为不需要强制改密，因为这是初始化部署操作
-        profile.must_change_password = False
+        profile.must_change_password = admin_must_change_password
         profile.save()
 
         # 分配管理员角色

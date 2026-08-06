@@ -35,11 +35,12 @@ cp .env.production.example .env.production
 产品管理员账号由部署脚本读取 `.env.production` 后自动创建，并分配管理员角色和全部模块权限：
 
 ```bash
-ADMIN_USERNAME=admin
+ADMIN_USERNAME=jiuyouyunbai
 ADMIN_PASSWORD=替换为强密码
+ADMIN_MUST_CHANGE_PASSWORD=1
 ```
 
-部署脚本每次都会按 `.env.production` 同步该管理员账号的密码和角色权限。需要变更生产管理员密码时，修改 `ADMIN_PASSWORD` 后重新执行部署脚本。
+部署脚本每次都会按 `.env.production` 同步该管理员账号的密码和角色权限。`ADMIN_MUST_CHANGE_PASSWORD=1` 会要求管理员首次登录后修改密码。需要变更生产管理员密码时，修改 `ADMIN_PASSWORD` 后重新执行部署脚本。
 
 3. 执行部署脚本：
 
