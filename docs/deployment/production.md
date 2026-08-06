@@ -30,6 +30,22 @@ cp .env.production.example .env.production
 - `MYSQL_PASSWORD`
 - `MYSQL_ROOT_PASSWORD`
 - `DJANGO_SECRET_KEY`
+- `DJANGO_SUPERUSER_PASSWORD`
+
+生产管理员账号由部署脚本读取 `.env.production` 后自动创建：
+
+```bash
+DJANGO_SUPERUSER_USERNAME=admin
+DJANGO_SUPERUSER_EMAIL=1944202924@qq.com
+DJANGO_SUPERUSER_PASSWORD=替换为强密码
+DJANGO_SUPERUSER_RESET_PASSWORD=0
+```
+
+如果管理员账号已存在，部署脚本只会确认它具备 staff/superuser 权限，不会默认重置密码。需要主动重置密码时，临时设置：
+
+```bash
+DJANGO_SUPERUSER_RESET_PASSWORD=1
+```
 
 3. 执行部署脚本：
 

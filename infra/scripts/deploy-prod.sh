@@ -14,5 +14,6 @@ docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" build
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d mysql redis
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d api web
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec api python manage.py migrate
+docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec api python manage.py ensure_superuser
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec api python manage.py collectstatic --noinput
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" ps
