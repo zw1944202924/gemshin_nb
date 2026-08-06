@@ -40,7 +40,7 @@ ADMIN_PASSWORD=替换为强密码
 ADMIN_MUST_CHANGE_PASSWORD=1
 ```
 
-部署脚本每次都会按 `.env.production` 同步该管理员账号的密码和角色权限。`ADMIN_MUST_CHANGE_PASSWORD=1` 会要求管理员首次登录后修改密码。需要变更生产管理员密码时，修改 `ADMIN_PASSWORD` 后重新执行部署脚本。
+管理员账号不存在时，部署脚本会使用 `ADMIN_PASSWORD` 创建初始账号。管理员账号已存在时，部署脚本只同步启用状态、管理员角色和模块权限，不会覆盖已修改的密码。`ADMIN_MUST_CHANGE_PASSWORD=1` 只在首次创建该管理员账号时生效，用于要求管理员首次登录后修改密码。
 
 3. 执行部署脚本：
 
