@@ -1,0 +1,14 @@
+.git
+.env
+.env.*
+!.env.example
+!.env.production.example
+**/__pycache__/
+**/.pytest_cache/
+**/.venv/
+**/node_modules/
+**/.nuxt/
+**/.output/
+**/dist/
+mysql_data/
+*.log
