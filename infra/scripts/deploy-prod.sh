@@ -16,5 +16,4 @@ docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d api web
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec api python manage.py migrate
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec api python manage.py seed_modules
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec api python manage.py seed_roles
-docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec api python manage.py collectstatic --noinput
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" ps

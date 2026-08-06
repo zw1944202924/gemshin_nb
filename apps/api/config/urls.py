@@ -1,4 +1,3 @@
-from django.contrib import admin
 from django.core.cache import cache
 from django.db import connection
 from django.urls import include, path
@@ -40,7 +39,6 @@ class HealthView(APIView):
 
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
     path("api/v1/health/", HealthView.as_view(), name="health"),
     path("api/v1/auth/login/", LoginView.as_view(), name="auth-login"),
     path("api/v1/auth/logout/", LogoutView.as_view(), name="auth-logout"),

@@ -72,12 +72,6 @@ https://991hahahanxsm.xyz/login
 
 产品后台账号使用 `.env.production` 中的 `ADMIN_USERNAME` 和 `ADMIN_PASSWORD` 登录。
 
-如需运维排查，也可以访问 Django Admin：
-
-```text
-https://991hahahanxsm.xyz/admin/
-```
-
 ## HTTPS
 
 当前 Nginx 模板只声明 HTTP server block。生产正式开放时，需要在服务器上为 `991hahahanxsm.xyz` 签发证书，并让 Nginx 将 HTTP 跳转到 HTTPS。
@@ -95,10 +89,4 @@ git pull
 
 ```bash
 python manage.py migrate
-```
-
-静态文件由部署脚本收集：
-
-```bash
-python manage.py collectstatic --noinput
 ```
