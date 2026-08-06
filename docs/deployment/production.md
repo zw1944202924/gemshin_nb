@@ -30,22 +30,16 @@ cp .env.production.example .env.production
 - `MYSQL_PASSWORD`
 - `MYSQL_ROOT_PASSWORD`
 - `DJANGO_SECRET_KEY`
-- `DJANGO_SUPERUSER_PASSWORD`
+- `ADMIN_PASSWORD`
 
-生产管理员账号由部署脚本读取 `.env.production` 后自动创建：
-
-```bash
-DJANGO_SUPERUSER_USERNAME=admin
-DJANGO_SUPERUSER_EMAIL=1944202924@qq.com
-DJANGO_SUPERUSER_PASSWORD=替换为强密码
-DJANGO_SUPERUSER_RESET_PASSWORD=0
-```
-
-如果管理员账号已存在，部署脚本只会确认它具备 staff/superuser 权限，不会默认重置密码。需要主动重置密码时，临时设置：
+产品管理员账号由部署脚本读取 `.env.production` 后自动创建，并分配管理员角色和全部模块权限：
 
 ```bash
-DJANGO_SUPERUSER_RESET_PASSWORD=1
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=替换为强密码
 ```
+
+部署脚本每次都会按 `.env.production` 同步该管理员账号的密码和角色权限。需要变更生产管理员密码时，修改 `ADMIN_PASSWORD` 后重新执行部署脚本。
 
 3. 执行部署脚本：
 
@@ -69,13 +63,19 @@ curl http://127.0.0.1:8100/api/v1/health/
 curl http://991hahahanxsm.xyz/api/v1/health/
 ```
 
-6. 验证 Django Admin：
+6. 验证产品登录：
+
+```text
+https://991hahahanxsm.xyz/login
+```
+
+产品后台账号使用 `.env.production` 中的 `ADMIN_USERNAME` 和 `ADMIN_PASSWORD` 登录。
+
+如需运维排查，也可以访问 Django Admin：
 
 ```text
 https://991hahahanxsm.xyz/admin/
 ```
-
-使用 `.env.production` 中的 `DJANGO_SUPERUSER_USERNAME` 和 `DJANGO_SUPERUSER_PASSWORD` 登录。
 
 ## HTTPS
 
