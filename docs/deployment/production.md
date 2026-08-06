@@ -69,6 +69,14 @@ curl http://127.0.0.1:8100/api/v1/health/
 curl http://991hahahanxsm.xyz/api/v1/health/
 ```
 
+6. 验证 Django Admin：
+
+```text
+https://991hahahanxsm.xyz/admin/
+```
+
+使用 `.env.production` 中的 `DJANGO_SUPERUSER_USERNAME` 和 `DJANGO_SUPERUSER_PASSWORD` 登录。
+
 ## HTTPS
 
 当前 Nginx 模板只声明 HTTP server block。生产正式开放时，需要在服务器上为 `991hahahanxsm.xyz` 签发证书，并让 Nginx 将 HTTP 跳转到 HTTPS。
