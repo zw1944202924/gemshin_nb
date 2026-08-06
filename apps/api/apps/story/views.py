@@ -1,5 +1,4 @@
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -10,11 +9,12 @@ import zipfile
 
 from django.http import HttpResponse
 
+from apps.core.permissions import MustChangePasswordGuard
 from apps.story import serializers, services
 
 
 class ProjectCollectionView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
 
     def get(self, request):
         project_status = request.query_params.get("status")
@@ -39,7 +39,7 @@ class ProjectCollectionView(APIView):
 
 
 class ProjectItemView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
 
     def get(self, request, project_id: int):
         project = services.get_project(user=request.user, project_id=project_id)
@@ -57,7 +57,7 @@ class ProjectItemView(APIView):
 
 
 class ShotListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
 
     def get(self, request, project_id: int):
         shots = services.list_shots(user=request.user, project_id=project_id)
@@ -83,7 +83,7 @@ class ShotListView(APIView):
 
 
 class ShotItemView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
 
     def get(self, request, shot_id: int):
         shot = services.get_shot(user=request.user, shot_id=shot_id)
@@ -100,7 +100,7 @@ class ShotItemView(APIView):
 
 
 class JobListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
 
     def get(self, request, project_id: int):
         shot_id = request.query_params.get("shot_id")
@@ -146,7 +146,7 @@ class JobListView(APIView):
 
 
 class JobItemView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
 
     def get(self, request, job_id: int):
         job = services.get_job(user=request.user, job_id=job_id)
@@ -154,7 +154,7 @@ class JobItemView(APIView):
 
 
 class JobRetryView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
 
     def post(self, request, job_id: int):
         job = services.retry_job(user=request.user, job_id=job_id)
@@ -162,7 +162,7 @@ class JobRetryView(APIView):
 
 
 class ExportSummaryView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
 
     def get(self, request, project_id: int):
         summary = services.get_export_summary(user=request.user, project_id=project_id)
@@ -170,7 +170,7 @@ class ExportSummaryView(APIView):
 
 
 class ExportValidateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
 
     def get(self, request, project_id: int):
         result = services.validate_export(user=request.user, project_id=project_id)
@@ -179,7 +179,7 @@ class ExportValidateView(APIView):
 
 class ExportDownloadView(APIView):
     """结构化产物包下载 —— 生成 ZIP 含 project.json / storyboard.json / manifest.csv 及素材目录"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
 
     def get(self, request, project_id: int):
         package = services.build_export_package(user=request.user, project_id=project_id)

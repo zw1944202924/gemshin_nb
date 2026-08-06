@@ -144,6 +144,15 @@ class ModuleAPITests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["modules"], [])
 
+    def test_list_blocked_when_user_must_change_password(self):
+        UserProfile.objects.create(user=self.user, must_change_password=True)
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        response = self.client.get("/api/v1/modules/")
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data["detail"], "请先完成密码修改")
+
     def test_list_returns_only_authorized_modules(self):
         UserRole.objects.create(user=self.user, role=self.role_comic)
         UserRole.objects.create(user=self.user, role=self.role_stock)
@@ -172,6 +181,16 @@ class ModuleAPITests(TestCase):
         response = self.client.get("/api/v1/modules/comic/")
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.data["detail"], "无权访问该模块")
+
+    def test_detail_blocked_when_user_must_change_password(self):
+        UserProfile.objects.create(user=self.user, must_change_password=True)
+        UserRole.objects.create(user=self.user, role=self.role_comic)
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        response = self.client.get("/api/v1/modules/comic/")
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data["detail"], "请先完成密码修改")
 
     def test_detail_returns_module_when_authorized(self):
         UserRole.objects.create(user=self.user, role=self.role_comic)
