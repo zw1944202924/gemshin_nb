@@ -519,7 +519,7 @@ class SeedRolesCommandTests(TestCase):
             [content.code],
         )
 
-    def test_seed_roles_restores_configured_admin_account_state(self):
+    def test_seed_roles_restores_configured_admin_account_state_without_resetting_password(self):
         self.admin.is_active = False
         self.admin.is_staff = False
         self.admin.save()
@@ -531,7 +531,8 @@ class SeedRolesCommandTests(TestCase):
         self.admin.refresh_from_db()
         self.assertTrue(self.admin.is_active)
         self.assertTrue(self.admin.is_staff)
-        self.assertTrue(self.admin.check_password("newpass123"))
+        self.assertTrue(self.admin.check_password("oldpass123"))
+        self.assertFalse(self.admin.check_password("newpass123"))
         self.assertEqual(
             list(self.admin.user_roles.values_list("role__code", flat=True)),
             ["admin"],
