@@ -92,6 +92,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        admin_must_change_password = os.environ.get("ADMIN_MUST_CHANGE_PASSWORD", "0") == "1"
+
         # 创建角色
         for role_data in ROLES:
             role, created = Role.objects.update_or_create(
@@ -129,9 +131,10 @@ class Command(BaseCommand):
                     f"请通过环境变量 {password_env} 设置密码，或使用 --interactive-password 交互式输入"
                 )
         
+        user_created = False
         try:
             user = User.objects.get(username=admin_username)
-            self.stdout.write(f"用户 {admin_username} 已存在，将更新其管理员权限")
+            self.stdout.write(f"用户 {admin_username} 已存在，将同步管理员权限，保留现有密码")
         except User.DoesNotExist:
             # 用户不存在时自动创建
             self.stdout.write(f"用户 {admin_username} 不存在，将创建新用户")
@@ -140,17 +143,17 @@ class Command(BaseCommand):
                 password=admin_password,
                 is_active=True,
             )
+            user_created = True
             self.stdout.write(self.style.SUCCESS(f"用户 {admin_username} 创建成功"))
 
         user.is_active = True
         user.is_staff = True
-        user.set_password(admin_password)
         user.save()
 
         # 确保有 profile
         profile, _ = UserProfile.objects.get_or_create(user=user)
-        # 核验账号设置为不需要强制改密，因为这是初始化部署操作
-        profile.must_change_password = False
+        if user_created:
+            profile.must_change_password = admin_must_change_password
         profile.save()
 
         # 分配管理员角色

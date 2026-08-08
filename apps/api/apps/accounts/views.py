@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -16,6 +15,7 @@ from apps.accounts.serializers import (
     UserSerializer,
 )
 from apps.oidc.session import invalidate_user_sessions
+from apps.core.permissions import MustChangePasswordGuard
 
 User = get_user_model()
 
@@ -37,7 +37,7 @@ def log_audit(request, action, target_user=None, detail=None):
     )
 
 
-class IsAdminUser(IsAuthenticated):
+class IsAdminUser(MustChangePasswordGuard):
     def has_permission(self, request, view):
         if not super().has_permission(request, view):
             return False
@@ -45,7 +45,8 @@ class IsAdminUser(IsAuthenticated):
 
 
 class ProfileView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
+    allow_must_change_password_methods = ("GET",)
 
     def get(self, request):
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
@@ -72,7 +73,8 @@ class ProfileView(APIView):
 
 
 class ChangePasswordView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
+    allow_must_change_password_methods = ("POST",)
 
     def post(self, request):
         serializer = ChangePasswordSerializer(data=request.data, context={"request": request})

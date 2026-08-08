@@ -8,6 +8,7 @@ from django.db import close_old_connections, connection
 from django.test import TestCase, TransactionTestCase, override_settings
 from rest_framework.test import APIClient
 
+from apps.accounts.models import UserProfile
 from apps.chat.models import Conversation, Message
 from apps.chat.services import chat as chat_service
 from apps.core.authentication import build_auth_token
@@ -309,6 +310,14 @@ class ChatFlowTests(TestCase):
         other_client.credentials(HTTP_AUTHORIZATION=f"Bearer {build_auth_token(self.other_user)}")
         denied = other_client.get(f"/api/v1/chat/messages/{message.id}/")
         self.assertEqual(denied.status_code, 404)
+
+    def test_must_change_password_blocks_chat_endpoints(self):
+        UserProfile.objects.create(user=self.user, must_change_password=True)
+
+        response = self.client.get("/api/v1/chat/conversations/")
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data["detail"], "请先完成密码修改")
 
     @override_settings(
         CHAT_PROVIDER_CLASS="apps.chat.tests.EmojiFakeProvider",

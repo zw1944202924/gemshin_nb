@@ -39,6 +39,16 @@ class ProfileAPITests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["profile"]["display_name"], "测试用户")
 
+    def test_get_profile_allowed_when_user_must_change_password(self):
+        self.profile.must_change_password = True
+        self.profile.save(update_fields=["must_change_password"])
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        response = self.client.get("/api/v1/accounts/profile/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["profile"]["must_change_password"])
+
     def test_update_profile(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
         response = self.client.patch(
@@ -48,6 +58,20 @@ class ProfileAPITests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["profile"]["display_name"], "新名称")
+
+    def test_update_profile_blocked_when_user_must_change_password(self):
+        self.profile.must_change_password = True
+        self.profile.save(update_fields=["must_change_password"])
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        response = self.client.patch(
+            "/api/v1/accounts/profile/",
+            {"profile": {"display_name": "新名称"}},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data["detail"], "请先完成密码修改")
 
 
 @override_settings(
@@ -80,6 +104,32 @@ class ChangePasswordAPITests(TestCase):
         
         self.profile.refresh_from_db()
         self.assertFalse(self.profile.must_change_password)
+
+    def test_change_password_unlocks_modules_access(self):
+        module = Module.objects.create(
+            code="comic",
+            name="AI 漫剧制作一站式系统",
+            icon="🎬",
+        )
+        role = Role.objects.create(name="漫剧角色", code="comic_role")
+        role.modules.add(module)
+        UserRole.objects.create(user=self.user, role=role)
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
+
+        blocked_response = self.client.get("/api/v1/modules/")
+        self.assertEqual(blocked_response.status_code, 403)
+
+        change_response = self.client.post(
+            "/api/v1/accounts/change-password/",
+            {"old_password": "testpass123", "new_password": "newpass123"},
+            format="json",
+        )
+        self.assertEqual(change_response.status_code, 200)
+
+        allowed_response = self.client.get("/api/v1/modules/")
+        self.assertEqual(allowed_response.status_code, 200)
+        self.assertEqual(len(allowed_response.data["modules"]), 1)
 
 
 @override_settings(
@@ -152,6 +202,17 @@ class AdminUserAPITests(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {normal_token}")
         response = self.client.get("/api/v1/accounts/admin/users/")
         self.assertEqual(response.status_code, 403)
+
+    def test_admin_endpoints_blocked_while_admin_must_change_password(self):
+        admin_profile = self.admin.profile
+        admin_profile.must_change_password = True
+        admin_profile.save(update_fields=["must_change_password"])
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
+        response = self.client.get("/api/v1/accounts/admin/users/")
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data["detail"], "请先完成密码修改")
 
     def test_admin_create_user(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
@@ -458,7 +519,7 @@ class SeedRolesCommandTests(TestCase):
             [content.code],
         )
 
-    def test_seed_roles_restores_configured_admin_account_state(self):
+    def test_seed_roles_restores_configured_admin_account_state_without_resetting_password(self):
         self.admin.is_active = False
         self.admin.is_staff = False
         self.admin.save()
@@ -470,7 +531,8 @@ class SeedRolesCommandTests(TestCase):
         self.admin.refresh_from_db()
         self.assertTrue(self.admin.is_active)
         self.assertTrue(self.admin.is_staff)
-        self.assertTrue(self.admin.check_password("newpass123"))
+        self.assertTrue(self.admin.check_password("oldpass123"))
+        self.assertFalse(self.admin.check_password("newpass123"))
         self.assertEqual(
             list(self.admin.user_roles.values_list("role__code", flat=True)),
             ["admin"],

@@ -1,6 +1,5 @@
 from django.http import StreamingHttpResponse
 from rest_framework import exceptions, status
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -20,10 +19,11 @@ from apps.chat.services.chat import (
     serialize_message_detail,
     soft_delete_conversation,
 )
+from apps.core.permissions import MustChangePasswordGuard
 
 
 class ChatAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
 
 
 class ConversationCollectionView(ChatAPIView):

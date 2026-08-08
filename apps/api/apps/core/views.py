@@ -2,12 +2,13 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.models import UserProfile, UserRole
 from apps.core.authentication import build_auth_token, revoke_auth_token
+from apps.core.permissions import MustChangePasswordGuard
 
 
 def serialize_user(user):
@@ -61,7 +62,8 @@ class LoginView(APIView):
 
 
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
+    allow_must_change_password_methods = ("POST",)
 
     def post(self, request):
         if isinstance(request.auth, str):
@@ -70,14 +72,15 @@ class LogoutView(APIView):
 
 
 class SessionView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
+    allow_must_change_password_methods = ("GET",)
 
     def get(self, request):
         return Response({"user": serialize_user(request.user)})
 
 
 class ProtectedView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MustChangePasswordGuard]
 
     def get(self, request):
         return Response(

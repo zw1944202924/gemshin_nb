@@ -62,6 +62,36 @@ class AuthFlowTests(TestCase):
         self.assertEqual(protected_response.status_code, 200)
         self.assertEqual(protected_response.data["scope"], "authenticated")
 
+    def test_must_change_password_user_can_access_session_but_not_protected_endpoint(self):
+        profile = self.user.profile
+        profile.must_change_password = True
+        profile.save(update_fields=["must_change_password"])
+
+        token = build_auth_token(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+        session_response = self.client.get("/api/v1/auth/me/")
+        protected_response = self.client.get("/api/v1/protected/")
+
+        self.assertEqual(session_response.status_code, 200)
+        self.assertTrue(session_response.data["user"]["must_change_password"])
+        self.assertEqual(protected_response.status_code, 403)
+        self.assertEqual(protected_response.data["detail"], "请先完成密码修改")
+
+    def test_must_change_password_user_can_logout(self):
+        profile = self.user.profile
+        profile.must_change_password = True
+        profile.save(update_fields=["must_change_password"])
+
+        token = build_auth_token(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+        logout_response = self.client.post("/api/v1/auth/logout/")
+        self.assertEqual(logout_response.status_code, 204)
+
+        session_response = self.client.get("/api/v1/auth/me/")
+        self.assertEqual(session_response.status_code, 401)
+
     def test_logout_revokes_current_token(self):
         token = build_auth_token(self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
