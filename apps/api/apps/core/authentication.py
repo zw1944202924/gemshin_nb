@@ -24,7 +24,7 @@ def build_auth_token(user):
     token = secrets.token_urlsafe(32)
     cache.set(
         _cache_key(token),
-        {"user_id": user.pk, "issued_at": int(timezone.now().timestamp())},
+        {"user_id": user.pk, "issued_at": timezone.now().timestamp()},
         timeout=settings.AUTH_TOKEN_MAX_AGE_SECONDS,
     )
     return token
@@ -50,7 +50,8 @@ def resolve_user_from_token(token):
 
     profile, _ = UserProfile.objects.get_or_create(user=user)
     issued_at = payload.get("issued_at")
-    if profile.auth_revoked_at and (issued_at is None or issued_at <= int(profile.auth_revoked_at.timestamp())):
+    revoked_at_ts = profile.auth_revoked_at.timestamp() if profile.auth_revoked_at else None
+    if revoked_at_ts is not None and (issued_at is None or float(issued_at) <= revoked_at_ts):
         raise exceptions.AuthenticationFailed("登录态无效或已过期")
 
     return user

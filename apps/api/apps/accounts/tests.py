@@ -127,6 +127,14 @@ class ChangePasswordAPITests(TestCase):
         )
         self.assertEqual(change_response.status_code, 200)
 
+        relogin_response = self.client.post(
+            "/api/v1/auth/login/",
+            {"username": "testuser", "password": "newpass123"},
+            format="json",
+        )
+        self.assertEqual(relogin_response.status_code, 200)
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {relogin_response.data['token']}")
         allowed_response = self.client.get("/api/v1/modules/")
         self.assertEqual(allowed_response.status_code, 200)
         self.assertEqual(len(allowed_response.data["modules"]), 1)

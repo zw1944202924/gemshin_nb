@@ -178,6 +178,50 @@ class OidcFlowTests(TestCase):
         )
         self.assertEqual(userinfo.status_code, 401)
 
+    def test_disabled_account_cannot_start_oidc_authorization(self):
+        self.client.force_login(self.user)
+        self.user.is_active = False
+        self.user.save(update_fields=["is_active"])
+
+        response = self.client.get(
+            "/api/v1/oidc/authorize/",
+            {
+                "response_type": "code",
+                "client_id": self.application.client_id,
+                "redirect_uri": self.redirect_uri,
+                "scope": "openid profile",
+                "state": "disabled-state",
+                "nonce": "disabled-nonce",
+                "code_challenge": self.code_challenge,
+                "code_challenge_method": "S256",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/api/v1/oidc/login/", response["Location"])
+
+    def test_disabled_account_cannot_refresh_oidc_token(self):
+        response = self._authorize()
+        code = parse_qs(urlparse(response["Location"]).query)["code"][0]
+        token_response = self._exchange_code(code)
+        refresh_token = token_response.json()["refresh_token"]
+
+        self.user.is_active = False
+        self.user.save(update_fields=["is_active"])
+        invalidate_user_sessions(self.user)
+
+        refresh_response = self.client.post(
+            "/api/v1/oidc/token/",
+            {
+                "grant_type": "refresh_token",
+                "client_id": self.application.client_id,
+                "refresh_token": refresh_token,
+            },
+        )
+
+        self.assertEqual(refresh_response.status_code, 400)
+        self.assertEqual(refresh_response.json()["error"], "invalid_grant")
+
     def test_rp_logout_redirects_and_revokes_refresh_token(self):
         response = self._authorize()
         code = parse_qs(urlparse(response["Location"]).query)["code"][0]
