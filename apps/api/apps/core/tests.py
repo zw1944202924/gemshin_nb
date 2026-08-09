@@ -47,6 +47,19 @@ class AuthFlowTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data["detail"], "用户名或密码错误")
 
+    def test_disabled_user_cannot_login(self):
+        self.user.is_active = False
+        self.user.save(update_fields=["is_active"])
+
+        response = self.client.post(
+            "/api/v1/auth/login/",
+            {"username": "demo", "password": "pass123456"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["detail"], "用户名或密码错误")
+
     def test_authenticated_endpoints_require_bearer_token(self):
         token = build_auth_token(self.user)
 
@@ -104,3 +117,13 @@ class AuthFlowTests(TestCase):
 
         self.assertEqual(session_response.status_code, 401)
         self.assertEqual(protected_response.status_code, 401)
+
+    def test_deactivated_user_existing_token_is_rejected(self):
+        token = build_auth_token(self.user)
+        self.user.is_active = False
+        self.user.save(update_fields=["is_active"])
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+        session_response = self.client.get("/api/v1/auth/me/")
+
+        self.assertEqual(session_response.status_code, 401)

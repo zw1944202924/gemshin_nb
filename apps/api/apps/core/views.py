@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import AllowAny
@@ -9,6 +10,8 @@ from rest_framework.views import APIView
 from apps.accounts.models import UserProfile, UserRole
 from apps.core.authentication import build_auth_token, revoke_auth_token
 from apps.core.permissions import MustChangePasswordGuard
+
+User = get_user_model()
 
 
 def serialize_user(user):
@@ -38,6 +41,13 @@ class LoginView(APIView):
         if not username or not password:
             return Response(
                 {"detail": "请输入用户名和密码"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        login_user = User.objects.filter(username=username).only("id", "is_active").first()
+        if login_user is not None and not login_user.is_active:
+            return Response(
+                {"detail": "用户名或密码错误"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

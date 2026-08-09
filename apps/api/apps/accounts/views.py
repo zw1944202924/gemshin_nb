@@ -14,6 +14,7 @@ from apps.accounts.serializers import (
     RoleSerializer,
     UserSerializer,
 )
+from apps.oidc.session import invalidate_user_sessions
 from apps.core.permissions import MustChangePasswordGuard
 
 User = get_user_model()
@@ -80,12 +81,13 @@ class ChangePasswordView(APIView):
         serializer.is_valid(raise_exception=True)
 
         request.user.set_password(serializer.validated_data["new_password"])
-        request.user.save()
+        request.user.save(update_fields=["password"])
 
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
         profile.must_change_password = False
         profile.last_password_change = timezone.now()
-        profile.save()
+        profile.save(update_fields=["must_change_password", "last_password_change"])
+        invalidate_user_sessions(request.user)
 
         log_audit(request, "force_change_password", request.user)
 
@@ -261,7 +263,8 @@ class AdminUserDisableView(APIView):
                 return Response({"detail": "不能停用最后一个管理员"}, status=status.HTTP_400_BAD_REQUEST)
 
         user.is_active = False
-        user.save()
+        user.save(update_fields=["is_active"])
+        invalidate_user_sessions(user)
         log_audit(request, "disable_account", user)
 
         return Response({"detail": "账号已停用"})
@@ -296,11 +299,13 @@ class AdminResetPasswordView(APIView):
         serializer.is_valid(raise_exception=True)
 
         user.set_password(serializer.validated_data["new_password"])
-        user.save()
+        user.save(update_fields=["password"])
 
         profile, _ = UserProfile.objects.get_or_create(user=user)
         profile.must_change_password = serializer.validated_data.get("must_change_password", True)
-        profile.save()
+        profile.last_password_change = timezone.now()
+        profile.save(update_fields=["must_change_password", "last_password_change"])
+        invalidate_user_sessions(user)
 
         log_audit(request, "reset_password", user, {
             "must_change_password": profile.must_change_password,
