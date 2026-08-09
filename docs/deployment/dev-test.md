@@ -12,10 +12,10 @@
 - Gemshin Web 宿主机端口：`127.0.0.1:3101`
 - Gemshin API 宿主机端口：`127.0.0.1:8101`
 - newapi-test 宿主机端口：`127.0.0.1:3002`
-- newapi-test 推荐域名：`newapi-dev.991hahahanxsm.xyz`
+- newapi-test 访问范围：仅服务器本机或 SSH 隧道访问，不配置公网 DNS，不通过 Nginx 暴露
 - new_api 镜像固定为生产当前 digest：`calciumion/new-api@sha256:5a4ca9705f13a000ea85a43c179c4f4f6c6409cdee5b2d7a56df32a9818c783a`
 
-`dev.991hahahanxsm.xyz` 已解析到服务器 `218.244.151.41`。`newapi-dev.991hahahanxsm.xyz` 需要在真实部署前补 DNS 解析，或改为用户确认的其他测试域名。
+`dev.991hahahanxsm.xyz` 已解析到服务器 `218.244.151.41`。newapi-test 不允许暴露到公网，因此不需要也不应配置 `newapi-dev` 之类的公网 DNS。
 
 ## 隔离边界
 
@@ -28,7 +28,7 @@
 | API | `gemshin_nb-api-1` / `127.0.0.1:8100` | `gemshin-dev-api` / `127.0.0.1:8101` |
 | MySQL | `gemshin_nb-mysql-1` | `gemshin-dev-db-test` |
 | Redis | `gemshin_nb-redis-1` | `gemshin-dev-redis-test` |
-| new_api | `new-api` / `127.0.0.1:3000` | `gemshin-dev-newapi-test` / `127.0.0.1:3002` |
+| new_api | `new-api` / `127.0.0.1:3000` | `gemshin-dev-newapi-test` / `127.0.0.1:3002`，不暴露公网 |
 | new_api 数据 | `/home/admin/new-api/data` | `/opt/gemshin-dev/new-api/data` |
 | new_api 日志 | `/home/admin/new-api/logs` | `/opt/gemshin-dev/new-api/logs` |
 
@@ -88,7 +88,6 @@ systemctl reload nginx
 HTTPS 证书建议分别覆盖：
 
 - `dev.991hahahanxsm.xyz`
-- `newapi-dev.991hahahanxsm.xyz`
 
 签发证书前先确认不会覆盖现有 `multica.991hahahanxsm.xyz` 和生产域名证书配置。
 
@@ -100,10 +99,22 @@ Gemshin 测试环境作为 OIDC issuer：
 https://dev.991hahahanxsm.xyz/api/v1/oidc
 ```
 
-newapi-test 作为 OIDC 客户端，部署后在 new_api 管理后台配置：
+newapi-test 作为 OIDC 客户端，部署后在 new_api 管理后台配置。因为 newapi-test 不暴露公网，管理后台访问与浏览器联调建议通过 SSH 隧道完成：
+
+```bash
+ssh -L 3002:127.0.0.1:3002 root@218.244.151.41
+```
+
+打开本机浏览器访问：
+
+```text
+http://127.0.0.1:3002
+```
+
+OIDC 配置：
 
 - Discovery：`https://dev.991hahahanxsm.xyz/api/v1/oidc/.well-known/openid-configuration`
-- Redirect URI：以 `newapi-dev.991hahahanxsm.xyz` 实际回调地址为准
+- Redirect URI：以 SSH 隧道访问地址对应的 newapi-test 实际回调地址为准，例如 `http://127.0.0.1:3002/<newapi-callback-path>`
 - 授权模式：Authorization Code + PKCE S256
 - Scope：`openid profile email`
 
