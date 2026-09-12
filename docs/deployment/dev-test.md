@@ -86,6 +86,46 @@ chmod +x infra/scripts/deploy-dev.sh
 - 执行 `seed_roles`
 - 检查 `http://127.0.0.1:8101/api/v1/health/`
 
+## 按最新版重新部署测试环境
+
+服务器测试目录已经存在时，推荐使用重部署脚本从远端拉取最新版 `dev` 并部署：
+
+```bash
+cd /home/admin/gemshin_nb-test/app
+chmod +x infra/scripts/redeploy-dev-latest.sh
+./infra/scripts/redeploy-dev-latest.sh
+```
+
+脚本默认会：
+
+- 检查当前目录是否为 Git 仓库；
+- 拒绝覆盖未提交的服务器本地代码改动；
+- 拉取 `origin` 最新内容；
+- 切换到 `origin/dev` 最新提交；
+- 执行 `infra/scripts/deploy-dev.sh`；
+- 检查 `https://dev.991hahahanxsm.xyz/api/v1/health/`。
+
+如果确认服务器代码目录里的本地改动可以丢弃，可强制按最新版覆盖：
+
+```bash
+cd /home/admin/gemshin_nb-test/app
+./infra/scripts/redeploy-dev-latest.sh --force
+```
+
+如需同时刷新并重启 `newapi-test` 的 compose 文件：
+
+```bash
+cd /home/admin/gemshin_nb-test/app
+./infra/scripts/redeploy-dev-latest.sh --with-newapi
+```
+
+可指定其他分支、标签或提交：
+
+```bash
+cd /home/admin/gemshin_nb-test/app
+./infra/scripts/redeploy-dev-latest.sh --ref dev
+```
+
 ## 启动 newapi-test
 
 `newapi-test` 已从 Gemshin 测试 compose 中拆出，单独放在 `/home/admin/new_api-test` 管理。
