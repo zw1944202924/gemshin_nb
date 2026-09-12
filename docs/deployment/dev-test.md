@@ -4,11 +4,15 @@
 
 在同一台阿里云服务器上准备一套与生产隔离的 `gemshin_nb` 测试环境，用于验证 `dev` 分支、数据库迁移、账号权限、OIDC 和 new_api 接入。
 
-本阶段只补齐仓库内配置、脚本和文档。真实服务器部署、证书签发、new_api 测试实例初始化和 OIDC 客户端创建，另行执行。
+当前服务器上的测试环境已经迁移到 `/home/admin` 下统一管理，并且 `gemshin_nb` 测试项目与 `new_api` 测试项目拆分为两套独立 compose。
 
 ## 已确认配置
 
 - Gemshin 测试域名：`dev.991hahahanxsm.xyz`
+- Gemshin 测试标准目录：`/home/admin/gemshin_nb-test/app`
+- newapi-test 标准目录：`/home/admin/new_api-test`
+- Gemshin 测试 Compose 项目：`gemshin-nb-test`
+- newapi-test Compose 项目：`new-api-test`
 - Gemshin Web 宿主机端口：`127.0.0.1:3101`
 - Gemshin API 宿主机端口：`127.0.0.1:8101`
 - newapi-test 宿主机端口：`127.0.0.1:3002`
@@ -23,22 +27,27 @@
 
 | 类型 | 生产 | 测试 |
 | --- | --- | --- |
-| Compose 项目 | `gemshin_nb` | `gemshin-dev` |
-| Web | `gemshin_nb-web-1` / `127.0.0.1:3100` | `gemshin-dev-web` / `127.0.0.1:3101` |
-| API | `gemshin_nb-api-1` / `127.0.0.1:8100` | `gemshin-dev-api` / `127.0.0.1:8101` |
-| MySQL | `gemshin_nb-mysql-1` | `gemshin-dev-db-test` |
-| Redis | `gemshin_nb-redis-1` | `gemshin-dev-redis-test` |
-| new_api | `new-api` / `127.0.0.1:3000` | `gemshin-dev-newapi-test` / `127.0.0.1:3002`，不暴露公网 |
-| new_api 数据 | `/home/admin/new-api/data` | `/opt/gemshin-dev/new-api/data` |
-| new_api 日志 | `/home/admin/new-api/logs` | `/opt/gemshin-dev/new-api/logs` |
+| 代码目录 | `/home/admin/gemshin_nb-prod` | `/home/admin/gemshin_nb-test/app` |
+| Compose 项目 | `gemshin_nb` | `gemshin-nb-test` |
+| Web | `gemshin_nb-web-1` / `127.0.0.1:3100` | `gemshin-nb-test-web` / `127.0.0.1:3101` |
+| API | `gemshin_nb-api-1` / `127.0.0.1:8100` | `gemshin-nb-test-api` / `127.0.0.1:8101` |
+| MySQL | `gemshin_nb-mysql-1` | `gemshin-nb-test-db` |
+| Redis | `gemshin_nb-redis-1` | `gemshin-nb-test-redis` |
+| new_api | `new-api` / `127.0.0.1:3000` | `new-api-test` / `127.0.0.1:3002`，不暴露公网 |
+| new_api 数据 | 生产现有目录 | `/home/admin/new_api-test/data` |
+| new_api 日志 | 生产现有目录 | `/home/admin/new_api-test/logs` |
 
 禁止复用生产数据库、Redis、数据卷、OIDC 私钥、new_api 生产实例、生产客户端密钥和生产业务数据。
 
-## 首次准备
+## Gemshin 测试环境首次准备
 
-在服务器拉取要验证的明确提交 SHA 后，复制测试环境变量模板：
+在服务器标准目录拉取要验证的明确提交 SHA 后，复制测试环境变量模板：
 
 ```bash
+mkdir -p /home/admin/gemshin_nb-test
+cd /home/admin/gemshin_nb-test
+git clone <repo-url> app
+cd /home/admin/gemshin_nb-test/app
 cp .env.dev.example .env.dev
 ```
 
@@ -58,22 +67,51 @@ openssl genrsa 2048 | awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}'
 
 不要复制生产私钥、生产数据库密码、生产 new_api 密钥或生产 Token。
 
-## 启动测试环境
+## 启动 Gemshin 测试环境
 
 ```bash
+cd /home/admin/gemshin_nb-test/app
 chmod +x infra/scripts/deploy-dev.sh
 ./infra/scripts/deploy-dev.sh
 ```
 
 脚本会执行：
 
-- 构建 `gemshin-dev-api` 和 `gemshin-dev-web`
-- 启动 `mysql`、`redis`、`newapi`
+- 确认测试 MySQL/Redis volume 存在，缺失时自动创建
+- 构建 `gemshin-nb-test-api` 和 `gemshin-nb-test-web`
+- 启动 `mysql`、`redis`
 - 启动 `api`、`web`
 - 执行 `migrate`
 - 执行 `seed_modules`
 - 执行 `seed_roles`
 - 检查 `http://127.0.0.1:8101/api/v1/health/`
+
+## 启动 newapi-test
+
+`newapi-test` 已从 Gemshin 测试 compose 中拆出，单独放在 `/home/admin/new_api-test` 管理。
+
+首次准备：
+
+```bash
+mkdir -p /home/admin/new_api-test
+cp /home/admin/gemshin_nb-test/app/infra/new_api-test/docker-compose.yml /home/admin/new_api-test/docker-compose.yml
+cd /home/admin/new_api-test
+mkdir -p data logs
+```
+
+启动或更新：
+
+```bash
+cd /home/admin/new_api-test
+/home/admin/gemshin_nb-test/app/infra/scripts/deploy-newapi-test.sh
+```
+
+如果脚本不在当前目录，也可以直接执行：
+
+```bash
+docker compose --project-name new-api-test -f docker-compose.yml up -d
+curl -fsS http://127.0.0.1:3002/api/status
+```
 
 ## Nginx
 
@@ -123,9 +161,14 @@ OIDC 配置：
 ## 验证清单
 
 ```bash
-docker compose --project-name gemshin-dev --env-file .env.dev -f docker-compose.dev.yml ps
+cd /home/admin/gemshin_nb-test/app
+docker compose --project-name gemshin-nb-test --env-file .env.dev -f docker-compose.dev.yml ps
 curl -fsS http://127.0.0.1:8101/api/v1/health/
 curl -fsS https://dev.991hahahanxsm.xyz/api/v1/health/
+
+cd /home/admin/new_api-test
+docker compose --project-name new-api-test -f docker-compose.yml ps
+curl -fsS http://127.0.0.1:3002/api/status
 ```
 
 OIDC 验证：
@@ -135,7 +178,7 @@ OIDC 验证：
 - Authorization Code + PKCE 可完成
 - `state` / `nonce` 校验正常
 - Token 和 UserInfo 正常
-- 已登录 `gemshin-dev` 后进入 `newapi-test` 不需要二次输入密码
+- 已登录 Gemshin 测试环境后进入 `newapi-test` 不需要二次输入密码
 - 退出、停用账号、改密后 Token 和会话按预期失效
 
 隔离验证：
@@ -143,27 +186,42 @@ OIDC 验证：
 - `docker volume ls` 中测试卷与生产卷不同
 - `docker network ls` 中测试网络与生产网络不同
 - 测试 MySQL 库名为 `gemshin_dev`
-- newapi-test 数据目录为 `/opt/gemshin-dev/new-api/data`
-- 不读取或写入 `/home/admin/new-api/data`
+- newapi-test 数据目录为 `/home/admin/new_api-test/data`
+- 不读取或写入生产 new_api 数据目录
 
 ## 停止与回滚
 
-停止测试环境：
+停止 Gemshin 测试环境：
 
 ```bash
-docker compose --project-name gemshin-dev --env-file .env.dev -f docker-compose.dev.yml down
+cd /home/admin/gemshin_nb-test/app
+docker compose --project-name gemshin-nb-test --env-file .env.dev -f docker-compose.dev.yml down
 ```
 
-保留测试数据时不要删除 volume 和 `/opt/gemshin-dev/new-api`。
+停止 newapi-test：
+
+```bash
+cd /home/admin/new_api-test
+docker compose --project-name new-api-test -f docker-compose.yml down
+```
+
+保留测试数据时不要删除 Gemshin 测试 volume 和 `/home/admin/new_api-test/data`。
 
 如需完全清理测试环境：
 
 ```bash
-docker compose --project-name gemshin-dev --env-file .env.dev -f docker-compose.dev.yml down -v
-rm -rf /opt/gemshin-dev/new-api
+cd /home/admin/gemshin_nb-test/app
+docker compose --project-name gemshin-nb-test --env-file .env.dev -f docker-compose.dev.yml down -v
+
+cd /home/admin/new_api-test
+docker compose --project-name new-api-test -f docker-compose.yml down
+rm -rf /home/admin/new_api-test/data /home/admin/new_api-test/logs
+
 rm -f /etc/nginx/conf.d/gemshin_nb_dev.conf
 nginx -t
 systemctl reload nginx
 ```
 
 清理前必须再次确认目标是测试环境，不能删除生产容器、生产卷或生产 new_api 数据目录。
+
+旧目录 `/opt/gemshin-dev/app` 只作为历史回滚目录保留，不再作为标准测试部署目录。

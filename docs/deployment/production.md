@@ -3,9 +3,13 @@
 ## 部署目标
 
 - 生产域名：`991hahahanxsm.xyz`
+- 生产标准目录：`/home/admin/gemshin_nb-prod`
+- Docker Compose 项目名固定为：`gemshin_nb`
 - 不启用 `www` 域名。
 - `gemshin_nb` 使用独立 MySQL 和 Redis，不复用 Multica 或 new_api 的数据库服务。
 - 应用容器只绑定服务器本机端口，公网入口统一交给服务器 Nginx。
+
+已有服务器已经迁移到 `/home/admin/gemshin_nb-prod`。旧目录 `/opt/gemshin_nb` 只作为历史回滚目录保留，不再作为标准部署目录。
 
 ## 服务端口
 
@@ -18,8 +22,16 @@
 
 ## 首次部署
 
-1. 在服务器拉取 `main` 分支代码。
-2. 复制并填写生产环境变量：
+1. 在服务器标准目录拉取 `main` 分支代码。
+
+```bash
+mkdir -p /home/admin
+cd /home/admin
+git clone <repo-url> gemshin_nb-prod
+cd /home/admin/gemshin_nb-prod
+```
+
+2. 复制并填写生产环境变量。
 
 ```bash
 cp .env.production.example .env.production
@@ -42,14 +54,16 @@ ADMIN_MUST_CHANGE_PASSWORD=1
 
 管理员账号不存在时，部署脚本会使用 `ADMIN_PASSWORD` 创建初始账号。管理员账号已存在时，部署脚本只同步启用状态、管理员角色和模块权限，不会覆盖已修改的密码。`ADMIN_MUST_CHANGE_PASSWORD=1` 只在首次创建该管理员账号时生效，用于要求管理员首次登录后修改密码。
 
-3. 执行部署脚本：
+3. 执行部署脚本。
 
 ```bash
 chmod +x infra/scripts/deploy-prod.sh
 ./infra/scripts/deploy-prod.sh
 ```
 
-4. 安装 Nginx 配置：
+部署脚本默认使用 compose project `gemshin_nb`。不要因为目录名变化而更换 compose project 名，否则会生成新的数据库卷。
+
+4. 安装 Nginx 配置。
 
 ```bash
 cp infra/nginx/gemshin_nb.conf /etc/nginx/conf.d/gemshin_nb.conf
@@ -57,14 +71,14 @@ nginx -t
 systemctl reload nginx
 ```
 
-5. 验证健康检查：
+5. 验证健康检查。
 
 ```bash
 curl http://127.0.0.1:8100/api/v1/health/
-curl http://991hahahanxsm.xyz/api/v1/health/
+curl https://991hahahanxsm.xyz/api/v1/health/
 ```
 
-6. 验证产品登录：
+6. 验证产品登录。
 
 ```text
 https://991hahahanxsm.xyz/login
@@ -81,6 +95,7 @@ https://991hahahanxsm.xyz/login
 ## 后续更新
 
 ```bash
+cd /home/admin/gemshin_nb-prod
 git pull
 ./infra/scripts/deploy-prod.sh
 ```

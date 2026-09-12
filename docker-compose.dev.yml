@@ -1,7 +1,7 @@
 services:
   mysql:
     image: mysql:8.4
-    container_name: gemshin-dev-db-test
+    container_name: gemshin-nb-test-db
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -18,7 +18,7 @@ services:
 
   redis:
     image: redis:7.2
-    container_name: gemshin-dev-redis-test
+    container_name: gemshin-nb-test-redis
     restart: unless-stopped
     volumes:
       - gemshin_dev_redis_data:/data
@@ -32,7 +32,7 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-    container_name: gemshin-dev-api
+    container_name: gemshin-nb-test-api
     restart: unless-stopped
     env_file:
       - ${GEMSHIN_ENV_FILE:-.env.dev}
@@ -57,7 +57,7 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-    container_name: gemshin-dev-web
+    container_name: gemshin-nb-test-web
     restart: unless-stopped
     env_file:
       - ${GEMSHIN_ENV_FILE:-.env.dev}
@@ -67,16 +67,10 @@ services:
     ports:
       - "127.0.0.1:3101:3000"
 
-  newapi:
-    image: calciumion/new-api@sha256:5a4ca9705f13a000ea85a43c179c4f4f6c6409cdee5b2d7a56df32a9818c783a
-    container_name: gemshin-dev-newapi-test
-    restart: unless-stopped
-    volumes:
-      - /opt/gemshin-dev/new-api/data:/data
-      - /opt/gemshin-dev/new-api/logs:/app/logs
-    ports:
-      - "127.0.0.1:3002:3000"
-
 volumes:
   gemshin_dev_mysql_data:
+    external: true
+    name: gemshin-dev_gemshin_dev_mysql_data
   gemshin_dev_redis_data:
+    external: true
+    name: gemshin-dev_gemshin_dev_redis_data

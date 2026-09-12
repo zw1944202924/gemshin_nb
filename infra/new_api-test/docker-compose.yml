@@ -1,0 +1,10 @@
+services:
+  newapi:
+    image: calciumion/new-api@sha256:5a4ca9705f13a000ea85a43c179c4f4f6c6409cdee5b2d7a56df32a9818c783a
+    container_name: new-api-test
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+      - ./logs:/app/logs
+    ports:
+      - "127.0.0.1:3002:3000"
