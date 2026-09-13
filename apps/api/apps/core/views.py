@@ -2,13 +2,14 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from rest_framework import exceptions
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.models import UserProfile, UserRole
-from apps.core.authentication import build_auth_token, revoke_auth_token
+from apps.core.authentication import build_auth_token, resolve_user_from_token, revoke_auth_token
 from apps.core.permissions import MustChangePasswordGuard
 
 User = get_user_model()
@@ -99,3 +100,34 @@ class ProtectedView(APIView):
                 "scope": "authenticated",
             }
         )
+
+
+class NewApiProxyAuthView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        token = self._extract_token(request)
+        if not token:
+            return Response({"detail": "未登录"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            user = resolve_user_from_token(token)
+        except exceptions.AuthenticationFailed as exc:
+            return Response({"detail": str(exc.detail)}, status=status.HTTP_401_UNAUTHORIZED)
+
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        if profile.must_change_password:
+            return Response({"detail": "请先完成密码修改"}, status=status.HTTP_403_FORBIDDEN)
+
+        response = Response(status=status.HTTP_204_NO_CONTENT)
+        response["X-Gemshin-User-Id"] = str(user.pk)
+        response["X-Gemshin-Username"] = user.get_username()
+        response["X-Gemshin-Oidc-Subject"] = str(profile.oidc_subject)
+        return response
+
+    def _extract_token(self, request):
+        auth = request.META.get("HTTP_AUTHORIZATION", "")
+        if auth.lower().startswith("bearer "):
+            return auth.split(" ", 1)[1].strip()
+        return (request.COOKIES.get("gemshin_token") or "").strip()

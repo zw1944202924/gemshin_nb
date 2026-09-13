@@ -3,6 +3,11 @@ services:
     image: calciumion/new-api@sha256:5a4ca9705f13a000ea85a43c179c4f4f6c6409cdee5b2d7a56df32a9818c783a
     container_name: new-api-test
     restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      FRONTEND_BASE_URL: ${NEWAPI_FRONTEND_BASE_URL:-https://dev.991hahahanxsm.xyz/assistant/new-api}
+      SESSION_SECRET: ${NEWAPI_SESSION_SECRET:?Set NEWAPI_SESSION_SECRET in /home/admin/new_api-test/.env}
+      CRYPTO_SECRET: ${NEWAPI_CRYPTO_SECRET:?Set NEWAPI_CRYPTO_SECRET in /home/admin/new_api-test/.env}
     volumes:
       - ./data:/data
       - ./logs:/app/logs
