@@ -40,6 +40,8 @@ def reverse_charset(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
+    atomic = False
+
     dependencies = [
         ('chat', '0001_initial'),
     ]
