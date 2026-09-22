@@ -4,7 +4,7 @@ from django.urls import include, path
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.core.views import LoginView, LogoutView, ProtectedView, SessionView
+from apps.core.views import LoginView, LogoutView, NewApiProxyAuthView, ProtectedView, SessionView
 
 
 class HealthView(APIView):
@@ -44,6 +44,7 @@ urlpatterns = [
     path("api/v1/auth/logout/", LogoutView.as_view(), name="auth-logout"),
     path("api/v1/auth/me/", SessionView.as_view(), name="auth-me"),
     path("api/v1/protected/", ProtectedView.as_view(), name="protected"),
+    path("api/v1/assistant/new-api/auth/", NewApiProxyAuthView.as_view(), name="new-api-proxy-auth"),
     path("api/v1/oidc/", include("apps.oidc.urls")),
     path("api/v1/oidc/", include(("apps.oidc.oauth_urls", "oauth2_provider"), namespace="oauth2_provider")),
     path("api/v1/accounts/", include("apps.accounts.urls")),

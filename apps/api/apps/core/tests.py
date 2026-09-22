@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import UserProfile
@@ -127,3 +128,35 @@ class AuthFlowTests(TestCase):
         session_response = self.client.get("/api/v1/auth/me/")
 
         self.assertEqual(session_response.status_code, 401)
+
+    def test_new_api_proxy_auth_accepts_gemshin_cookie(self):
+        token = build_auth_token(self.user)
+        self.client.cookies["gemshin_token"] = token
+
+        response = self.client.get("/api/v1/assistant/new-api/auth/")
+
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response["X-Gemshin-User-Id"], str(self.user.pk))
+        self.assertEqual(response["X-Gemshin-Username"], "demo")
+        self.assertEqual(response["X-Gemshin-Oidc-Subject"], str(self.user.profile.oidc_subject))
+
+    def test_new_api_proxy_auth_rejects_missing_or_revoked_session(self):
+        denied = self.client.get("/api/v1/assistant/new-api/auth/")
+        self.assertEqual(denied.status_code, 401)
+
+        token = build_auth_token(self.user)
+        self.client.cookies["gemshin_token"] = token
+        self.user.profile.auth_revoked_at = timezone.now()
+        self.user.profile.save(update_fields=["auth_revoked_at"])
+
+        revoked = self.client.get("/api/v1/assistant/new-api/auth/")
+        self.assertEqual(revoked.status_code, 401)
+
+    def test_new_api_proxy_auth_rejects_must_change_password_user(self):
+        self.user.profile.must_change_password = True
+        self.user.profile.save(update_fields=["must_change_password"])
+        self.client.cookies["gemshin_token"] = build_auth_token(self.user)
+
+        response = self.client.get("/api/v1/assistant/new-api/auth/")
+
+        self.assertEqual(response.status_code, 403)
